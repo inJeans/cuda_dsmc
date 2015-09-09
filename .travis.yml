@@ -1,9 +1,8 @@
 language: c
 
-before_install:
-    ls
-
 script:
+    - aclocal
+    - autoconf
+    - automake --add-missing
     - ./configure
     - make
-    - make test
