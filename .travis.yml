@@ -3,7 +3,7 @@ language: c
 before_install:
     ls
 
-install:
-    ./configure
-    make
-    make test
+script:
+    - ./configure
+    - make
+    - make test
