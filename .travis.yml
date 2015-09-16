@@ -1,8 +1,5 @@
 language: c
 
 script:
-    - aclocal
-    - autoconf
-    - automake --add-missing
-    - ./configure
+    - cmake .
     - make
