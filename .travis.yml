@@ -1,12 +1,13 @@
 language: c
 
-compiler:
-	- clang
-	- gcc
-
-os:
-    - linux
-    - osx
+matrix:
+	include:
+		- os: linux
+		  compiler: gcc
+    	- os: osx
+    	  compiler: 
+    	  - gcc
+    	  - clang
 
 script:
     - cmake .
