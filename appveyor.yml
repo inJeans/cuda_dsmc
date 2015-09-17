@@ -4,4 +4,3 @@ before_build:
     - cmake .
 
 project: hello.vcxproj
-
