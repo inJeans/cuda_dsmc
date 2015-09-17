@@ -11,3 +11,4 @@ os:
 script:
     - cmake .
     - make
+    - make test
