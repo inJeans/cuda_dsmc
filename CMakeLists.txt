@@ -6,6 +6,8 @@ project (cuda_dsmc)
 add_executable(hello hello_world.c)
 
 # does the application run
+enable_testing()
+
 add_test (cuda_dmsc_runs hello)
 
 # does it have the correct output
