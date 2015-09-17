@@ -4,4 +4,4 @@ before_build:
     - cmake .
 
 build:
-  project: hello.vcxproj
+  project: cuda_dsmc.sln
