@@ -7,5 +7,5 @@ before_build:
 #  project: cuda_dsmc.sln
 
 build_script:
-	msbuild cuda_dsmc.sln
-	dir
+    - msbuild cuda_dsmc.sln
+    - dir
