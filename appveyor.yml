@@ -9,3 +9,4 @@ before_build:
 build_script:
     - msbuild cuda_dsmc.sln
     - dir
+    - msbuild RUN_TESTS.vcxproj
