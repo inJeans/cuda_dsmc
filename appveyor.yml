@@ -3,4 +3,5 @@ version: 1.0.{build}
 before_build:
     - cmake .
 
-project: hello.vcxproj
+build:
+  project: hello.vcxproj
