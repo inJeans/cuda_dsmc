@@ -1,5 +1,8 @@
 language: c
 
+env:
+    global: CUDA=7.0-28
+
 compiler:
     - clang
     - gcc
