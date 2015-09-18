@@ -1,9 +1,10 @@
 SET( CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG ".")
 SET( CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ".")
 
-cmake_minimum_required (VERSION 2.6)
+cmake_minimum_required (VERSION 2.8)
 project (cuda_dsmc)
-add_executable(hello hello_world.c)
+find_package(CUDA QUIET REQUIRED)
+cuda_add_executable(hello hello_world.cu)
 
 # does the application run
 enable_testing()
