@@ -7,7 +7,7 @@ services:
 
 before_install:
     - docker pull kaixhin/cuda
-    - docker run -t -i kaixhin/cuda /bin/sh -c "sudo apt-get update; sudo apt-get install -y cmake; nvcc --version;"
+    - docker run -v=/:cuda_dsmc -t -i kaixhin/cuda /bin/sh -c "sudo apt-get update; sudo apt-get install -y cmake; nvcc --version; ls cuda_dsmc"
 
 script:
     - ls
