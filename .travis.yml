@@ -7,10 +7,11 @@ services:
 
 before_install:
     - docker pull kaixhin/cuda
-    - docker run -t -i kaixhin/cuda /bin/sh -c "sudo apt-get update; sudo apt-get install -y cmake; ls /mnt; ls;"
+    - docker run -t -i kaixhin/cuda /bin/sh -c "sudo apt-get update; sudo apt-get install -y cmake; nvcc --version;"
 
-# script:
-#     - ls
+script:
+    - ls
+    - nvcc --version
 #     - cmake .
 #     - make
 #     - make test
