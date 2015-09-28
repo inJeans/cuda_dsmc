@@ -8,11 +8,10 @@ services:
 before_install:
     - ls
     - docker pull kaixhin/cuda
-    - docker run -v=/:/cuda_dsmc -t -i kaixhin/cuda /bin/sh -c "sudo apt-get update; sudo apt-get install -y cmake; nvcc --version; ls cuda_dsmc"
+    - docker run -v=/:/cuda_dsmc -d --name="cuda_7.5" kaixhin/cuda /bin/sh -c "sudo apt-get update;"
+    - docker attach cuda_7.5 /bin/sh -c "sudo apt-get install -y cmake;"
 
 script:
-    - ls
-    - nvcc --version
-#     - cmake .
-#     - make
-#     - make test
+    - docker attach cuda_7.5 /bin/sh -c "nvcc --version"
+    - docker attach cuda_7.5 /bin/sh -c "cmake ."
+    - docker attach cuda_7.5 /bin/sh -c "make" 
