@@ -15,3 +15,4 @@ script:
     - docker exec -d cuda_7.5 /bin/sh -c "nvcc --version;"
     - docker exec -d cuda_7.5 /bin/sh -c "cd /cuda_dsmc; cmake .;"
     - docker exec -d cuda_7.5 /bin/sh -c "cd /cuda_dsmc; make;" 
+    - docker attach cuda_7.5
