@@ -9,10 +9,9 @@ before_install:
     - ls
     - docker pull kaixhin/cuda
     - docker run -v=/:/cuda_dsmc -d --name="cuda_7.5" kaixhin/cuda /bin/sh -c "sudo apt-get update;"
-    - docker attach cuda_7.5
-    - sudo apt-get install -y cmake
+    - docker exec -d cuda_7.5 /bin/sh -c "sudo apt-get install -y cmake;"
 
 script:
-    - docker attach cuda_7.5 /bin/sh -c "nvcc --version;"
-    - docker attach cuda_7.5 /bin/sh -c "cd /cuda_dsmc; cmake .;"
-    - docker attach cuda_7.5 /bin/sh -c "cd /cuda_dsmc; make;" 
+    - docker exec -d cuda_7.5 /bin/sh -c "nvcc --version;"
+    - docker exec -d cuda_7.5 /bin/sh -c "cd /cuda_dsmc; cmake .;"
+    - docker exec -d cuda_7.5 /bin/sh -c "cd /cuda_dsmc; make;" 
