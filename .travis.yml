@@ -7,7 +7,7 @@ services:
 
 before_install:
     - docker pull kaixhin/cuda
-    - docker run -t -i kaixhin/cuda /bin/sh -c "sudo apt-get update; sudo apt-get install -y cmake; ls /root;"
+    - docker run -t -i kaixhin/cuda /bin/sh -c "sudo apt-get update; sudo apt-get install -y cmake; ls /mnt;"
 
 # script:
 #     - ls
