@@ -11,8 +11,8 @@ before_install:
     - docker exec -d cuda_7.5 /bin/sh -c "sudo apt-get install -y cmake;"
 
 script:
-    - docker exec -d cuda_7.5 /bin/sh -c "nvcc --version;"
-    - docker exec -d cuda_7.5 /bin/sh -c "cd /cuda_dsmc; cmake .;"
-    - docker exec -d cuda_7.5 /bin/sh -c "cd /cuda_dsmc; make;" 
+    - docker exec -it cuda_7.5 /bin/sh -c "nvcc --version;"
+    - docker exec -it cuda_7.5 /bin/sh -c "cd /cuda_dsmc; cmake .;"
+    - docker exec -it cuda_7.5 /bin/sh -c "cd /cuda_dsmc; make;" 
     - ls
-    - docker exec -d cuda_7.5 /bin/sh -c "cd /cuda_dsmc; make test;" 
+    - docker exec -it cuda_7.5 /bin/sh -c "cd /cuda_dsmc; make test;" 
