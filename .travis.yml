@@ -15,7 +15,7 @@ before_install:
     - docker rm cuda_7.5 
 
 script:
-    - docker run --name="cuda_7.5" kaixhin/cuda /bin/sh -c "nvcc --version;"
+    - docker run --name="cuda_7.5" kaixhin/cuda /bin/sh -c "nvcc --version; ls; pwd;"
     - docker rm cuda_7.5
     - docker run --name="cuda_7.5" kaixhin/cuda /bin/sh -c "cd /cuda_dsmc; cmake .; ls;"
     - docker commit cuda_7.5 kaixhin/cuda:latest
