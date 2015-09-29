@@ -6,15 +6,8 @@ services:
     - docker
 
 before_install:
-    - pwd
-    - ls 
-    - ls /home
-    - ls /home/me
-    - ls /home/travis
-    - ls /home/ubuntu
-    - ls /home/vagrant
     - docker pull kaixhin/cuda
-    - docker run -v=./:/cuda_dsmc --name="cuda_7.5" kaixhin/cuda /bin/sh -c "sudo apt-get update; ls; ls /cuda_dsmc;"
+    - docker run -v=/home/travis/buil/inJeans/cuda_dsmc:/cuda_dsmc --name="cuda_7.5" kaixhin/cuda /bin/sh -c "sudo apt-get update; ls; ls /cuda_dsmc;"
     - docker commit cuda_7.5 kaixhin/cuda:latest
     - docker rm cuda_7.5 
     - docker run --name="cuda_7.5" kaixhin/cuda /bin/sh -c "sudo apt-get install -y cmake; ls;"
