@@ -1,0 +1,539 @@
+The system is: Darwin - 14.5.0 - x86_64
+Compiling the C compiler identification source file "CMakeCCompilerId.c" succeeded.
+Compiler: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/cc 
+Build flags: 
+Id flags: 
+
+The output was:
+0
+
+
+Compilation of the C compiler identification source "CMakeCCompilerId.c" produced "a.out"
+
+The C compiler identification is AppleClang, found in "/Users/miMacbookPro/Documents/GitMercurial/cuda_dsmc/build/CMakeFiles/3.3.1/CompilerIdC/a.out"
+
+Compiling the CXX compiler identification source file "CMakeCXXCompilerId.cpp" succeeded.
+Compiler: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++ 
+Build flags: 
+Id flags: 
+
+The output was:
+0
+
+
+Compilation of the CXX compiler identification source "CMakeCXXCompilerId.cpp" produced "a.out"
+
+The CXX compiler identification is AppleClang, found in "/Users/miMacbookPro/Documents/GitMercurial/cuda_dsmc/build/CMakeFiles/3.3.1/CompilerIdCXX/a.out"
+
+Determining if the C compiler works passed with the following output:
+Change Dir: /Users/miMacbookPro/Documents/GitMercurial/cuda_dsmc/build/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/make" "cmTC_274e2/fast"
+/Applications/Xcode.app/Contents/Developer/usr/bin/make -f CMakeFiles/cmTC_274e2.dir/build.make CMakeFiles/cmTC_274e2.dir/build
+Building C object CMakeFiles/cmTC_274e2.dir/testCCompiler.c.o
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/cc    -o CMakeFiles/cmTC_274e2.dir/testCCompiler.c.o   -c /Users/miMacbookPro/Documents/GitMercurial/cuda_dsmc/build/CMakeFiles/CMakeTmp/testCCompiler.c
+Linking C executable cmTC_274e2
+/usr/local/bin/cmake -E cmake_link_script CMakeFiles/cmTC_274e2.dir/link.txt --verbose=1
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/cc    -Wl,-search_paths_first -Wl,-headerpad_max_install_names   CMakeFiles/cmTC_274e2.dir/testCCompiler.c.o  -o cmTC_274e2  
+
+
+Detecting C compiler ABI info compiled with the following output:
+Change Dir: /Users/miMacbookPro/Documents/GitMercurial/cuda_dsmc/build/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/make" "cmTC_3fac4/fast"
+/Applications/Xcode.app/Contents/Developer/usr/bin/make -f CMakeFiles/cmTC_3fac4.dir/build.make CMakeFiles/cmTC_3fac4.dir/build
+Building C object CMakeFiles/cmTC_3fac4.dir/CMakeCCompilerABI.c.o
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/cc    -o CMakeFiles/cmTC_3fac4.dir/CMakeCCompilerABI.c.o   -c /usr/local/share/cmake-3.3/Modules/CMakeCCompilerABI.c
+Linking C executable cmTC_3fac4
+/usr/local/bin/cmake -E cmake_link_script CMakeFiles/cmTC_3fac4.dir/link.txt --verbose=1
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/cc    -Wl,-search_paths_first -Wl,-headerpad_max_install_names  -v -Wl,-v CMakeFiles/cmTC_3fac4.dir/CMakeCCompilerABI.c.o  -o cmTC_3fac4   
+Apple LLVM version 6.1.0 (clang-602.0.53) (based on LLVM 3.6.0svn)
+Target: x86_64-apple-darwin14.5.0
+Thread model: posix
+ "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ld" -demangle -dynamic -arch x86_64 -macosx_version_min 10.10.0 -o cmTC_3fac4 -search_paths_first -headerpad_max_install_names -v CMakeFiles/cmTC_3fac4.dir/CMakeCCompilerABI.c.o -L/opt/intel/composer_xe_2013_sp1.2.139/compiler/lib -L/opt/intel/composer_xe_2013_sp1.2.139/ipp/../compiler/lib -L/opt/intel/composer_xe_2013_sp1.2.139/ipp/lib -L/opt/intel/composer_xe_2013_sp1.2.139/compiler/lib -L/opt/intel/composer_xe_2013_sp1.2.139/mkl/lib -L/opt/intel/composer_xe_2013_sp1.2.139/tbb/lib -lSystem /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../lib/clang/6.1.0/lib/darwin/libclang_rt.osx.a
+@(#)PROGRAM:ld  PROJECT:ld64-242.2
+configured to support archs: armv6 armv7 armv7s arm64 i386 x86_64 x86_64h armv6m armv7m armv7em
+Library search paths:
+	/opt/intel/composer_xe_2013_sp1.2.139/compiler/lib
+	/opt/intel/composer_xe_2013_sp1.2.139/compiler/lib
+	/opt/intel/composer_xe_2013_sp1.2.139/ipp/lib
+	/opt/intel/composer_xe_2013_sp1.2.139/compiler/lib
+	/opt/intel/composer_xe_2013_sp1.2.139/mkl/lib
+	/opt/intel/composer_xe_2013_sp1.2.139/tbb/lib
+	/usr/lib
+	/usr/local/lib
+Framework search paths:
+	/Library/Frameworks/
+	/System/Library/Frameworks/
+
+
+Parsed C implicit link information from above output:
+  link line regex: [^( *|.*[/\])(ld|([^/\]+-)?ld|collect2)[^/\]*( |$)]
+  ignore line: [Change Dir: /Users/miMacbookPro/Documents/GitMercurial/cuda_dsmc/build/CMakeFiles/CMakeTmp]
+  ignore line: []
+  ignore line: [Run Build Command:"/usr/bin/make" "cmTC_3fac4/fast"]
+  ignore line: [/Applications/Xcode.app/Contents/Developer/usr/bin/make -f CMakeFiles/cmTC_3fac4.dir/build.make CMakeFiles/cmTC_3fac4.dir/build]
+  ignore line: [Building C object CMakeFiles/cmTC_3fac4.dir/CMakeCCompilerABI.c.o]
+  ignore line: [/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/cc    -o CMakeFiles/cmTC_3fac4.dir/CMakeCCompilerABI.c.o   -c /usr/local/share/cmake-3.3/Modules/CMakeCCompilerABI.c]
+  ignore line: [Linking C executable cmTC_3fac4]
+  ignore line: [/usr/local/bin/cmake -E cmake_link_script CMakeFiles/cmTC_3fac4.dir/link.txt --verbose=1]
+  ignore line: [/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/cc    -Wl,-search_paths_first -Wl,-headerpad_max_install_names  -v -Wl,-v CMakeFiles/cmTC_3fac4.dir/CMakeCCompilerABI.c.o  -o cmTC_3fac4   ]
+  ignore line: [Apple LLVM version 6.1.0 (clang-602.0.53) (based on LLVM 3.6.0svn)]
+  ignore line: [Target: x86_64-apple-darwin14.5.0]
+  ignore line: [Thread model: posix]
+  link line: [ "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ld" -demangle -dynamic -arch x86_64 -macosx_version_min 10.10.0 -o cmTC_3fac4 -search_paths_first -headerpad_max_install_names -v CMakeFiles/cmTC_3fac4.dir/CMakeCCompilerABI.c.o -L/opt/intel/composer_xe_2013_sp1.2.139/compiler/lib -L/opt/intel/composer_xe_2013_sp1.2.139/ipp/../compiler/lib -L/opt/intel/composer_xe_2013_sp1.2.139/ipp/lib -L/opt/intel/composer_xe_2013_sp1.2.139/compiler/lib -L/opt/intel/composer_xe_2013_sp1.2.139/mkl/lib -L/opt/intel/composer_xe_2013_sp1.2.139/tbb/lib -lSystem /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../lib/clang/6.1.0/lib/darwin/libclang_rt.osx.a]
+    arg [/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ld] ==> ignore
+    arg [-demangle] ==> ignore
+    arg [-dynamic] ==> ignore
+    arg [-arch] ==> ignore
+    arg [x86_64] ==> ignore
+    arg [-macosx_version_min] ==> ignore
+    arg [10.10.0] ==> ignore
+    arg [-o] ==> ignore
+    arg [cmTC_3fac4] ==> ignore
+    arg [-search_paths_first] ==> ignore
+    arg [-headerpad_max_install_names] ==> ignore
+    arg [-v] ==> ignore
+    arg [CMakeFiles/cmTC_3fac4.dir/CMakeCCompilerABI.c.o] ==> ignore
+    arg [-L/opt/intel/composer_xe_2013_sp1.2.139/compiler/lib] ==> dir [/opt/intel/composer_xe_2013_sp1.2.139/compiler/lib]
+    arg [-L/opt/intel/composer_xe_2013_sp1.2.139/ipp/../compiler/lib] ==> dir [/opt/intel/composer_xe_2013_sp1.2.139/ipp/../compiler/lib]
+    arg [-L/opt/intel/composer_xe_2013_sp1.2.139/ipp/lib] ==> dir [/opt/intel/composer_xe_2013_sp1.2.139/ipp/lib]
+    arg [-L/opt/intel/composer_xe_2013_sp1.2.139/compiler/lib] ==> dir [/opt/intel/composer_xe_2013_sp1.2.139/compiler/lib]
+    arg [-L/opt/intel/composer_xe_2013_sp1.2.139/mkl/lib] ==> dir [/opt/intel/composer_xe_2013_sp1.2.139/mkl/lib]
+    arg [-L/opt/intel/composer_xe_2013_sp1.2.139/tbb/lib] ==> dir [/opt/intel/composer_xe_2013_sp1.2.139/tbb/lib]
+    arg [-lSystem] ==> lib [System]
+    arg [/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../lib/clang/6.1.0/lib/darwin/libclang_rt.osx.a] ==> lib [/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../lib/clang/6.1.0/lib/darwin/libclang_rt.osx.a]
+  Library search paths: [;/opt/intel/composer_xe_2013_sp1.2.139/compiler/lib;/opt/intel/composer_xe_2013_sp1.2.139/compiler/lib;/opt/intel/composer_xe_2013_sp1.2.139/ipp/lib;/opt/intel/composer_xe_2013_sp1.2.139/compiler/lib;/opt/intel/composer_xe_2013_sp1.2.139/mkl/lib;/opt/intel/composer_xe_2013_sp1.2.139/tbb/lib;/usr/lib;/usr/local/lib]
+  Framework search paths: [;/Library/Frameworks/;/System/Library/Frameworks/]
+  remove lib [System]
+  collapse lib [/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../lib/clang/6.1.0/lib/darwin/libclang_rt.osx.a] ==> [/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/6.1.0/lib/darwin/libclang_rt.osx.a]
+  collapse library dir [/opt/intel/composer_xe_2013_sp1.2.139/compiler/lib] ==> [/opt/intel/composer_xe_2013_sp1.2.139/compiler/lib]
+  collapse library dir [/opt/intel/composer_xe_2013_sp1.2.139/ipp/../compiler/lib] ==> [/opt/intel/composer_xe_2013_sp1.2.139/compiler/lib]
+  collapse library dir [/opt/intel/composer_xe_2013_sp1.2.139/ipp/lib] ==> [/opt/intel/composer_xe_2013_sp1.2.139/ipp/lib]
+  collapse library dir [/opt/intel/composer_xe_2013_sp1.2.139/compiler/lib] ==> [/opt/intel/composer_xe_2013_sp1.2.139/compiler/lib]
+  collapse library dir [/opt/intel/composer_xe_2013_sp1.2.139/mkl/lib] ==> [/opt/intel/composer_xe_2013_sp1.2.139/mkl/lib]
+  collapse library dir [/opt/intel/composer_xe_2013_sp1.2.139/tbb/lib] ==> [/opt/intel/composer_xe_2013_sp1.2.139/tbb/lib]
+  collapse library dir [/opt/intel/composer_xe_2013_sp1.2.139/compiler/lib] ==> [/opt/intel/composer_xe_2013_sp1.2.139/compiler/lib]
+  collapse library dir [/opt/intel/composer_xe_2013_sp1.2.139/compiler/lib] ==> [/opt/intel/composer_xe_2013_sp1.2.139/compiler/lib]
+  collapse library dir [/opt/intel/composer_xe_2013_sp1.2.139/ipp/lib] ==> [/opt/intel/composer_xe_2013_sp1.2.139/ipp/lib]
+  collapse library dir [/opt/intel/composer_xe_2013_sp1.2.139/compiler/lib] ==> [/opt/intel/composer_xe_2013_sp1.2.139/compiler/lib]
+  collapse library dir [/opt/intel/composer_xe_2013_sp1.2.139/mkl/lib] ==> [/opt/intel/composer_xe_2013_sp1.2.139/mkl/lib]
+  collapse library dir [/opt/intel/composer_xe_2013_sp1.2.139/tbb/lib] ==> [/opt/intel/composer_xe_2013_sp1.2.139/tbb/lib]
+  collapse library dir [/usr/lib] ==> [/usr/lib]
+  collapse library dir [/usr/local/lib] ==> [/usr/local/lib]
+  collapse framework dir [/Library/Frameworks/] ==> [/Library/Frameworks]
+  collapse framework dir [/System/Library/Frameworks/] ==> [/System/Library/Frameworks]
+  implicit libs: [/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/6.1.0/lib/darwin/libclang_rt.osx.a]
+  implicit dirs: [/opt/intel/composer_xe_2013_sp1.2.139/compiler/lib;/opt/intel/composer_xe_2013_sp1.2.139/ipp/lib;/opt/intel/composer_xe_2013_sp1.2.139/mkl/lib;/opt/intel/composer_xe_2013_sp1.2.139/tbb/lib;/usr/lib;/usr/local/lib]
+  implicit fwks: [/Library/Frameworks;/System/Library/Frameworks]
+
+
+
+
+Detecting C [-std=c11] compiler features compiled with the following output:
+Change Dir: /Users/miMacbookPro/Documents/GitMercurial/cuda_dsmc/build/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/make" "cmTC_d6d34/fast"
+/Applications/Xcode.app/Contents/Developer/usr/bin/make -f CMakeFiles/cmTC_d6d34.dir/build.make CMakeFiles/cmTC_d6d34.dir/build
+Building C object CMakeFiles/cmTC_d6d34.dir/feature_tests.c.o
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/cc   -std=c11 -o CMakeFiles/cmTC_d6d34.dir/feature_tests.c.o   -c /Users/miMacbookPro/Documents/GitMercurial/cuda_dsmc/build/CMakeFiles/feature_tests.c
+Linking C executable cmTC_d6d34
+/usr/local/bin/cmake -E cmake_link_script CMakeFiles/cmTC_d6d34.dir/link.txt --verbose=1
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/cc    -Wl,-search_paths_first -Wl,-headerpad_max_install_names   CMakeFiles/cmTC_d6d34.dir/feature_tests.c.o  -o cmTC_d6d34  
+
+
+    Feature record: C_FEATURE:1c_function_prototypes
+    Feature record: C_FEATURE:1c_restrict
+    Feature record: C_FEATURE:1c_static_assert
+    Feature record: C_FEATURE:1c_variadic_macros
+
+
+Detecting C [-std=c99] compiler features compiled with the following output:
+Change Dir: /Users/miMacbookPro/Documents/GitMercurial/cuda_dsmc/build/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/make" "cmTC_e0c1c/fast"
+/Applications/Xcode.app/Contents/Developer/usr/bin/make -f CMakeFiles/cmTC_e0c1c.dir/build.make CMakeFiles/cmTC_e0c1c.dir/build
+Building C object CMakeFiles/cmTC_e0c1c.dir/feature_tests.c.o
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/cc   -std=c99 -o CMakeFiles/cmTC_e0c1c.dir/feature_tests.c.o   -c /Users/miMacbookPro/Documents/GitMercurial/cuda_dsmc/build/CMakeFiles/feature_tests.c
+Linking C executable cmTC_e0c1c
+/usr/local/bin/cmake -E cmake_link_script CMakeFiles/cmTC_e0c1c.dir/link.txt --verbose=1
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/cc    -Wl,-search_paths_first -Wl,-headerpad_max_install_names   CMakeFiles/cmTC_e0c1c.dir/feature_tests.c.o  -o cmTC_e0c1c  
+
+
+    Feature record: C_FEATURE:1c_function_prototypes
+    Feature record: C_FEATURE:1c_restrict
+    Feature record: C_FEATURE:0c_static_assert
+    Feature record: C_FEATURE:1c_variadic_macros
+
+
+Detecting C [-std=c90] compiler features compiled with the following output:
+Change Dir: /Users/miMacbookPro/Documents/GitMercurial/cuda_dsmc/build/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/make" "cmTC_c725a/fast"
+/Applications/Xcode.app/Contents/Developer/usr/bin/make -f CMakeFiles/cmTC_c725a.dir/build.make CMakeFiles/cmTC_c725a.dir/build
+Building C object CMakeFiles/cmTC_c725a.dir/feature_tests.c.o
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/cc   -std=c90 -o CMakeFiles/cmTC_c725a.dir/feature_tests.c.o   -c /Users/miMacbookPro/Documents/GitMercurial/cuda_dsmc/build/CMakeFiles/feature_tests.c
+Linking C executable cmTC_c725a
+/usr/local/bin/cmake -E cmake_link_script CMakeFiles/cmTC_c725a.dir/link.txt --verbose=1
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/cc    -Wl,-search_paths_first -Wl,-headerpad_max_install_names   CMakeFiles/cmTC_c725a.dir/feature_tests.c.o  -o cmTC_c725a  
+
+
+    Feature record: C_FEATURE:1c_function_prototypes
+    Feature record: C_FEATURE:0c_restrict
+    Feature record: C_FEATURE:0c_static_assert
+    Feature record: C_FEATURE:0c_variadic_macros
+Determining if the CXX compiler works passed with the following output:
+Change Dir: /Users/miMacbookPro/Documents/GitMercurial/cuda_dsmc/build/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/make" "cmTC_0483d/fast"
+/Applications/Xcode.app/Contents/Developer/usr/bin/make -f CMakeFiles/cmTC_0483d.dir/build.make CMakeFiles/cmTC_0483d.dir/build
+Building CXX object CMakeFiles/cmTC_0483d.dir/testCXXCompiler.cxx.o
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++     -o CMakeFiles/cmTC_0483d.dir/testCXXCompiler.cxx.o -c /Users/miMacbookPro/Documents/GitMercurial/cuda_dsmc/build/CMakeFiles/CMakeTmp/testCXXCompiler.cxx
+Linking CXX executable cmTC_0483d
+/usr/local/bin/cmake -E cmake_link_script CMakeFiles/cmTC_0483d.dir/link.txt --verbose=1
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++     -Wl,-search_paths_first -Wl,-headerpad_max_install_names   CMakeFiles/cmTC_0483d.dir/testCXXCompiler.cxx.o  -o cmTC_0483d  
+
+
+Detecting CXX compiler ABI info compiled with the following output:
+Change Dir: /Users/miMacbookPro/Documents/GitMercurial/cuda_dsmc/build/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/make" "cmTC_3a1ad/fast"
+/Applications/Xcode.app/Contents/Developer/usr/bin/make -f CMakeFiles/cmTC_3a1ad.dir/build.make CMakeFiles/cmTC_3a1ad.dir/build
+Building CXX object CMakeFiles/cmTC_3a1ad.dir/CMakeCXXCompilerABI.cpp.o
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++     -o CMakeFiles/cmTC_3a1ad.dir/CMakeCXXCompilerABI.cpp.o -c /usr/local/share/cmake-3.3/Modules/CMakeCXXCompilerABI.cpp
+Linking CXX executable cmTC_3a1ad
+/usr/local/bin/cmake -E cmake_link_script CMakeFiles/cmTC_3a1ad.dir/link.txt --verbose=1
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++     -Wl,-search_paths_first -Wl,-headerpad_max_install_names  -v -Wl,-v CMakeFiles/cmTC_3a1ad.dir/CMakeCXXCompilerABI.cpp.o  -o cmTC_3a1ad   
+Apple LLVM version 6.1.0 (clang-602.0.53) (based on LLVM 3.6.0svn)
+Target: x86_64-apple-darwin14.5.0
+Thread model: posix
+ "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ld" -demangle -dynamic -arch x86_64 -macosx_version_min 10.10.0 -o cmTC_3a1ad -search_paths_first -headerpad_max_install_names -v CMakeFiles/cmTC_3a1ad.dir/CMakeCXXCompilerABI.cpp.o -L/opt/intel/composer_xe_2013_sp1.2.139/compiler/lib -L/opt/intel/composer_xe_2013_sp1.2.139/ipp/../compiler/lib -L/opt/intel/composer_xe_2013_sp1.2.139/ipp/lib -L/opt/intel/composer_xe_2013_sp1.2.139/compiler/lib -L/opt/intel/composer_xe_2013_sp1.2.139/mkl/lib -L/opt/intel/composer_xe_2013_sp1.2.139/tbb/lib -lc++ -lSystem /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../lib/clang/6.1.0/lib/darwin/libclang_rt.osx.a
+@(#)PROGRAM:ld  PROJECT:ld64-242.2
+configured to support archs: armv6 armv7 armv7s arm64 i386 x86_64 x86_64h armv6m armv7m armv7em
+Library search paths:
+	/opt/intel/composer_xe_2013_sp1.2.139/compiler/lib
+	/opt/intel/composer_xe_2013_sp1.2.139/compiler/lib
+	/opt/intel/composer_xe_2013_sp1.2.139/ipp/lib
+	/opt/intel/composer_xe_2013_sp1.2.139/compiler/lib
+	/opt/intel/composer_xe_2013_sp1.2.139/mkl/lib
+	/opt/intel/composer_xe_2013_sp1.2.139/tbb/lib
+	/usr/lib
+	/usr/local/lib
+Framework search paths:
+	/Library/Frameworks/
+	/System/Library/Frameworks/
+
+
+Parsed CXX implicit link information from above output:
+  link line regex: [^( *|.*[/\])(ld|([^/\]+-)?ld|collect2)[^/\]*( |$)]
+  ignore line: [Change Dir: /Users/miMacbookPro/Documents/GitMercurial/cuda_dsmc/build/CMakeFiles/CMakeTmp]
+  ignore line: []
+  ignore line: [Run Build Command:"/usr/bin/make" "cmTC_3a1ad/fast"]
+  ignore line: [/Applications/Xcode.app/Contents/Developer/usr/bin/make -f CMakeFiles/cmTC_3a1ad.dir/build.make CMakeFiles/cmTC_3a1ad.dir/build]
+  ignore line: [Building CXX object CMakeFiles/cmTC_3a1ad.dir/CMakeCXXCompilerABI.cpp.o]
+  ignore line: [/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++     -o CMakeFiles/cmTC_3a1ad.dir/CMakeCXXCompilerABI.cpp.o -c /usr/local/share/cmake-3.3/Modules/CMakeCXXCompilerABI.cpp]
+  ignore line: [Linking CXX executable cmTC_3a1ad]
+  ignore line: [/usr/local/bin/cmake -E cmake_link_script CMakeFiles/cmTC_3a1ad.dir/link.txt --verbose=1]
+  ignore line: [/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++     -Wl,-search_paths_first -Wl,-headerpad_max_install_names  -v -Wl,-v CMakeFiles/cmTC_3a1ad.dir/CMakeCXXCompilerABI.cpp.o  -o cmTC_3a1ad   ]
+  ignore line: [Apple LLVM version 6.1.0 (clang-602.0.53) (based on LLVM 3.6.0svn)]
+  ignore line: [Target: x86_64-apple-darwin14.5.0]
+  ignore line: [Thread model: posix]
+  link line: [ "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ld" -demangle -dynamic -arch x86_64 -macosx_version_min 10.10.0 -o cmTC_3a1ad -search_paths_first -headerpad_max_install_names -v CMakeFiles/cmTC_3a1ad.dir/CMakeCXXCompilerABI.cpp.o -L/opt/intel/composer_xe_2013_sp1.2.139/compiler/lib -L/opt/intel/composer_xe_2013_sp1.2.139/ipp/../compiler/lib -L/opt/intel/composer_xe_2013_sp1.2.139/ipp/lib -L/opt/intel/composer_xe_2013_sp1.2.139/compiler/lib -L/opt/intel/composer_xe_2013_sp1.2.139/mkl/lib -L/opt/intel/composer_xe_2013_sp1.2.139/tbb/lib -lc++ -lSystem /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../lib/clang/6.1.0/lib/darwin/libclang_rt.osx.a]
+    arg [/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ld] ==> ignore
+    arg [-demangle] ==> ignore
+    arg [-dynamic] ==> ignore
+    arg [-arch] ==> ignore
+    arg [x86_64] ==> ignore
+    arg [-macosx_version_min] ==> ignore
+    arg [10.10.0] ==> ignore
+    arg [-o] ==> ignore
+    arg [cmTC_3a1ad] ==> ignore
+    arg [-search_paths_first] ==> ignore
+    arg [-headerpad_max_install_names] ==> ignore
+    arg [-v] ==> ignore
+    arg [CMakeFiles/cmTC_3a1ad.dir/CMakeCXXCompilerABI.cpp.o] ==> ignore
+    arg [-L/opt/intel/composer_xe_2013_sp1.2.139/compiler/lib] ==> dir [/opt/intel/composer_xe_2013_sp1.2.139/compiler/lib]
+    arg [-L/opt/intel/composer_xe_2013_sp1.2.139/ipp/../compiler/lib] ==> dir [/opt/intel/composer_xe_2013_sp1.2.139/ipp/../compiler/lib]
+    arg [-L/opt/intel/composer_xe_2013_sp1.2.139/ipp/lib] ==> dir [/opt/intel/composer_xe_2013_sp1.2.139/ipp/lib]
+    arg [-L/opt/intel/composer_xe_2013_sp1.2.139/compiler/lib] ==> dir [/opt/intel/composer_xe_2013_sp1.2.139/compiler/lib]
+    arg [-L/opt/intel/composer_xe_2013_sp1.2.139/mkl/lib] ==> dir [/opt/intel/composer_xe_2013_sp1.2.139/mkl/lib]
+    arg [-L/opt/intel/composer_xe_2013_sp1.2.139/tbb/lib] ==> dir [/opt/intel/composer_xe_2013_sp1.2.139/tbb/lib]
+    arg [-lc++] ==> lib [c++]
+    arg [-lSystem] ==> lib [System]
+    arg [/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../lib/clang/6.1.0/lib/darwin/libclang_rt.osx.a] ==> lib [/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../lib/clang/6.1.0/lib/darwin/libclang_rt.osx.a]
+  Library search paths: [;/opt/intel/composer_xe_2013_sp1.2.139/compiler/lib;/opt/intel/composer_xe_2013_sp1.2.139/compiler/lib;/opt/intel/composer_xe_2013_sp1.2.139/ipp/lib;/opt/intel/composer_xe_2013_sp1.2.139/compiler/lib;/opt/intel/composer_xe_2013_sp1.2.139/mkl/lib;/opt/intel/composer_xe_2013_sp1.2.139/tbb/lib;/usr/lib;/usr/local/lib]
+  Framework search paths: [;/Library/Frameworks/;/System/Library/Frameworks/]
+  remove lib [System]
+  collapse lib [/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../lib/clang/6.1.0/lib/darwin/libclang_rt.osx.a] ==> [/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/6.1.0/lib/darwin/libclang_rt.osx.a]
+  collapse library dir [/opt/intel/composer_xe_2013_sp1.2.139/compiler/lib] ==> [/opt/intel/composer_xe_2013_sp1.2.139/compiler/lib]
+  collapse library dir [/opt/intel/composer_xe_2013_sp1.2.139/ipp/../compiler/lib] ==> [/opt/intel/composer_xe_2013_sp1.2.139/compiler/lib]
+  collapse library dir [/opt/intel/composer_xe_2013_sp1.2.139/ipp/lib] ==> [/opt/intel/composer_xe_2013_sp1.2.139/ipp/lib]
+  collapse library dir [/opt/intel/composer_xe_2013_sp1.2.139/compiler/lib] ==> [/opt/intel/composer_xe_2013_sp1.2.139/compiler/lib]
+  collapse library dir [/opt/intel/composer_xe_2013_sp1.2.139/mkl/lib] ==> [/opt/intel/composer_xe_2013_sp1.2.139/mkl/lib]
+  collapse library dir [/opt/intel/composer_xe_2013_sp1.2.139/tbb/lib] ==> [/opt/intel/composer_xe_2013_sp1.2.139/tbb/lib]
+  collapse library dir [/opt/intel/composer_xe_2013_sp1.2.139/compiler/lib] ==> [/opt/intel/composer_xe_2013_sp1.2.139/compiler/lib]
+  collapse library dir [/opt/intel/composer_xe_2013_sp1.2.139/compiler/lib] ==> [/opt/intel/composer_xe_2013_sp1.2.139/compiler/lib]
+  collapse library dir [/opt/intel/composer_xe_2013_sp1.2.139/ipp/lib] ==> [/opt/intel/composer_xe_2013_sp1.2.139/ipp/lib]
+  collapse library dir [/opt/intel/composer_xe_2013_sp1.2.139/compiler/lib] ==> [/opt/intel/composer_xe_2013_sp1.2.139/compiler/lib]
+  collapse library dir [/opt/intel/composer_xe_2013_sp1.2.139/mkl/lib] ==> [/opt/intel/composer_xe_2013_sp1.2.139/mkl/lib]
+  collapse library dir [/opt/intel/composer_xe_2013_sp1.2.139/tbb/lib] ==> [/opt/intel/composer_xe_2013_sp1.2.139/tbb/lib]
+  collapse library dir [/usr/lib] ==> [/usr/lib]
+  collapse library dir [/usr/local/lib] ==> [/usr/local/lib]
+  collapse framework dir [/Library/Frameworks/] ==> [/Library/Frameworks]
+  collapse framework dir [/System/Library/Frameworks/] ==> [/System/Library/Frameworks]
+  implicit libs: [c++;/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/6.1.0/lib/darwin/libclang_rt.osx.a]
+  implicit dirs: [/opt/intel/composer_xe_2013_sp1.2.139/compiler/lib;/opt/intel/composer_xe_2013_sp1.2.139/ipp/lib;/opt/intel/composer_xe_2013_sp1.2.139/mkl/lib;/opt/intel/composer_xe_2013_sp1.2.139/tbb/lib;/usr/lib;/usr/local/lib]
+  implicit fwks: [/Library/Frameworks;/System/Library/Frameworks]
+
+
+
+
+Detecting CXX [-std=c++1y] compiler features compiled with the following output:
+Change Dir: /Users/miMacbookPro/Documents/GitMercurial/cuda_dsmc/build/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/make" "cmTC_43229/fast"
+/Applications/Xcode.app/Contents/Developer/usr/bin/make -f CMakeFiles/cmTC_43229.dir/build.make CMakeFiles/cmTC_43229.dir/build
+Building CXX object CMakeFiles/cmTC_43229.dir/feature_tests.cxx.o
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++    -std=c++1y -o CMakeFiles/cmTC_43229.dir/feature_tests.cxx.o -c /Users/miMacbookPro/Documents/GitMercurial/cuda_dsmc/build/CMakeFiles/feature_tests.cxx
+Linking CXX executable cmTC_43229
+/usr/local/bin/cmake -E cmake_link_script CMakeFiles/cmTC_43229.dir/link.txt --verbose=1
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++     -Wl,-search_paths_first -Wl,-headerpad_max_install_names   CMakeFiles/cmTC_43229.dir/feature_tests.cxx.o  -o cmTC_43229  
+
+
+    Feature record: CXX_FEATURE:1cxx_aggregate_default_initializers
+    Feature record: CXX_FEATURE:1cxx_alias_templates
+    Feature record: CXX_FEATURE:1cxx_alignas
+    Feature record: CXX_FEATURE:1cxx_alignof
+    Feature record: CXX_FEATURE:1cxx_attributes
+    Feature record: CXX_FEATURE:1cxx_attribute_deprecated
+    Feature record: CXX_FEATURE:1cxx_auto_type
+    Feature record: CXX_FEATURE:1cxx_binary_literals
+    Feature record: CXX_FEATURE:1cxx_constexpr
+    Feature record: CXX_FEATURE:1cxx_contextual_conversions
+    Feature record: CXX_FEATURE:1cxx_decltype
+    Feature record: CXX_FEATURE:1cxx_decltype_auto
+    Feature record: CXX_FEATURE:1cxx_decltype_incomplete_return_types
+    Feature record: CXX_FEATURE:1cxx_default_function_template_args
+    Feature record: CXX_FEATURE:1cxx_defaulted_functions
+    Feature record: CXX_FEATURE:1cxx_defaulted_move_initializers
+    Feature record: CXX_FEATURE:1cxx_delegating_constructors
+    Feature record: CXX_FEATURE:1cxx_deleted_functions
+    Feature record: CXX_FEATURE:1cxx_digit_separators
+    Feature record: CXX_FEATURE:1cxx_enum_forward_declarations
+    Feature record: CXX_FEATURE:1cxx_explicit_conversions
+    Feature record: CXX_FEATURE:1cxx_extended_friend_declarations
+    Feature record: CXX_FEATURE:1cxx_extern_templates
+    Feature record: CXX_FEATURE:1cxx_final
+    Feature record: CXX_FEATURE:1cxx_func_identifier
+    Feature record: CXX_FEATURE:1cxx_generalized_initializers
+    Feature record: CXX_FEATURE:1cxx_generic_lambdas
+    Feature record: CXX_FEATURE:1cxx_inheriting_constructors
+    Feature record: CXX_FEATURE:1cxx_inline_namespaces
+    Feature record: CXX_FEATURE:1cxx_lambdas
+    Feature record: CXX_FEATURE:1cxx_lambda_init_captures
+    Feature record: CXX_FEATURE:1cxx_local_type_template_args
+    Feature record: CXX_FEATURE:1cxx_long_long_type
+    Feature record: CXX_FEATURE:1cxx_noexcept
+    Feature record: CXX_FEATURE:1cxx_nonstatic_member_init
+    Feature record: CXX_FEATURE:1cxx_nullptr
+    Feature record: CXX_FEATURE:1cxx_override
+    Feature record: CXX_FEATURE:1cxx_range_for
+    Feature record: CXX_FEATURE:1cxx_raw_string_literals
+    Feature record: CXX_FEATURE:1cxx_reference_qualified_functions
+    Feature record: CXX_FEATURE:1cxx_relaxed_constexpr
+    Feature record: CXX_FEATURE:1cxx_return_type_deduction
+    Feature record: CXX_FEATURE:1cxx_right_angle_brackets
+    Feature record: CXX_FEATURE:1cxx_rvalue_references
+    Feature record: CXX_FEATURE:1cxx_sizeof_member
+    Feature record: CXX_FEATURE:1cxx_static_assert
+    Feature record: CXX_FEATURE:1cxx_strong_enums
+    Feature record: CXX_FEATURE:1cxx_template_template_parameters
+    Feature record: CXX_FEATURE:0cxx_thread_local
+    Feature record: CXX_FEATURE:1cxx_trailing_return_types
+    Feature record: CXX_FEATURE:1cxx_unicode_literals
+    Feature record: CXX_FEATURE:1cxx_uniform_initialization
+    Feature record: CXX_FEATURE:1cxx_unrestricted_unions
+    Feature record: CXX_FEATURE:1cxx_user_literals
+    Feature record: CXX_FEATURE:1cxx_variable_templates
+    Feature record: CXX_FEATURE:1cxx_variadic_macros
+    Feature record: CXX_FEATURE:1cxx_variadic_templates
+
+
+Detecting CXX [-std=c++11] compiler features compiled with the following output:
+Change Dir: /Users/miMacbookPro/Documents/GitMercurial/cuda_dsmc/build/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/make" "cmTC_78dc9/fast"
+/Applications/Xcode.app/Contents/Developer/usr/bin/make -f CMakeFiles/cmTC_78dc9.dir/build.make CMakeFiles/cmTC_78dc9.dir/build
+Building CXX object CMakeFiles/cmTC_78dc9.dir/feature_tests.cxx.o
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++    -std=c++11 -o CMakeFiles/cmTC_78dc9.dir/feature_tests.cxx.o -c /Users/miMacbookPro/Documents/GitMercurial/cuda_dsmc/build/CMakeFiles/feature_tests.cxx
+Linking CXX executable cmTC_78dc9
+/usr/local/bin/cmake -E cmake_link_script CMakeFiles/cmTC_78dc9.dir/link.txt --verbose=1
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++     -Wl,-search_paths_first -Wl,-headerpad_max_install_names   CMakeFiles/cmTC_78dc9.dir/feature_tests.cxx.o  -o cmTC_78dc9  
+
+
+    Feature record: CXX_FEATURE:0cxx_aggregate_default_initializers
+    Feature record: CXX_FEATURE:1cxx_alias_templates
+    Feature record: CXX_FEATURE:1cxx_alignas
+    Feature record: CXX_FEATURE:1cxx_alignof
+    Feature record: CXX_FEATURE:1cxx_attributes
+    Feature record: CXX_FEATURE:0cxx_attribute_deprecated
+    Feature record: CXX_FEATURE:1cxx_auto_type
+    Feature record: CXX_FEATURE:0cxx_binary_literals
+    Feature record: CXX_FEATURE:1cxx_constexpr
+    Feature record: CXX_FEATURE:0cxx_contextual_conversions
+    Feature record: CXX_FEATURE:1cxx_decltype
+    Feature record: CXX_FEATURE:0cxx_decltype_auto
+    Feature record: CXX_FEATURE:1cxx_decltype_incomplete_return_types
+    Feature record: CXX_FEATURE:1cxx_default_function_template_args
+    Feature record: CXX_FEATURE:1cxx_defaulted_functions
+    Feature record: CXX_FEATURE:1cxx_defaulted_move_initializers
+    Feature record: CXX_FEATURE:1cxx_delegating_constructors
+    Feature record: CXX_FEATURE:1cxx_deleted_functions
+    Feature record: CXX_FEATURE:0cxx_digit_separators
+    Feature record: CXX_FEATURE:1cxx_enum_forward_declarations
+    Feature record: CXX_FEATURE:1cxx_explicit_conversions
+    Feature record: CXX_FEATURE:1cxx_extended_friend_declarations
+    Feature record: CXX_FEATURE:1cxx_extern_templates
+    Feature record: CXX_FEATURE:1cxx_final
+    Feature record: CXX_FEATURE:1cxx_func_identifier
+    Feature record: CXX_FEATURE:1cxx_generalized_initializers
+    Feature record: CXX_FEATURE:0cxx_generic_lambdas
+    Feature record: CXX_FEATURE:1cxx_inheriting_constructors
+    Feature record: CXX_FEATURE:1cxx_inline_namespaces
+    Feature record: CXX_FEATURE:1cxx_lambdas
+    Feature record: CXX_FEATURE:0cxx_lambda_init_captures
+    Feature record: CXX_FEATURE:1cxx_local_type_template_args
+    Feature record: CXX_FEATURE:1cxx_long_long_type
+    Feature record: CXX_FEATURE:1cxx_noexcept
+    Feature record: CXX_FEATURE:1cxx_nonstatic_member_init
+    Feature record: CXX_FEATURE:1cxx_nullptr
+    Feature record: CXX_FEATURE:1cxx_override
+    Feature record: CXX_FEATURE:1cxx_range_for
+    Feature record: CXX_FEATURE:1cxx_raw_string_literals
+    Feature record: CXX_FEATURE:1cxx_reference_qualified_functions
+    Feature record: CXX_FEATURE:0cxx_relaxed_constexpr
+    Feature record: CXX_FEATURE:0cxx_return_type_deduction
+    Feature record: CXX_FEATURE:1cxx_right_angle_brackets
+    Feature record: CXX_FEATURE:1cxx_rvalue_references
+    Feature record: CXX_FEATURE:1cxx_sizeof_member
+    Feature record: CXX_FEATURE:1cxx_static_assert
+    Feature record: CXX_FEATURE:1cxx_strong_enums
+    Feature record: CXX_FEATURE:1cxx_template_template_parameters
+    Feature record: CXX_FEATURE:0cxx_thread_local
+    Feature record: CXX_FEATURE:1cxx_trailing_return_types
+    Feature record: CXX_FEATURE:1cxx_unicode_literals
+    Feature record: CXX_FEATURE:1cxx_uniform_initialization
+    Feature record: CXX_FEATURE:1cxx_unrestricted_unions
+    Feature record: CXX_FEATURE:1cxx_user_literals
+    Feature record: CXX_FEATURE:0cxx_variable_templates
+    Feature record: CXX_FEATURE:1cxx_variadic_macros
+    Feature record: CXX_FEATURE:1cxx_variadic_templates
+
+
+Detecting CXX [-std=c++98] compiler features compiled with the following output:
+Change Dir: /Users/miMacbookPro/Documents/GitMercurial/cuda_dsmc/build/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/make" "cmTC_c2113/fast"
+/Applications/Xcode.app/Contents/Developer/usr/bin/make -f CMakeFiles/cmTC_c2113.dir/build.make CMakeFiles/cmTC_c2113.dir/build
+Building CXX object CMakeFiles/cmTC_c2113.dir/feature_tests.cxx.o
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++    -std=c++98 -o CMakeFiles/cmTC_c2113.dir/feature_tests.cxx.o -c /Users/miMacbookPro/Documents/GitMercurial/cuda_dsmc/build/CMakeFiles/feature_tests.cxx
+Linking CXX executable cmTC_c2113
+/usr/local/bin/cmake -E cmake_link_script CMakeFiles/cmTC_c2113.dir/link.txt --verbose=1
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++     -Wl,-search_paths_first -Wl,-headerpad_max_install_names   CMakeFiles/cmTC_c2113.dir/feature_tests.cxx.o  -o cmTC_c2113  
+
+
+    Feature record: CXX_FEATURE:0cxx_aggregate_default_initializers
+    Feature record: CXX_FEATURE:0cxx_alias_templates
+    Feature record: CXX_FEATURE:0cxx_alignas
+    Feature record: CXX_FEATURE:0cxx_alignof
+    Feature record: CXX_FEATURE:0cxx_attributes
+    Feature record: CXX_FEATURE:0cxx_attribute_deprecated
+    Feature record: CXX_FEATURE:0cxx_auto_type
+    Feature record: CXX_FEATURE:0cxx_binary_literals
+    Feature record: CXX_FEATURE:0cxx_constexpr
+    Feature record: CXX_FEATURE:0cxx_contextual_conversions
+    Feature record: CXX_FEATURE:0cxx_decltype
+    Feature record: CXX_FEATURE:0cxx_decltype_auto
+    Feature record: CXX_FEATURE:0cxx_decltype_incomplete_return_types
+    Feature record: CXX_FEATURE:0cxx_default_function_template_args
+    Feature record: CXX_FEATURE:0cxx_defaulted_functions
+    Feature record: CXX_FEATURE:0cxx_defaulted_move_initializers
+    Feature record: CXX_FEATURE:0cxx_delegating_constructors
+    Feature record: CXX_FEATURE:0cxx_deleted_functions
+    Feature record: CXX_FEATURE:0cxx_digit_separators
+    Feature record: CXX_FEATURE:0cxx_enum_forward_declarations
+    Feature record: CXX_FEATURE:0cxx_explicit_conversions
+    Feature record: CXX_FEATURE:0cxx_extended_friend_declarations
+    Feature record: CXX_FEATURE:0cxx_extern_templates
+    Feature record: CXX_FEATURE:0cxx_final
+    Feature record: CXX_FEATURE:0cxx_func_identifier
+    Feature record: CXX_FEATURE:0cxx_generalized_initializers
+    Feature record: CXX_FEATURE:0cxx_generic_lambdas
+    Feature record: CXX_FEATURE:0cxx_inheriting_constructors
+    Feature record: CXX_FEATURE:0cxx_inline_namespaces
+    Feature record: CXX_FEATURE:0cxx_lambdas
+    Feature record: CXX_FEATURE:0cxx_lambda_init_captures
+    Feature record: CXX_FEATURE:0cxx_local_type_template_args
+    Feature record: CXX_FEATURE:0cxx_long_long_type
+    Feature record: CXX_FEATURE:0cxx_noexcept
+    Feature record: CXX_FEATURE:0cxx_nonstatic_member_init
+    Feature record: CXX_FEATURE:0cxx_nullptr
+    Feature record: CXX_FEATURE:0cxx_override
+    Feature record: CXX_FEATURE:0cxx_range_for
+    Feature record: CXX_FEATURE:0cxx_raw_string_literals
+    Feature record: CXX_FEATURE:0cxx_reference_qualified_functions
+    Feature record: CXX_FEATURE:0cxx_relaxed_constexpr
+    Feature record: CXX_FEATURE:0cxx_return_type_deduction
+    Feature record: CXX_FEATURE:0cxx_right_angle_brackets
+    Feature record: CXX_FEATURE:0cxx_rvalue_references
+    Feature record: CXX_FEATURE:0cxx_sizeof_member
+    Feature record: CXX_FEATURE:0cxx_static_assert
+    Feature record: CXX_FEATURE:0cxx_strong_enums
+    Feature record: CXX_FEATURE:1cxx_template_template_parameters
+    Feature record: CXX_FEATURE:0cxx_thread_local
+    Feature record: CXX_FEATURE:0cxx_trailing_return_types
+    Feature record: CXX_FEATURE:0cxx_unicode_literals
+    Feature record: CXX_FEATURE:0cxx_uniform_initialization
+    Feature record: CXX_FEATURE:0cxx_unrestricted_unions
+    Feature record: CXX_FEATURE:0cxx_user_literals
+    Feature record: CXX_FEATURE:0cxx_variable_templates
+    Feature record: CXX_FEATURE:0cxx_variadic_macros
+    Feature record: CXX_FEATURE:0cxx_variadic_templates
+Determining if files pthread.h exist passed with the following output:
+Change Dir: /Users/miMacbookPro/Documents/GitMercurial/cuda_dsmc/build/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/make" "cmTC_5bd67/fast"
+/Applications/Xcode.app/Contents/Developer/usr/bin/make -f CMakeFiles/cmTC_5bd67.dir/build.make CMakeFiles/cmTC_5bd67.dir/build
+Building C object CMakeFiles/cmTC_5bd67.dir/CheckIncludeFiles.c.o
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/cc   -fPIC    -o CMakeFiles/cmTC_5bd67.dir/CheckIncludeFiles.c.o   -c /Users/miMacbookPro/Documents/GitMercurial/cuda_dsmc/build/CMakeFiles/CMakeTmp/CheckIncludeFiles.c
+Linking C executable cmTC_5bd67
+/usr/local/bin/cmake -E cmake_link_script CMakeFiles/cmTC_5bd67.dir/link.txt --verbose=1
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/cc  -fPIC  -Wl,-search_paths_first -Wl,-headerpad_max_install_names   CMakeFiles/cmTC_5bd67.dir/CheckIncludeFiles.c.o  -o cmTC_5bd67  
+
+
+Determining if the pthread_create exist passed with the following output:
+Change Dir: /Users/miMacbookPro/Documents/GitMercurial/cuda_dsmc/build/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/make" "cmTC_49336/fast"
+/Applications/Xcode.app/Contents/Developer/usr/bin/make -f CMakeFiles/cmTC_49336.dir/build.make CMakeFiles/cmTC_49336.dir/build
+Building C object CMakeFiles/cmTC_49336.dir/CheckSymbolExists.c.o
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/cc   -fPIC    -o CMakeFiles/cmTC_49336.dir/CheckSymbolExists.c.o   -c /Users/miMacbookPro/Documents/GitMercurial/cuda_dsmc/build/CMakeFiles/CMakeTmp/CheckSymbolExists.c
+Linking C executable cmTC_49336
+/usr/local/bin/cmake -E cmake_link_script CMakeFiles/cmTC_49336.dir/link.txt --verbose=1
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/cc  -fPIC  -Wl,-search_paths_first -Wl,-headerpad_max_install_names   CMakeFiles/cmTC_49336.dir/CheckSymbolExists.c.o  -o cmTC_49336  
+
+File /Users/miMacbookPro/Documents/GitMercurial/cuda_dsmc/build/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <pthread.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef pthread_create
+  return ((int*)(&pthread_create))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+
