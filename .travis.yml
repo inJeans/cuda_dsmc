@@ -7,12 +7,21 @@ services:
 
 before_install:
     - docker pull kaixhin/cuda
-    - docker run -v=/:/cuda_dsmc -d --name="cuda_7.5" kaixhin/cuda /bin/sh -c "sudo apt-get update;"
-    - docker exec -d cuda_7.5 /bin/sh -c "sudo apt-get install -y cmake;"
+    - docker run -v=/:/cuda_dsmc --name="cuda_7.5" kaixhin/cuda /bin/sh -c "sudo apt-get update;"
+    - docker commit cuda_7.5 kaixhin/cuda:latest
+    - docker rm cuda_7.5 
+    - docker run -v=/:/cuda_dsmc --name="cuda_7.5" kaixhin/cuda /bin/sh -c "sudo apt-get install -y cmake;"
+    - docker commit cuda_7.5 kaixhin/cuda:latest
+    - docker rm cuda_7.5 
 
 script:
-    - docker exec -it cuda_7.5 /bin/sh -c "nvcc --version;"
-    - docker exec -it cuda_7.5 /bin/sh -c "cd /cuda_dsmc; cmake .;"
-    - docker exec -it cuda_7.5 /bin/sh -c "cd /cuda_dsmc; make;" 
-    - ls
-    - docker exec -it cuda_7.5 /bin/sh -c "cd /cuda_dsmc; make test;" 
+    - docker run -v=/:/cuda_dsmc --name="cuda_7.5" kaixhin/cuda /bin/sh -c "nvcc --version;"
+    - docker run -v=/:/cuda_dsmc --name="cuda_7.5" kaixhin/cuda /bin/sh -c "cd /cuda_dsmc; cmake .; ls;"
+    - docker commit cuda_7.5 kaixhin/cuda:latest
+    - docker rm cuda_7.5
+    - docker run -v=/:/cuda_dsmc --name="cuda_7.5" kaixhin/cuda /bin/sh -c "cd /cuda_dsmc; make; ls;" 
+    - docker commit cuda_7.5 kaixhin/cuda:latest
+    - docker rm cuda_7.5
+    - docker run -v=/:/cuda_dsmc --name="cuda_7.5" kaixhin/cuda /bin/sh -c "cd /cuda_dsmc; make test; ls;" 
+    - docker commit cuda_7.5 kaixhin/cuda:latest
+    - docker rm cuda_7.5
