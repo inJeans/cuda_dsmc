@@ -7,10 +7,10 @@ services:
 
 before_install:
     - docker pull kaixhin/cuda
-    - docker run -v=/:/cuda_dsmc --name="cuda_7.5" kaixhin/cuda /bin/sh -c "sudo apt-get update; ls; ls /cuda_dsmc;"
+    - docker run -v=./:/cuda_dsmc --name="cuda_7.5" kaixhin/cuda /bin/sh -c "sudo apt-get update; ls; ls /cuda_dsmc;"
     - docker commit cuda_7.5 kaixhin/cuda:latest
     - docker rm cuda_7.5 
-    - docker run --name="cuda_7.5" kaixhin/cuda /bin/sh -c "sudo apt-get install -y cmake;"
+    - docker run --name="cuda_7.5" kaixhin/cuda /bin/sh -c "sudo apt-get install -y cmake; ls;"
     - docker commit cuda_7.5 kaixhin/cuda:latest
     - docker rm cuda_7.5 
 
