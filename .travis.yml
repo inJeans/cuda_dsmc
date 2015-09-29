@@ -9,6 +9,7 @@ before_install:
     - ls /
     - ls /home
     - ls /home/travis
+    - ls /home/ubuntu
     - docker pull kaixhin/cuda
     - docker run -v=./:/cuda_dsmc --name="cuda_7.5" kaixhin/cuda /bin/sh -c "sudo apt-get update; ls; ls /cuda_dsmc;"
     - docker commit cuda_7.5 kaixhin/cuda:latest
