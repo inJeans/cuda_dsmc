@@ -1,15 +1,26 @@
-SET( CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG ".")
-SET( CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ".")
+SET( CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG "bin")
+SET( CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE "bin")
 
 cmake_minimum_required (VERSION 2.8)
 project (cuda_dsmc)
 find_package(CUDA QUIET REQUIRED)
-cuda_add_executable(hello hello_world.cu)
+
+include_directories("${PROJECT_SOURCE_DIR}/include")
+SET( SOURCES src/main.c )
+
+cuda_add_executable(cuda_dsmc ${SOURCES})
+
+# make run
+add_custom_target(run
+    COMMAND cuda_dsmc
+    DEPENDS cuda_dsmc
+    WORKING_DIRECTORY ${CMAKE_PROJECT_DIR}
+)
 
 # does the application run
 enable_testing()
 
-add_test (cuda_dmsc_runs hello)
+add_test (cuda_dmsc_runs cuda_dsmc)
 
 # does it have the correct output
 # add_test (hello_world_test hello)
