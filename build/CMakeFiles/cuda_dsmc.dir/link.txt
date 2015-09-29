@@ -1,1 +1,0 @@
-/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++    -Wl,-search_paths_first -Wl,-headerpad_max_install_names  CMakeFiles/cuda_dsmc.dir/src/main.c.o  -o cuda_dsmc  /Developer/NVIDIA/CUDA-7.0/lib/libcudart_static.a -Wl,-rpath,/usr/local/cuda/lib 

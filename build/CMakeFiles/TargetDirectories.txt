@@ -1,2 +1,0 @@
-/Users/miMacbookPro/Documents/GitMercurial/cuda_dsmc/build/CMakeFiles/run.dir
-/Users/miMacbookPro/Documents/GitMercurial/cuda_dsmc/build/CMakeFiles/cuda_dsmc.dir
