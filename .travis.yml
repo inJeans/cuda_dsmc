@@ -3,8 +3,8 @@ sudo: required
 language: c
 
 env:
-    - DOCKERFILE=docker_file-1
-    - DOCKERFILE=docker_file-2
+    - DOCKERFILE=dockerfile_test-1
+    - DOCKERFILE=dockerfile_test-2
 
 services:
     - docker
