@@ -10,7 +10,8 @@ services:
     - docker
 
 before_install:
-    -docker build -f $DOCKERFILE .
+    - echo $DOCKERFILE
+    - docker build -f $DOCKERFILE .
 
 script:
     # -docker run injeans/$DOCKERFILE /bin/bash -c "ls /"
