@@ -10,10 +10,10 @@ services:
     - docker
 
 before_install:
-    -docker build injeans/$DOCKERFILE
+    -docker build -f $DOCKERFILE .
 
 script:
-    -docker run injeans/$DOCKERFILE /bin/bash -c "ls /"
+    # -docker run injeans/$DOCKERFILE /bin/bash -c "ls /"
 
 # before_install:
 #     - docker pull kaixhin/cuda
