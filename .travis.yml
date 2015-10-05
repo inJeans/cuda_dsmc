@@ -12,16 +12,15 @@ before_install:
     - docker rm cuda_7.5 
     - docker run --name="cuda_7.5" kaixhin/cuda /bin/sh -c "sudo apt-get install -y cmake"
     - docker commit cuda_7.5 kaixhin/cuda:latest
-    - docker rm cuda_7.5
-    - mkdir  /home/travis/build/inJeans/cuda_dsmc/build
+    - docker rm cuda_7.5 
 
 script:
-    - docker run -v=/home/travis/build/inJeans/cuda_dsmc:/cuda_dsmc --name="cuda_7.5" kaixhin/cuda /bin/sh -c "cd /cuda_dsmc/build; cmake .."
+    - docker run -v=/home/travis/build/inJeans/cuda_dsmc:/cuda_dsmc --name="cuda_7.5" kaixhin/cuda /bin/sh -c "cd /cuda_dsmc; cmake ."
     - docker commit cuda_7.5 kaixhin/cuda:latest
     - docker rm cuda_7.5
-    - docker run -v=/home/travis/build/inJeans/cuda_dsmc:/cuda_dsmc --name="cuda_7.5" kaixhin/cuda /bin/sh -c "cd /cuda_dsmc/build; make" 
+    - docker run -v=/home/travis/build/inJeans/cuda_dsmc:/cuda_dsmc --name="cuda_7.5" kaixhin/cuda /bin/sh -c "cd /cuda_dsmc; make;" 
     - docker commit cuda_7.5 kaixhin/cuda:latest
     - docker rm cuda_7.5
-    - docker run -v=/home/travis/build/inJeans/cuda_dsmc:/cuda_dsmc --name="cuda_7.5" kaixhin/cuda /bin/sh -c "cd /cuda_dsmc/build; make test" 
+    - docker run -v=/home/travis/build/inJeans/cuda_dsmc:/cuda_dsmc --name="cuda_7.5" kaixhin/cuda /bin/sh -c "cd /cuda_dsmc; make test;" 
     - docker commit cuda_7.5 kaixhin/cuda:latest
     - docker rm cuda_7.5
