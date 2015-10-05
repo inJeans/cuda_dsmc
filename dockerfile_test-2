@@ -1,0 +1,2 @@
+FROM kaixhin/cuda
+RUN mkdir -p /test-2

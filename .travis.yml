@@ -2,25 +2,35 @@ sudo: required
 
 language: c
 
+env:
+    - DOCKERFILE=docker_file-1
+    - DOCKERFILE=docker_file-2
+
 services:
     - docker
 
 before_install:
-    - docker pull kaixhin/cuda
-    - docker run --name="cuda_7.5" kaixhin/cuda /bin/sh -c "sudo apt-get update"
-    - docker commit cuda_7.5 kaixhin/cuda:latest
-    - docker rm cuda_7.5 
-    - docker run --name="cuda_7.5" kaixhin/cuda /bin/sh -c "sudo apt-get install -y cmake"
-    - docker commit cuda_7.5 kaixhin/cuda:latest
-    - docker rm cuda_7.5 
+    -docker pull injeans/$DOCKERFILE
 
 script:
-    - docker run -v=/home/travis/build/inJeans/cuda_dsmc:/cuda_dsmc --name="cuda_7.5" kaixhin/cuda /bin/sh -c "cd /cuda_dsmc; cmake ."
-    - docker commit cuda_7.5 kaixhin/cuda:latest
-    - docker rm cuda_7.5
-    - docker run -v=/home/travis/build/inJeans/cuda_dsmc:/cuda_dsmc --name="cuda_7.5" kaixhin/cuda /bin/sh -c "cd /cuda_dsmc; make;" 
-    - docker commit cuda_7.5 kaixhin/cuda:latest
-    - docker rm cuda_7.5
-    - docker run -v=/home/travis/build/inJeans/cuda_dsmc:/cuda_dsmc --name="cuda_7.5" kaixhin/cuda /bin/sh -c "cd /cuda_dsmc; make test;" 
-    - docker commit cuda_7.5 kaixhin/cuda:latest
-    - docker rm cuda_7.5
+    -docker run injeans/$DOCKERFILE /bin/bash -c "ls /"
+
+# before_install:
+#     - docker pull kaixhin/cuda
+#     - docker run --name="cuda_7.5" kaixhin/cuda /bin/sh -c "sudo apt-get update"
+#     - docker commit cuda_7.5 kaixhin/cuda:latest
+#     - docker rm cuda_7.5 
+#     - docker run --name="cuda_7.5" kaixhin/cuda /bin/sh -c "sudo apt-get install -y cmake"
+#     - docker commit cuda_7.5 kaixhin/cuda:latest
+#     - docker rm cuda_7.5 
+
+# script:
+#     - docker run -v=/home/travis/build/inJeans/cuda_dsmc:/cuda_dsmc --name="cuda_7.5" kaixhin/cuda /bin/sh -c "cd /cuda_dsmc; cmake ."
+#     - docker commit cuda_7.5 kaixhin/cuda:latest
+#     - docker rm cuda_7.5
+#     - docker run -v=/home/travis/build/inJeans/cuda_dsmc:/cuda_dsmc --name="cuda_7.5" kaixhin/cuda /bin/sh -c "cd /cuda_dsmc; make;" 
+#     - docker commit cuda_7.5 kaixhin/cuda:latest
+#     - docker rm cuda_7.5
+#     - docker run -v=/home/travis/build/inJeans/cuda_dsmc:/cuda_dsmc --name="cuda_7.5" kaixhin/cuda /bin/sh -c "cd /cuda_dsmc; make test;" 
+#     - docker commit cuda_7.5 kaixhin/cuda:latest
+#     - docker rm cuda_7.5
