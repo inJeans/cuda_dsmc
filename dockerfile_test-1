@@ -1,2 +1,0 @@
-FROM kaixhin/cuda
-RUN echo "test-1"
