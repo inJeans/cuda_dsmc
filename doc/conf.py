@@ -15,6 +15,14 @@
 import sys
 import os
 import shlex
+import subprocess, os
+
+# Auto build the doxygen xml files for read the docs
+read_the_docs_build = os.environ.get('READTHEDOCS', None) == 'True'
+
+if read_the_docs_build:
+
+    subprocess.call('cd ../doxygen; doxygen', shell=True)
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
