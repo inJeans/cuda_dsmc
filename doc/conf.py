@@ -21,8 +21,8 @@ import subprocess, os
 read_the_docs_build = os.environ.get('READTHEDOCS', None) == 'True'
 
 if read_the_docs_build:
-
-    subprocess.call('cd ../doxygen; doxygen', shell=True)
+    
+    subprocess.call('cd ../doxygen; doxygen doxygen.config', shell=True)
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -47,7 +47,7 @@ extensions = [
 ]
 
 # Tell breathe about the projects
-breathe_projects = { "CUDA_DSMC": "/Users/miMacbookPro/Documents/GitMercurial/cuda_dsmc/doc/xml/" }
+breathe_projects = { "CUDA_DSMC": "/Users/miMacbookPro/Documents/GitMercurial/cuda_dsmc/doxygen/xml/" }
 breathe_default_project = "CUDA_DSMC"
 
 # Add any paths that contain templates here, relative to this directory.
