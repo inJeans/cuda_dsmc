@@ -22,8 +22,6 @@ read_the_docs_build = os.environ.get('READTHEDOCS', None) == 'True'
 
 if read_the_docs_build:
     subprocess.call('cd ../doxygen; doxygen doxyfile.config', shell=True)
-
-if not read_the_docs_build:  # only import and set the theme if we're building docs locally
     import sphinx_rtd_theme
     html_theme = 'sphinx_rtd_theme'
     html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
