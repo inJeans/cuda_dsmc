@@ -21,14 +21,14 @@ import subprocess, os
 read_the_docs_build = os.environ.get('READTHEDOCS', None) == 'True'
 
 if read_the_docs_build:
-    subprocess.call('ls', shell=True)
+    
     subprocess.call('cd ../doxygen; doxygen doxyfile.config', shell=True)
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #sys.path.insert(0, os.path.abspath('.'))
-sys.path.append( "doc/ext/breathe/" )
+sys.path.append( "../doc/ext/breathe/" )
 
 # -- General configuration ------------------------------------------------
 
@@ -47,7 +47,7 @@ extensions = [
 ]
 
 # Tell breathe about the projects
-breathe_projects = { "CUDA_DSMC": "doxygen/xml/" }
+breathe_projects = { "CUDA_DSMC": "../doxygen/xml/" }
 breathe_default_project = "CUDA_DSMC"
 
 # Add any paths that contain templates here, relative to this directory.
