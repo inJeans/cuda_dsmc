@@ -1,3 +1,4 @@
+#Project cmake
 SET( CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG "bin")
 SET( CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE "bin")
 
@@ -5,10 +6,12 @@ cmake_minimum_required (VERSION 2.8)
 project (cuda_dsmc)
 find_package(CUDA QUIET REQUIRED)
 
-include_directories("${PROJECT_SOURCE_DIR}/include")
-SET( SOURCES src/main.c )
+add_subdirectory( src )
 
-cuda_add_executable(cuda_dsmc ${SOURCES})
+include_directories("${PROJECT_SOURCE_DIR}/include" "${PROJECT_SOURCE_DIR}/include/cuda_dsmc" "/Developer/NVIDIA/CUDA-7.0/include/")
+SET( SOURCES src/main.cpp src/distributionGeneration.cpp )
+
+add_executable(cuda_dsmc ${SOURCES})
 
 # make run
 add_custom_target(run
@@ -20,7 +23,11 @@ add_custom_target(run
 # does the application run
 enable_testing()
 
+SET( TEST_SOURCES test/distribtution_generation_test.cpp src/distributionGeneration.cpp )
+add_executable(distribution_generation_test ${TEST_SOURCES})
+
 add_test (cuda_dmsc_runs cuda_dsmc)
+add_test (distribution_generation distribution_generation_test)
 
 # does it have the correct output
 # add_test (hello_world_test hello)

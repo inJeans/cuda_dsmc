@@ -19,7 +19,7 @@ int main(int argc, char const *argv[])
 
 	// Generate distribution.
 
-	printf( "%f\n", gaussian_point( 0., 1., 0. ) );
+	printf( "\n%f\n", gaussian_point( 0., 1., 0. ) );
 
 	return 0;
 }
