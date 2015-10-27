@@ -6,7 +6,7 @@ cmake_minimum_required (VERSION 2.8)
 project (cuda_dsmc)
 find_package(CUDA QUIET REQUIRED)
 
-add_subdirectory( src )
+# add_subdirectory( src )
 
 include_directories("${PROJECT_SOURCE_DIR}/include" "${PROJECT_SOURCE_DIR}/include/cuda_dsmc" "/Developer/NVIDIA/CUDA-7.0/include/")
 SET( SOURCES src/main.cpp src/distributionGeneration.cpp )
