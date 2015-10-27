@@ -8,7 +8,7 @@ find_package(CUDA QUIET REQUIRED)
 
 # add_subdirectory( src )
 
-include_directories("${PROJECT_SOURCE_DIR}/include" "${PROJECT_SOURCE_DIR}/include/cuda_dsmc" "/Developer/NVIDIA/CUDA-7.0/include/")
+include_directories("${PROJECT_SOURCE_DIR}/include" "${PROJECT_SOURCE_DIR}/include/cuda_dsmc" "/Developer/NVIDIA/CUDA-7.0/include/" "/usr/local/cuda/include")
 SET( SOURCES src/main.cpp src/distributionGeneration.cpp )
 
 add_executable(cuda_dsmc ${SOURCES})
