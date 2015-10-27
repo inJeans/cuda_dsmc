@@ -8,6 +8,8 @@ find_package(CUDA QUIET REQUIRED)
 
 # add_subdirectory( src )
 
+set(CMAKE_CXX_FLAGS "-std=c++0x ${CMAKE_CXX_FLAGS}")
+
 include_directories("${PROJECT_SOURCE_DIR}/include" "${PROJECT_SOURCE_DIR}/include/cuda_dsmc" "/Developer/NVIDIA/CUDA-7.0/include/" "/usr/local/cuda/include")
 SET( SOURCES src/main.cpp src/distributionGeneration.cpp )
 
