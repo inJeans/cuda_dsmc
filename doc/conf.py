@@ -21,13 +21,13 @@ import subprocess, os
 read_the_docs_build = os.environ.get('READTHEDOCS', None) == 'True'
 
 if read_the_docs_build:
-    subprocess.call('cd ../doxygen; doxygen doxyfile.config', shell=True)
+    subprocess.call('doxygen doxyfile.config', shell=True)
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #sys.path.insert(0, os.path.abspath('.'))
-sys.path.append( "../doc/ext/breathe/" )
+sys.path.append( "./ext/breathe/" )
 
 # -- General configuration ------------------------------------------------
 
@@ -46,7 +46,7 @@ extensions = [
 ]
 
 # Tell breathe about the projects
-breathe_projects = { "CUDA_DSMC": "../doxygen/xml/" }
+breathe_projects = { "CUDA_DSMC": "./xml/" }
 breathe_default_project = "CUDA_DSMC"
 
 # Add any paths that contain templates here, relative to this directory.
@@ -64,7 +64,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'CUDA DSMC'
+project = u'CUDA_DSMC'
 copyright = u'2015, Christopher Jon Watkins'
 author = u'Christopher Jon Watkins'
 
@@ -73,7 +73,7 @@ author = u'Christopher Jon Watkins'
 # built documents.
 #
 # The short X.Y version.
-version = '0.1.0'
+version = '0.1'
 # The full version, including alpha/beta/rc tags.
 release = '0.1.0'
 

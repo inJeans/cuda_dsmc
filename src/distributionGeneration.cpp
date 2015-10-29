@@ -5,11 +5,12 @@
  */
 
 #include <iostream>
-#include <random>
+#include <math.h>
 
 #include <cuda_runtime.h>
 
 #include "distribution_generation.cuh"
+#include "pcg_variants.h"
 
  __host__ __device__ double gaussian_point( double mean,
  	                                        double std,
@@ -22,11 +23,9 @@
 
 __host__ __device__ double uniform_prng( int seed )
 {
-	std::random_device rd;
-    std::mt19937 gen(rd());
-    std::uniform_real_distribution<> dis(0, 1);
-
-    double r = dis( gen );
+	pcg64_random_t rng;
+    pcg64_srandom_r(&rng, 42u, 54u);
+    double r = ldexp(pcg64_random_r(&rng), -64);
 
 	return r;
 }
