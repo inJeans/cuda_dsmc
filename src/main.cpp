@@ -5,6 +5,7 @@
  */
 
 #include <stdio.h>
+#include <float.h>
 #include <cuda_runtime.h>
 
 #include "distribution_generation.cuh"
@@ -17,9 +18,19 @@ int main(int argc, char const *argv[])
 	printf( "*                          *\n" );
 	printf( "****************************\n" );
 
-	// Generate distribution.
+	FILE *fp;
+	fp = fopen("test_numbers.txt", "a+");
 
-	printf( "\n%f\n", gaussian_point( 0., 1., 0. ) );
+	// Generate distribution.
+	pcg32_random_t rng;
+    pcg32_srandom_r(&rng, 42u, 54u);
+
+    for (int i = 0; i < 1000; ++i)
+    {
+    	fprintf( fp, "%f, ", gaussian_point( 0., 1., &rng ) );
+    }
+
+	fclose(fp);
 
 	return 0;
 }

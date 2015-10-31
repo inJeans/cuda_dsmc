@@ -21,6 +21,6 @@ script:
     - docker run -v=/home/travis/build/inJeans/cuda_dsmc:/cuda_dsmc --name="cuda_7.5" kaixhin/cuda /bin/sh -c "cd /cuda_dsmc; make;" 
     - docker commit cuda_7.5 kaixhin/cuda:latest
     - docker rm cuda_7.5
-    - docker run -v=/home/travis/build/inJeans/cuda_dsmc:/cuda_dsmc --name="cuda_7.5" kaixhin/cuda /bin/sh -c "cd /cuda_dsmc; make test;" 
+    - docker run -v=/home/travis/build/inJeans/cuda_dsmc:/cuda_dsmc --name="cuda_7.5" kaixhin/cuda /bin/sh -c "cd /cuda_dsmc; ctest --verbose;" 
     - docker commit cuda_7.5 kaixhin/cuda:latest
     - docker rm cuda_7.5

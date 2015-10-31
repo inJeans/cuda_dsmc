@@ -32,7 +32,7 @@ add_executable(distribution_generation_test ${TEST_SOURCES})
 target_link_libraries(distribution_generation_test pcg_random)
 
 add_test (cuda_dmsc_runs cuda_dsmc)
-add_test (distribution_generation distribution_generation_test)
+add_test (distribution_generation distribution_generation_test -s)
 
 # does it have the correct output
 # add_test (hello_world_test hello)
