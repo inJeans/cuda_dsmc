@@ -1,4 +1,6 @@
 
+double g_uniform_prng( void );
+
 double max( double *array,
             int num_elements );
 

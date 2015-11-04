@@ -10,9 +10,16 @@
 
 #define CATCH_CONFIG_MAIN
 #include "catch.hpp"
+extern "C"
+{
+#include "unif01.h"
+#include "bbattery.h" 
+}
 
 #include "distribution_generation.cuh"
 #include "distribution_generation_tests.cuh"
+
+pcg32_random_t g_rng;
 
 SCENARIO( "Uniform random number generation", "[urng]" ) {
 
@@ -27,6 +34,22 @@ SCENARIO( "Uniform random number generation", "[urng]" ) {
                 REQUIRE( r >= 0. );
                 REQUIRE( r <= 1. );
             }
+        }
+
+        WHEN( "We assign the local seed to the global seed" ) {
+            g_rng = rng;
+            unif01_Gen *gen;
+                char* rng_name = "g_uniform_prng";
+                gen = unif01_CreateExternGen01( rng_name,
+                                                g_uniform_prng );
+
+            THEN( "We expect to pass small crush" ) {
+                bbattery_SmallCrush( gen );
+                bool complete = true;
+                REQUIRE( complete );
+            }
+            
+            unif01_DeleteExternGen01( gen );
         }
     }
 }
@@ -67,6 +90,11 @@ SCENARIO( "Normally distributed random number generation", "[nrng]" ) {
             }
         }
     }
+}
+
+double g_uniform_prng( void )
+{
+    return uniform_prng( &g_rng );
 }
 
 double max( double *array,
