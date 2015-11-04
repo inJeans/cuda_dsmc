@@ -19,5 +19,5 @@ RUN wget http://www.iro.umontreal.ca/~simardr/testu01/TestU01.zip && \
 
 # Add the testu01 installation to the environment paths
 ENV LD_LIBRARY_PATH /usr/local/lib:$LD_LIBRARY_PATH
-ENV LIBRARY_PATH /usr/local/lib:LIBRARY_PATH
+ENV LIBRARY_PATH /usr/local/lib:$LIBRARY_PATH
 ENV C_INCLUDE_PATH /usr/local/include:$C_INCLUDE_PATH
