@@ -18,19 +18,11 @@ int main(int argc, char const *argv[])
 	printf( "*                          *\n" );
 	printf( "****************************\n" );
 
-	FILE *fp;
-	fp = fopen("test_numbers.txt", "a+");
-
 	// Generate distribution.
 	pcg32_random_t rng;
     pcg32_srandom_r(&rng, 42u, 54u);
-
-    for (int i = 0; i < 1000; ++i)
-    {
-    	fprintf( fp, "%f, ", gaussian_point( 0., 1., &rng ) );
-    }
-
-	fclose(fp);
+    double3 p = gaussian_point( 0., 1., &rng );
+    printf( "p = { %f,%f,%f }\n", p.x, p.y, p.z );
 
 	return 0;
 }

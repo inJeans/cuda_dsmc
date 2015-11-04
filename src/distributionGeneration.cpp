@@ -5,15 +5,17 @@
  */
 
 #include "distribution_generation.cuh"
-double gaussian_ziggurat ( pcg32_random_t *seed );
 
- __host__ __device__ double gaussian_point( double mean,
- 	                                        double std,
- 	                                        pcg32_random_t *seed )
+ __host__ __device__ double3 gaussian_point( double mean,
+ 	                                          double std,
+ 	                                          pcg32_random_t *seed )
 {
-	double r = gaussian_ziggurat( seed );
+  double3 p = make_double3( 0., 0., 0. );
+	p.x = gaussian_ziggurat( seed );
+  p.y = gaussian_ziggurat( seed );
+  p.z = gaussian_ziggurat( seed );
 
- 	return r;
+ 	return p;
 }
 
 __host__ __device__ double uniform_prng( pcg32_random_t *seed )

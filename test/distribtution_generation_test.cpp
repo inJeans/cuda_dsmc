@@ -39,9 +39,9 @@ SCENARIO( "Uniform random number generation", "[urng]" ) {
         WHEN( "We assign the local seed to the global seed" ) {
             g_rng = rng;
             unif01_Gen *gen;
-                char* rng_name = "g_uniform_prng";
-                gen = unif01_CreateExternGen01( rng_name,
-                                                g_uniform_prng );
+            char* rng_name = "g_uniform_prng";
+            gen = unif01_CreateExternGen01( rng_name,
+                                            g_uniform_prng );
 
             THEN( "We expect to pass small crush" ) {
                 bbattery_SmallCrush( gen );
@@ -63,9 +63,7 @@ SCENARIO( "Normally distributed random number generation", "[nrng]" ) {
         WHEN( "We generate 5,000 numbers using a mean of 0 and a std of 1" ) {
             double test_values[5000];
             for (int i = 0; i < 5000; ++i)
-                test_values[i] = gaussian_point( 0., 
-                                                 1., 
-                                                 &rng );
+                test_values[i] = gaussian_ziggurat( &rng );
 
             THEN( "The result should pass the back-of-the-envelope test" ) {
                 double val_mean = mean( test_values,
@@ -76,8 +74,6 @@ SCENARIO( "Normally distributed random number generation", "[nrng]" ) {
                                       5000 );
                 double val_min = min( test_values,
                                       5000 );
-                printf( "max = %f, min = %f\n", val_max, val_min );
-                printf( "mean = %f, std = %f\n", val_mean, val_std );
 
                 double Z_max = z_score( val_max,
                                         val_mean,
