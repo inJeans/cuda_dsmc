@@ -1,5 +1,5 @@
 # Start with the CUDA image from kaixhin
-FROM kaixhin/cuda:latest
+FROM injeans/nvidia_docker:latest
 MAINTAINER Chris Watkins <christopher.watkins@me.com>
 
 # Install wget and build-essential
