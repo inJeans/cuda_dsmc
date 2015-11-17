@@ -4,7 +4,9 @@
 
 So what if I just write something here?
 
-.. doxygenfile:: main.c
+.. doxygenfile:: main.cpp
+    :project: CUDA_DSMC
+.. doxygenfile:: random_numbers.hpp
     :project: CUDA_DSMC
 
 .. doxygenfunction:: doxygen_test

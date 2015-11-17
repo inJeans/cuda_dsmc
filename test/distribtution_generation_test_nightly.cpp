@@ -16,7 +16,7 @@ extern "C"
 #include "bbattery.h" 
 }
 
-#include "distribution_generation.cuh"
+#include "random_numbers.hpp"
 
 pcg32_random_t g_rng;
 
