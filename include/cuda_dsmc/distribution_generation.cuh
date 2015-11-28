@@ -1,14 +1,17 @@
-#include <iostream>
-#include <math.h>
 
 #include <cuda_runtime.h>
 
-#include "pcg_variants.h"
+#include "random_numbers.hpp"
 
-__host__ double gaussian_ziggurat ( pcg32_random_t *seed );
+__host__ void cu_generate_thermal_velocities(int num_atoms,
+                                             double temp,
+                                             curandState *state,
+                                             double3 *vel);
 
- __host__ __device__ double3 gaussian_point( double mean,
- 	                                         double std,
- 	                                         pcg32_random_t *seed );
+__global__ void g_generate_thermal_velocities(int num_atoms,
+                                              double temp,
+                                              curandState *state,
+                                              double3 *vel);
 
- __host__ __device__ double uniform_prng( pcg32_random_t *seed );
+__device__ double3 d_thermal_vel(double temp,
+                                 curandState *state);

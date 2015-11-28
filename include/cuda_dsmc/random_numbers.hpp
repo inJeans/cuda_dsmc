@@ -1,14 +1,16 @@
-#include <iostream>
+/**
+ *  More detailed description
+ *  Copyright 2015 Christopher Watkins
+ */
+
+#include "random_numbers.cuh"
+
 #include <math.h>
-
 #include <cuda_runtime.h>
+#include <cuda.h>
+#include <curand_kernel.h>
 
-#include "pcg_variants.h"
+#include <iostream>
 
-__host__ double gaussian_ziggurat(pcg32_random_t *seed);
-
-__host__ __device__ double3 gaussian_point(double mean,
-                                           double std,
-                                           pcg32_random_t *seed);
-
-__host__ __device__ double uniform_prng(pcg32_random_t *seed);
+void initialise_rng_states(int n_states,
+                           curandState *state);

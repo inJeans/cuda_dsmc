@@ -8,16 +8,20 @@ find_package(CUDA QUIET REQUIRED)
 
 # add_subdirectory( src )
 
-#set(CMAKE_CXX_FLAGS "-std=c++0x ${CMAKE_CXX_FLAGS}")
-set(CUDA_NVCC_FLAGS -arch sm_20)
+set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}")
+# set(CUDA_NVCC_FLAGS "-x cu -rdc=true -v")
+set(CUDA_SEPARABLE_COMPILATION ON)
 
-include_directories("${PROJECT_SOURCE_DIR}/include" "${PROJECT_SOURCE_DIR}/include/cuda_dsmc" "/Developer/NVIDIA/CUDA-7.0/include/" "/usr/local/cuda/include" "/usr/local/include/")
-link_directories("${PROJECT_SOURCE_DIR}/lib" "/usr/local/lib/")
-SET( SOURCES src/main.cpp src/distribution_generation.cpp src/random_numbers.cpp )
+message("${CUDA_TOOLKIT_ROOT_DIR}")
+include_directories("${PROJECT_SOURCE_DIR}/include" "${PROJECT_SOURCE_DIR}/include/cuda_dsmc" "${CUDA_INCLUDE_DIRS}" "~/Downloads/g3log-1.1/src")
+link_directories("${PROJECT_SOURCE_DIR}/lib" "/usr/local/lib/" "${CUDA_TOOLKIT_ROOT_DIR}/lib")
+
+SET( SOURCES src/main.cpp src/distribution_generation.cpp src/distribution_generation.cu src/random_numbers.cpp src/random_numbers.cu)
 
 # add_executable(cuda_dsmc ${SOURCES})
+add_definitions(-DCUDA)
 cuda_add_executable(cuda_dsmc ${SOURCES})
-target_link_libraries(cuda_dsmc pcg_random)
+target_link_libraries(cuda_dsmc pcg_random cudart g3logger)
 
 # make run
 add_custom_target(run
@@ -29,17 +33,12 @@ add_custom_target(run
 # does the application run
 enable_testing()
 
-SET( TEST_SOURCES test/distribtution_generation_test.cpp src/random_numbers.cpp )
-add_executable(distribution_generation_test ${TEST_SOURCES})
-target_link_libraries(distribution_generation_test pcg_random testu01)
-
-SET( TEST_SOURCES_NIGHTLY test/distribtution_generation_test_nightly.cpp src/random_numbers.cpp )
-add_executable(distribution_generation_test_nightly ${TEST_SOURCES_NIGHTLY})
-target_link_libraries(distribution_generation_test_nightly pcg_random testu01)
+#SET( TEST_SOURCES test/distribution_generation_test.cpp src/random_numbers.cpp )
+#add_executable(distribution_generation_test ${TEST_SOURCES})
+#target_link_libraries(distribution_generation_test pcg_random testu01)
 
 add_test (cuda_dmsc_runs cuda_dsmc)
-add_test (distribution_generation distribution_generation_test -s)
-add_test (distribution_generation_nightly distribution_generation_test_nightly -s)
+#add_test (distribution_generation distribution_generation_test -s)
 
 # does it have the correct output
 # add_test (hello_world_test hello)

@@ -1,5 +1,5 @@
-# Start with the CUDA image from kaixhin
-FROM injeans/nvidia-docker:latest
+# Start with the CUDA image from nvidia
+FROM injeans/cuda-devel:latest
 MAINTAINER Chris Watkins <christopher.watkins@me.com>
 
 # Install wget and build-essential
@@ -8,6 +8,13 @@ RUN apt-get update && apt-get install -y \
     wget \
     cmake \
     unzip
+
+# Download and install g3log
+RUN wget https://github.com/KjellKod/g3log/archive/v1.1.tar.gz && \
+    tar xvfz v1.1.tar.gz && \
+    cd g3log-1.1 && \
+    cmake -DCMAKE_BUILD_TYPE=Release .. && \
+    make
 
 # Download and install testu01
 RUN wget http://www.iro.umontreal.ca/~simardr/testu01/TestU01.zip && \

@@ -15,6 +15,6 @@ script:
     - docker run -v=/home/travis/build/inJeans/cuda_dsmc:/cuda_dsmc --name="cuda_7.5" injeans/cuda_dsmc /bin/sh -c "cd /cuda_dsmc; make;" 
     - docker commit cuda_7.5 injeans/cuda_dsmc:latest
     - docker rm cuda_7.5
-    - docker run -v=/home/travis/build/inJeans/cuda_dsmc:/cuda_dsmc --name="cuda_7.5" injeans/cuda_dsmc /bin/sh -c "cd /cuda_dsmc; ctest -V -E distribution_generation_nightly;" 
-    - docker commit cuda_7.5 injeans/cuda_dsmc:latest
-    - docker rm cuda_7.5
+#    - docker run -v=/home/travis/build/inJeans/cuda_dsmc:/cuda_dsmc --name="cuda_7.5" injeans/cuda_dsmc /bin/sh -c "cd /cuda_dsmc; ctest -V" 
+#    - docker commit cuda_7.5 injeans/cuda_dsmc:latest
+#    - docker rm cuda_7.5
