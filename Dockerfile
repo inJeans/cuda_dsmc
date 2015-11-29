@@ -13,7 +13,7 @@ RUN apt-get update && apt-get install -y \
 RUN wget https://github.com/KjellKod/g3log/archive/v1.1.tar.gz && \
     tar xvfz v1.1.tar.gz && \
     cd g3log-1.1 && \
-    mkdir buil && \
+    mkdir build && \
     cd ./build && \
     cmake -DCMAKE_BUILD_TYPE=Release .. && \
     make && \
