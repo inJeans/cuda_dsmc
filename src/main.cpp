@@ -24,6 +24,29 @@
     const std::string path_to_log_file = "/tmp/";
 #endif
 
+struct CustomSink {
+
+// Linux xterm color
+// http://stackoverflow.com/questions/2616906/how-do-i-output-coloured-text-to-a-linux-terminal
+  enum FG_Color {YELLOW = 33, RED = 31, GREEN=32, WHITE=97, CYAN=36};
+
+  FG_Color GetColor(const LEVELS level) const {
+     if (level.value == WARNING.value) { return YELLOW; }
+     if (level.value == DEBUG.value) { return GREEN; }
+     if (g3::internal::wasFatal(level)) { return RED; }
+
+     return CYAN;
+  }
+
+  void ReceiveLogMessage(g3::LogMessageMover logEntry) {
+     auto level = logEntry.get()._level;
+     auto color = GetColor(level);
+
+     std::cout << "\033[" << color << "m"
+               << logEntry.get().toString() << "\033[m" << std::endl;
+  }
+};
+
 int main(int argc, char const *argv[]) {
     printf("****************************\n");
     printf("*                          *\n");
@@ -34,10 +57,13 @@ int main(int argc, char const *argv[]) {
     // Initialise logger
     auto worker = g3::LogWorker::createLogWorker();
     auto handle = worker->addDefaultLogger(argv[0], path_to_log_file);
+    auto handle_term = worker->addSink(std2::make_unique<CustomSink>(),
+                                       &CustomSink::ReceiveLogMessage);
     g3::initializeLogging(worker.get());
     std::future<std::string> log_file_name = handle->call(&g3::FileSink::fileName);
     std::cout << "\n All logging output will be written to: "
               << log_file_name.get() << std::endl;
+    // g3::only_change_at_initialization::setLogLevel(INFO, false);
 
     // Initialise rng
     curandState *d_state;
@@ -67,6 +93,8 @@ int main(int argc, char const *argv[]) {
 
     cudaFree(d_state);
     cudaFree(d_vel);
+
+    g3::internal::shutDownLogging();
 
     return 0;
 }

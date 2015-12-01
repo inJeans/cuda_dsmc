@@ -22,7 +22,7 @@
 
 __host__ void cu_initialise_rng_states(int n_states,
                                        curandState *state) {
-    LOGF(INFO, "Calculating optimal launch configuration for the state intialisation kernel.\n");
+    LOGF(INFO, "\nCalculating optimal launch configuration for the state intialisation kernel.\n");
     int block_size = 0;
     int min_grid_size = 0;
     int grid_size = 0;
@@ -33,7 +33,7 @@ __host__ void cu_initialise_rng_states(int n_states,
                                        n_states);
     grid_size = (n_states + block_size - 1) / block_size;
 
-    LOGF(INFO, "Launch config set as <<<%i,%i>>>\n", grid_size, block_size);
+    LOGF(INFO, "\nLaunch config set as <<<%i,%i>>>\n", grid_size, block_size);
     g_initialise_rng_states<<<grid_size,
                               block_size>>>
                            (n_states,

@@ -22,6 +22,8 @@ void initialise_rng_states(int n_states,
 #ifdef CUDA
     cu_initialise_rng_states(n_states,
                              state);
+#else
+    // h_initialise_rng_states
 #endif
 
     return;
