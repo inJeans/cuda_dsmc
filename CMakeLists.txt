@@ -11,6 +11,7 @@ find_package(CUDA QUIET REQUIRED)
 set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}")
 # set(CUDA_NVCC_FLAGS "-x cu -rdc=true -v")
 set(CUDA_SEPARABLE_COMPILATION ON)
+# SET(CUDA_PROPAGATE_HOST_FLAGS OFF)
 
 message("${CUDA_TOOLKIT_ROOT_DIR}")
 include_directories("${PROJECT_SOURCE_DIR}/include" "${PROJECT_SOURCE_DIR}/include/cuda_dsmc" "${CUDA_INCLUDE_DIRS}" "~/Downloads/g3log-1.1/src" "/usr/local/include")
