@@ -14,6 +14,7 @@
 #include <iostream>
 #include <iomanip>
 
+#include "custom_sink.hpp"
 #include "distribution_generation.hpp"
 
 #define NUM_ATOMS 2
@@ -23,29 +24,6 @@
 #else
     const std::string path_to_log_file = "/tmp/";
 #endif
-
-struct CustomSink {
-
-// Linux xterm color
-// http://stackoverflow.com/questions/2616906/how-do-i-output-coloured-text-to-a-linux-terminal
-  enum FG_Color {YELLOW = 33, RED = 31, GREEN=32, WHITE=97, CYAN=36};
-
-  FG_Color GetColor(const LEVELS level) const {
-     if (level.value == WARNING.value) { return YELLOW; }
-     if (level.value == DEBUG.value) { return GREEN; }
-     if (g3::internal::wasFatal(level)) { return RED; }
-
-     return CYAN;
-  }
-
-  void ReceiveLogMessage(g3::LogMessageMover logEntry) {
-     auto level = logEntry.get()._level;
-     auto color = GetColor(level);
-
-     std::cout << "\033[" << color << "m"
-               << logEntry.get().toString() << "\033[m" << std::endl;
-  }
-};
 
 int main(int argc, char const *argv[]) {
     printf("****************************\n");
@@ -66,33 +44,41 @@ int main(int argc, char const *argv[]) {
     // g3::only_change_at_initialization::setLogLevel(INFO, false);
 
     // Initialise rng
-    curandState *d_state;
-    cudaMalloc(reinterpret_cast<void **>(&d_state),
+    LOGF(INFO, "\nInitialising the rng state arrays.\n");
+#ifdef CUDA
+    curandState *state;
+    cudaMalloc(reinterpret_cast<void **>(&state),
                NUM_ATOMS*sizeof(curandState));
+#else
+    pcg64_random_t *state;
+    state = reinterpret_cast<pcg64_random_t*>(calloc(NUM_ATOMS,
+                                                     sizeof(pcg64_random_t)));
+#endif
     initialise_rng_states(NUM_ATOMS,
-                          d_state);
+                          state);
 
-    double3 *d_vel;
-    cudaMalloc(reinterpret_cast<void **>(&d_vel),
-               NUM_ATOMS*sizeof(double3));
+    // double3 *d_vel;
+    // cudaMalloc(reinterpret_cast<void **>(&d_vel),
+    //            NUM_ATOMS*sizeof(double3));
 
-    // Generate distribution
-    generate_thermal_velocities(NUM_ATOMS,
-                                20.e-6,
-                                d_state,
-                                d_vel);
 
-    double3 vel[NUM_ATOMS];
-    cudaMemcpy(&vel,
-               d_vel,
-               NUM_ATOMS*sizeof(double3),
-               cudaMemcpyDeviceToHost);
+    // // Generate distribution
+    // generate_thermal_velocities(NUM_ATOMS,
+    //                             20.e-6,
+    //                             state,
+    //                             vel);
 
-    printf("v1 = { %f,%f,%f }, v2 = { %f,%f,%f }\n", vel[0].x, vel[0].y, vel[0].z,
-                                                     vel[1].x, vel[1].y, vel[1].z);
+    // double3 vel[NUM_ATOMS];
+    // cudaMemcpy(&vel,
+    //            vel,
+    //            NUM_ATOMS*sizeof(double3),
+    //            cudaMemcpyDeviceToHost);
 
-    cudaFree(d_state);
-    cudaFree(d_vel);
+    // printf("v1 = { %f,%f,%f }, v2 = { %f,%f,%f }\n", vel[0].x, vel[0].y, vel[0].z,
+    //                                                  vel[1].x, vel[1].y, vel[1].z);
+
+    // cudaFree(state);
+    // cudaFree(d_vel);
 
     g3::internal::shutDownLogging();
 
