@@ -10,12 +10,13 @@ find_package(CUDA QUIET REQUIRED)
 
 set(CMAKE_C_FLAGS "-std=c99 ${CMAKE_CXX_FLAGS}")
 set(CMAKE_CXX_FLAGS "-std=gnu++11 ${CMAKE_CXX_FLAGS}")
+set(CUDA_NVCC_FLAGS "-std=c++11")
 
 set(CUDA_SEPARABLE_COMPILATION ON)
 SET(CUDA_PROPAGATE_HOST_FLAGS OFF)
 
 message("${CUDA_TOOLKIT_ROOT_DIR}")
-include_directories("${PROJECT_SOURCE_DIR}/include" "${PROJECT_SOURCE_DIR}/include/cuda_dsmc" "${CUDA_INCLUDE_DIRS}" "/usr/local/include")
+include_directories("${PROJECT_SOURCE_DIR}/include" "${PROJECT_SOURCE_DIR}/include/cuda_dsmc" "${CUDA_INCLUDE_DIRS}" "~/Downloads/g3log-1.1/src" "/usr/local/include")
 link_directories("${PROJECT_SOURCE_DIR}/lib" "/usr/local/lib/" "${CUDA_TOOLKIT_ROOT_DIR}/lib" "${CUDA_TOOLKIT_ROOT_DIR}/lib64")
 
 SET( SOURCES src/main.cpp src/distribution_generation.cpp src/distribution_generation.cu src/random_numbers.cpp src/random_numbers.cu src/entropy.c)
