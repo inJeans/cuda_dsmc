@@ -7,18 +7,27 @@ RUN apt-get update && apt-get install -y \
     build-essential \
     wget \
     cmake \
-    unzip
+    unzip \
+    git
 
-# # Download and install g3log
-# RUN wget https://github.com/KjellKod/g3log/archive/v1.1.tar.gz && \
-#     tar xvfz v1.1.tar.gz && \
-#     cd g3log-1.1 && \
-#     mkdir build && \
-#     cd ./build && \
-#     cmake -DCMAKE_BUILD_TYPE=Release .. && \
-#     make && \
-#     cp -r ../src/g3log /usr/local/include && \
-#     cp ./lib* /usr/local/lib
+# Download and install g3log
+RUN wget https://github.com/KjellKod/g3log/archive/v1.1.tar.gz && \
+    tar xvfz v1.1.tar.gz && \
+    cd g3log-1.1 && \
+    mkdir build && \
+    cd ./build && \
+    cmake -DCMAKE_BUILD_TYPE=Release -DUSE_DYNAMIC_LOGGING_LEVELS=ON .. && \
+    make && \
+    cp -r ../src/g3log /usr/local/include && \
+    cp ./lib* /usr/local/lib
+
+# Download and install pcg_rand
+RUN git clone https://github.com/imneme/pcg-c.git && \
+    cd pcg-c && \
+    make && \
+    make test && \
+    cp src/libpcg_random.a /usr/local/lib/ && \
+    cp include/pcg_variants.h /usr/local/include/
 
 
 # Download and install testu01
