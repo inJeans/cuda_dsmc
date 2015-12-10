@@ -1,7 +1,9 @@
 version: 1.0.{build}
 
 before_build:
-    - cmake .
+    - mkdir build
+    - cd ./build
+    - cmake ..
 
 build:
  project: cuda_dsmc.sln
