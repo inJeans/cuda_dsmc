@@ -6,20 +6,28 @@ cmake_minimum_required (VERSION 2.8)
 project (cuda_dsmc)
 IF (NOT WIN32)
     find_package(CUDA QUIET REQUIRED)
+    SET(CUDA_NVCC_FLAGS "-std=c++11")
+    SET(CUDA_SEPARABLE_COMPILATION ON)
+    SET(CUDA_PROPAGATE_HOST_FLAGS OFF)
 ENDIF()
 
-# add_subdirectory( src )
+SET(CMAKE_C_FLAGS "-std=c99 ${CMAKE_CXX_FLAGS}")
+SET(CMAKE_CXX_FLAGS "-std=gnu++11 ${CMAKE_CXX_FLAGS}")
 
-set(CMAKE_C_FLAGS "-std=c99 ${CMAKE_CXX_FLAGS}")
-set(CMAKE_CXX_FLAGS "-std=gnu++11 ${CMAKE_CXX_FLAGS}")
-set(CUDA_NVCC_FLAGS "-std=c++11")
+include_directories("${PROJECT_SOURCE_DIR}/include" "${PROJECT_SOURCE_DIR}/include/cuda_dsmc")
+IF (NOT WIN32)
+    include_directories("${CUDA_INCLUDE_DIRS}" "/usr/local/include")
+ENDIF ()
 
-set(CUDA_SEPARABLE_COMPILATION ON)
-SET(CUDA_PROPAGATE_HOST_FLAGS OFF)
-
-message("${CUDA_TOOLKIT_ROOT_DIR}")
-include_directories("${PROJECT_SOURCE_DIR}/include" "${PROJECT_SOURCE_DIR}/include/cuda_dsmc" "${CUDA_INCLUDE_DIRS}" "~/Downloads/g3log-1.1/src" "/usr/local/include")
-link_directories("${PROJECT_SOURCE_DIR}/lib" "/usr/local/lib/" "${CUDA_TOOLKIT_ROOT_DIR}/lib" "${CUDA_TOOLKIT_ROOT_DIR}/lib64")
+link_directories("${PROJECT_SOURCE_DIR}/lib")
+IF (UNIX)
+    link_directories("/usr/local/lib/")
+    IF (APPLE)
+        link_directories("${CUDA_TOOLKIT_ROOT_DIR}/lib")
+    ELSE ()
+        link_directories("${CUDA_TOOLKIT_ROOT_DIR}/lib64")
+    ENDIF()
+ENDIF ()
 
 IF (WIN32)
 	SET(SOURCES src/main.cpp src/main.cpp src/distribution_generation.cpp src/random_numbers.cpp src/entropy.c)
@@ -53,7 +61,7 @@ IF (NOT MSVC)
       *******************************************************************
        ")
    add_custom_target(clean-cmake
-      COMMAND ${CMAKE_COMMAND} -P CleanAll.cmake
+      COMMAND ${CMAKE_COMMAND} -P ${PROJECT_SOURCE_DIR}/CleanAll.cmake
    )
 ENDIF()
 
