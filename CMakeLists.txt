@@ -4,7 +4,9 @@ SET( CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE "bin")
 
 cmake_minimum_required (VERSION 2.8)
 project (cuda_dsmc)
-find_package(CUDA QUIET REQUIRED)
+IF (NOT WIN32)
+    find_package(CUDA QUIET REQUIRED)
+ENDIF()
 
 # add_subdirectory( src )
 
