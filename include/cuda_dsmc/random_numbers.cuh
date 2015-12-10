@@ -21,4 +21,4 @@ __global__ void g_initialise_rng_states(int n_states,
 
 __device__ double3 gaussian_point(double mean,
                                   double std,
-                                  curandState *seed);
+                                  curandState *state);

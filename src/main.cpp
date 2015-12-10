@@ -13,8 +13,10 @@
 #include <g3log/logworker.hpp>
 #include <iostream>
 #include <iomanip>
+#include <string>
 
 #include "custom_sink.hpp"
+#include "helper_cuda.h"
 #include "distribution_generation.hpp"
 
 #define NUM_ATOMS 2
@@ -34,22 +36,27 @@ int main(int argc, char const *argv[]) {
 
     // Initialise logger
     auto worker = g3::LogWorker::createLogWorker();
-    auto handle = worker->addDefaultLogger(argv[0], path_to_log_file);
-    auto handle_term = worker->addSink(std2::make_unique<CustomSink>(),
+    auto default_handle = worker->addDefaultLogger(argv[0], path_to_log_file);
+    auto output_handle = worker->addSink(std2::make_unique<CustomSink>(),
                                        &CustomSink::ReceiveLogMessage);
     g3::initializeLogging(worker.get());
-    std::future<std::string> log_file_name = handle->call(&g3::FileSink::fileName);
+    std::future<std::string> log_file_name = default_handle->
+                                             call(&g3::FileSink::fileName);
     std::cout << "\n All logging output will be written to: "
               << log_file_name.get() << std::endl;
     // g3::only_change_at_initialization::setLogLevel(INFO, false);
 
     // Initialise rng
-    LOGF(INFO, "\nInitialising the rng state arrays.\n");
+    LOGF(INFO, "\nInitialising the rng state arrays.");
 #ifdef CUDA
+    LOGF(DEBUG, "\nAllocating %i curandState elements on the device.",
+         NUM_ATOMS);
     curandState *state;
-    cudaMalloc(reinterpret_cast<void **>(&state),
-               NUM_ATOMS*sizeof(curandState));
+    checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&state),
+                               NUM_ATOMS*sizeof(curandState)));
 #else
+    LOGF(DEBUG, "\nAllocating %i pcg64_random_t elements on the host.",
+         NUM_ATOMS);
     pcg64_random_t *state;
     state = reinterpret_cast<pcg64_random_t*>(calloc(NUM_ATOMS,
                                                      sizeof(pcg64_random_t)));

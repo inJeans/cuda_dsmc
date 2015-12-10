@@ -1,5 +1,6 @@
 /** \file
- *  \brief Functions necessary for generating a thermal distribution
+ *  \brief *random_numbers.cpp* - Functions necessary for generating a thermal
+ *  distribution
  *
  *  More detailed description
  *  Copyright 2015 Christopher Watkins
