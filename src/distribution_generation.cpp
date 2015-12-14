@@ -45,13 +45,13 @@ void generate_thermal_velocities(int num_atoms,
 
 /** \fn void generate_thermal_velocities(int num_atoms,
  *                                       double temp,
- *                                       pcg64_random_t *state,
+ *                                       pcg32_random_t *state,
  *                                       double3 *vel)
  *  \brief Calls the function to fill a `double3` array of thermal velocties 
  *  on the host with a mean temperature of `temp`.
  *  \param num_atoms Number of atoms in the thermal gas.
  *  \param temp Mean temperature of thermal gas, as defined by (TODO).
- *  \param *state Pointer to a `pcg64_random_t` host array of length `num_atoms`.
+ *  \param *state Pointer to a `pcg32_random_t` host array of length `num_atoms`.
  *  \param *vel Pointer to a `double3` host array of length `num_atoms`.
  *  \exception not yet.
  *  \return void
@@ -59,7 +59,7 @@ void generate_thermal_velocities(int num_atoms,
 
 void generate_thermal_velocities(int num_atoms,
                                  double temp,
-                                 pcg64_random_t *state,
+                                 pcg32_random_t *state,
                                  double3 *vel) {
     for (int atom = 0; atom < num_atoms; ++atom) {
         vel[atom] = thermal_vel(temp,
@@ -70,17 +70,17 @@ void generate_thermal_velocities(int num_atoms,
 }
 
 /** \fn thermal_vel(double temp,
-                      pcg64_random_t *state)
+                      pcg32_random_t *state)
  *  \brief Calls the function to generate a `double3` thermal velocty on the
  *  host with a mean temperature of `temp`.
  *  \param temp Mean temperature of thermal gas, as defined by (TODO).
- *  \param *state Pointer to a single `pcg64_random_t` state on the host.
+ *  \param *state Pointer to a single `pcg32_random_t` state on the host.
  *  \exception not yet.
  *  \return void
 */
 
 double3 thermal_vel(double temp,
-                    pcg64_random_t *state) {
+                    pcg32_random_t *state) {
     double V = sqrt(kB * temp / mass);
     double3 vel = gaussian_point(0,
                                  V,

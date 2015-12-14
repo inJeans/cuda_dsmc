@@ -61,11 +61,11 @@ int main(int argc, char const *argv[]) {
     checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&state),
                                NUM_ATOMS*sizeof(curandState)));
 #else
-    LOGF(DEBUG, "\nAllocating %i pcg64_random_t elements on the host.",
+    LOGF(DEBUG, "\nAllocating %i pcg32_random_t elements on the host.",
          NUM_ATOMS);
-    pcg64_random_t *state;
-    state = reinterpret_cast<pcg64_random_t*>(calloc(NUM_ATOMS,
-                                                     sizeof(pcg64_random_t)));
+    pcg32_random_t *state;
+    state = reinterpret_cast<pcg32_random_t*>(calloc(NUM_ATOMS,
+                                                     sizeof(pcg32_random_t)));
 #endif
     initialise_rng_states(NUM_ATOMS,
                           state);

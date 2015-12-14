@@ -21,10 +21,10 @@ __host__ void generate_thermal_velocities(int num_atoms,
 
 void generate_thermal_velocities(int num_atoms,
                                  double temp,
-                                 pcg64_random_t *state,
+                                 pcg32_random_t *state,
                                  double3 *vel);
 
 double3 thermal_vel(double temp,
-                    pcg64_random_t *state);
+                    pcg32_random_t *state);
 
 #endif  // DISTRIBUTION_GENERATION_HPP_INCLUDED

@@ -5,6 +5,7 @@ MAINTAINER Chris Watkins <christopher.watkins@me.com>
 # Install wget and build-essential
 RUN apt-get update && apt-get install -y \
     build-essential \
+    curl \
     wget \
     cmake \
     unzip \

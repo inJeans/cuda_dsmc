@@ -27,27 +27,27 @@ void initialise_rng_states(int n_states,
 
 /** \fn initialise_rng_states(int n_states,
  *                            bool non_deterministic_seed,
- *                            pcg64_random_t *state) 
- *  \brief Calls the function to fill an array of `pcg64_random_t` states on 
+ *                            pcg32_random_t *state) 
+ *  \brief Calls the function to fill an array of `pcg32_random_t` states on 
  *  the host.
- *  \param n_states Number of `pcg64_random_t` states.
- *  \param *state Pointer to a `pcg64_random_t` array of length `n_states`.
+ *  \param n_states Number of `pcg32_random_t` states.
+ *  \param *state Pointer to a `pcg32_random_t` array of length `n_states`.
  *  \exception not yet.
  *  \return void
 */
 
 void initialise_rng_states(int n_states,
-                           pcg64_random_t *state,
+                           pcg32_random_t *state,
                            bool non_deterministic_seed) {
     for (int id = 0; id < n_states; ++id) {
         if (non_deterministic_seed) {
             // Seed with external entropy
             pcg128_t seeds[2];
             entropy_getbytes(reinterpret_cast<void*>(seeds), sizeof(seeds));
-            pcg64_srandom_r(&state[id], seeds[0], seeds[1]);
+            pcg32_srandom_r(&state[id], seeds[0], seeds[1]);
         } else {
             // Seed with a fixed constant
-            pcg64_srandom_r(&state[id], 42u, 54u);
+            pcg32_srandom_r(&state[id], 42u, 54u);
         }
     }
 
@@ -56,7 +56,7 @@ void initialise_rng_states(int n_states,
 
 /** \fn double3 d_gaussian_point(double mean,
  *                               double std,
- *                               pcg64_random_t *state) 
+ *                               pcg32_random_t *state) 
  *  \brief Generates a `double3` where each component is normally distributed
  *  with `mean` and `std` as the mean and standard deviation respectively.
  *  \param mean Gaussian mean of the components of the output `double3`.
@@ -68,7 +68,7 @@ void initialise_rng_states(int n_states,
 
 double3 gaussian_point(double mean,
                        double std,
-                       pcg64_random_t *state) {
+                       pcg32_random_t *state) {
     double3 p = make_double3(0., 0., 0.);
     p.x = gaussian_ziggurat(state);
     p.y = gaussian_ziggurat(state);
@@ -148,7 +148,7 @@ static const double ytab[128] = {
 
 /* tabulated values for 2^24 times x[i]/x[i+1],
  * used to accept for U*x[i+1]<=x[i] without any floating point operations */
-static const int64_t ktab[128] = {
+static const int32_t ktab[128] = {
   0, 12590644, 14272653, 14988939,
   15384584, 15635009, 15807561, 15933577,
   16029594, 16105155, 16166147, 16216399,
@@ -219,12 +219,12 @@ static const double wtab[128] = {
   1.83813550477e-07, 1.92166040885e-07, 2.05295471952e-07, 2.22600839893e-07
 };
 
-double gaussian_ziggurat(pcg64_random_t *state) {
-  int64_t U, sign, i, j;
+double gaussian_ziggurat(pcg32_random_t *state) {
+  int32_t U, sign, i, j;
   double  x, y;
 
   while (1) {
-    U = pcg64_random_r(state);
+    U = pcg32_random_r(state);
     i = U & 0x0000007F;    /* 7 bit to choose the step */
     sign = U & 0x00000080; /* 1 bit for the sign */
     j = U>>8;              /* 24 bit for the x-value */
@@ -246,8 +246,7 @@ double gaussian_ziggurat(pcg64_random_t *state) {
   return  sign ? x : -x;
 }
 
-double uniform_prng(pcg64_random_t *state) {
-    double r = ldexp(pcg64_random_r(state), -64);
-
+double uniform_prng(pcg32_random_t *state) {
+    double r = ldexp(pcg32_random_r(state), -32);
     return r;
 }
