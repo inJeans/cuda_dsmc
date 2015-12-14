@@ -33,12 +33,12 @@ IF (UNIX)
 ENDIF ()
 
 IF (WIN32)
-	SET(SOURCES src/main.cpp src/main.cpp src/distribution_generation.cpp src/random_numbers.cpp src/entropy.c)
+    SET(SOURCES src/main.cpp src/main.cpp src/distribution_generation.cpp src/random_numbers.cpp src/entropy.c)
     add_executable(cuda_dsmc ${SOURCES})
     target_link_libraries(cuda_dsmc pcg_random g3logger)
 ELSE ()
-	SET(SOURCES src/main.cpp src/distribution_generation.cpp src/distribution_generation.cu src/random_numbers.cpp src/random_numbers.cu src/entropy.c)
-	add_definitions(-DCUDA)
+    SET(SOURCES src/main.cpp src/distribution_generation.cpp src/distribution_generation.cu src/random_numbers.cpp src/random_numbers.cu src/entropy.c)
+    # add_definitions(-DCUDA)
     cuda_add_executable(cuda_dsmc ${SOURCES})
     target_link_libraries(cuda_dsmc pcg_random cudart g3logger)
 ENDIF ()
@@ -93,5 +93,5 @@ add_test (cuda_dmsc_runs cuda_dsmc)
 # does it have the correct output
 # add_test (hello_world_test hello)
 # set_tests_properties( hello_world_test
-# 	PROPERTIES PASS_REGULAR_EXPRESSION "Hello World!")
+#   PROPERTIES PASS_REGULAR_EXPRESSION "Hello World!")
 # 
