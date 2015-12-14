@@ -24,7 +24,7 @@
 
 __host__ void cu_initialise_rng_states(int n_states,
                                        curandState *state) {
-    LOGF(DEBUG, "\nCalculating optimal launch configuration for the state"
+    LOGF(DEBUG, "\nCalculating optimal launch configuration for the state "
                 "intialisation kernel.\n");
     int block_size = 0;
     int min_grid_size = 0;
@@ -67,9 +67,9 @@ __global__ void g_initialise_rng_states(int n_states,
     return;
 }
 
-/** \fn __device__ double3 gaussian_point(double mean,
- *                                        double std,
- *                                        curandState *state) 
+/** \fn __device__ double3 d_gaussian_point(double mean,
+ *                                          double std,
+ *                                          curandState *state) 
  *  \brief Generates a `double3` where each component is normally distributed
  *  with mean and std as the mean and standard deviation respectively.
  *  \param mean Gaussian mean of the components of the output double3.
@@ -79,9 +79,9 @@ __global__ void g_initialise_rng_states(int n_states,
  *  \return A gaussian distributed `double3` point in cartesian space.
 */
 
-__device__ double3 gaussian_point(double mean,
-                                  double std,
-                                  curandState *state) {
+__device__ double3 d_gaussian_point(double mean,
+                                    double std,
+                                    curandState *state) {
     double3 p = make_double3(0., 0., 0.);
     p.x = curand_normal(state);
     p.y = curand_normal(state);

@@ -1,6 +1,9 @@
 #Project cmake
-SET( CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG "bin")
-SET( CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE "bin")
+SET( CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG "Debug")
+SET( CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE "Release")
+
+# Add project cmake modules to path.
+SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake)
 
 cmake_minimum_required (VERSION 2.8)
 project (cuda_dsmc)
@@ -40,7 +43,19 @@ ELSE ()
     target_link_libraries(cuda_dsmc pcg_random cudart g3logger)
 ENDIF ()
 
+# We probably don't want this to run on every build.
+option(COVERALLS "Generate coveralls data" OFF)
 
+IF (COVERALLS)
+    include(cmake/Coveralls.cmake)
+    coveralls_turn_on_coverage()
+    SET(COVERAGE_SRCS "${SOURCES}")
+
+    # Create the coveralls target.
+    coveralls_setup(
+        "${COVERAGE_SRCS}" # The source files.
+        ON)                # If we should upload.
+ENDIF()
 
 # make run
 add_custom_target(run
@@ -61,7 +76,7 @@ IF (NOT MSVC)
       *******************************************************************
        ")
    add_custom_target(clean-cmake
-      COMMAND ${CMAKE_COMMAND} -P ${PROJECT_SOURCE_DIR}/CleanAll.cmake
+      COMMAND ${CMAKE_COMMAND} -P ${PROJECT_SOURCE_DIR}/cmake/CleanAll.cmake
    )
 ENDIF()
 
