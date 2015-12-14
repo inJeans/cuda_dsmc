@@ -4,9 +4,6 @@ before_build:
     - mkdir build
     - cd ./build
     - cmake ..
-    - dir
-    - cd ..
-    - dir
 
 build:
  project: build\cuda_dsmc.sln
