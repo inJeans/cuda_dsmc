@@ -17,10 +17,10 @@ script:
     - docker run -v=/home/travis/build/inJeans/cuda_dsmc:/cuda_dsmc --name="cuda_7.5" injeans/cuda_dsmc /bin/sh -c "cd /cuda_dsmc/build; cmake -DCOVERALLS=ON -DCMAKE_BUILD_TYPE=Debug .."
     - docker commit cuda_7.5 injeans/cuda_dsmc:latest
     - docker rm cuda_7.5
-    - docker run -v=/home/travis/build/inJeans/cuda_dsmc:/cuda_dsmc --name="cuda_7.5" injeans/cuda_dsmc /bin/sh -c "cd /cuda_dsmc; make;" 
+    - docker run -v=/home/travis/build/inJeans/cuda_dsmc:/cuda_dsmc --name="cuda_7.5" injeans/cuda_dsmc /bin/sh -c "cd /cuda_dsmc/build; make;" 
     - docker commit cuda_7.5 injeans/cuda_dsmc:latest
     - docker rm cuda_7.5
-    - docker run -v=/home/travis/build/inJeans/cuda_dsmc:/cuda_dsmc --name="cuda_7.5" injeans/cuda_dsmc /bin/sh -c "cd /cuda_dsmc; make coveralls;" 
+    - docker run -v=/home/travis/build/inJeans/cuda_dsmc:/cuda_dsmc --name="cuda_7.5" injeans/cuda_dsmc /bin/sh -c "cd /cuda_dsmc/build; make coveralls;" 
     - docker commit cuda_7.5 injeans/cuda_dsmc:latest
     - docker rm cuda_7.5
 #    - docker run -v=/home/travis/build/inJeans/cuda_dsmc:/cuda_dsmc --name="cuda_7.5" injeans/cuda_dsmc /bin/sh -c "cd /cuda_dsmc; ctest -V" 
