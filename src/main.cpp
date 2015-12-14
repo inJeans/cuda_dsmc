@@ -7,7 +7,9 @@
 
 #include <stdio.h>
 #include <float.h>
+#ifdef CUDA
 #include <cuda_runtime.h>
+#endif
 
 #include <g3log/g3log.hpp>
 #include <g3log/logworker.hpp>

@@ -11,12 +11,14 @@
 #include "entropy.h"
 
 #include <math.h>
+#ifdef CUDA
 #include <cuda_runtime.h>
 #include <cuda.h>
 #include <curand_kernel.h>
+#endif
 
 #include <iostream>
-
+ 
 #ifdef CUDA
 void initialise_rng_states(int n_states,
                            curandState *state);

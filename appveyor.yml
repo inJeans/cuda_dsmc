@@ -1,10 +1,15 @@
 version: 1.0.{build}
 
 before_build:
-    - cmake .
+    - mkdir build
+    - cd ./build
+    - cmake ..
+    - dir
+    - cd ..
+    - dir
 
 build:
- project: cuda_dsmc.sln
+ project: build\cuda_dsmc.sln
 
 after_build:
-    - msbuild RUN_TESTS.vcxproj
+    - msbuild build/RUN_TESTS.vcxproj
