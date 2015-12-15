@@ -14,8 +14,8 @@ IF (NOT WIN32)
     SET(CUDA_PROPAGATE_HOST_FLAGS OFF)
 ENDIF()
 
-SET(CMAKE_C_FLAGS "-std=c99 ${CMAKE_CXX_FLAGS}")
-SET(CMAKE_CXX_FLAGS "-std=gnu++11 ${CMAKE_CXX_FLAGS}")
+SET(CMAKE_C_FLAGS "-std=c99 -pthread ${CMAKE_CXX_FLAGS}")
+SET(CMAKE_CXX_FLAGS "-std=gnu++11 -pthread ${CMAKE_CXX_FLAGS}")
 
 include_directories("${PROJECT_SOURCE_DIR}/include" "${PROJECT_SOURCE_DIR}/include/cuda_dsmc")
 IF (NOT WIN32)
