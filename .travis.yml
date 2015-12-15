@@ -5,9 +5,11 @@ language: c
 services:
     - docker
 
+env:
+    - COVERALLS_SERVICE_NAME=travis-ci
+    - COVERALLS_REPO_TOKEN=DyDqgIext3FRE6wXaymSOndUnxxNqXExA
+
 before_install:
-    - export COVERALLS_SERVICE_NAME=travis-ci
-    - export COVERALLS_REPO_TOKEN=DyDqgIext3FRE6wXaymSOndUnxxNqXExA
     - docker pull injeans/cuda_dsmc:latest
 
 script:
