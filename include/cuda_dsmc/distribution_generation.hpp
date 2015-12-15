@@ -6,9 +6,7 @@
 #ifndef DISTRIBUTION_GENERATION_HPP_INCLUDED
 #define DISTRIBUTION_GENERATION_HPP_INCLUDED 1
 
-#ifdef CUDA
 #include <cuda_runtime.h>
-#endif
 
 #include "random_numbers.hpp"
 

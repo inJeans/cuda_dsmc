@@ -13,8 +13,8 @@
 #include "entropy.h"
 
 #include <math.h>
-#ifdef CUDA
 #include <cuda_runtime.h>
+#ifdef CUDA
 #include <cuda.h>
 #include <curand_kernel.h>
 #endif

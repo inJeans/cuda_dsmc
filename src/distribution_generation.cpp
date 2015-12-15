@@ -6,7 +6,9 @@
  */
 
 #include "distribution_generation.hpp"
+#ifdef CUDA
 #include "distribution_generation.cuh"
+#endif
 
 const double gs   =  0.5;             // Gyromagnetic ratio
 const double MF   = -1.0;             // Magnetic quantum number
@@ -31,6 +33,7 @@ const double hbar = 1.05457148e-34;   // hbar
  *  \return void
 */
 
+#ifdef CUDA
 void generate_thermal_velocities(int num_atoms,
                                  double temp,
                                  curandState *state,
@@ -42,6 +45,7 @@ void generate_thermal_velocities(int num_atoms,
 
     return;
 }
+#endif
 
 /** \fn void generate_thermal_velocities(int num_atoms,
  *                                       double temp,

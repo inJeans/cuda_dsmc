@@ -32,15 +32,17 @@ IF (UNIX)
     ENDIF()
 ENDIF ()
 
-IF (WIN32)
+option(CUDA "CUDA enabled" OFF)
+
+IF (CUDA)
+    SET(SOURCES src/main.cpp src/distribution_generation.cpp src/distribution_generation.cu src/random_numbers.cpp src/random_numbers.cu src/entropy.c)
+    add_definitions(-DCUDA)
+    cuda_add_executable(cuda_dsmc ${SOURCES})
+    target_link_libraries(cuda_dsmc pcg_random cudart g3logger)
+ELSE ()
     SET(SOURCES src/main.cpp src/main.cpp src/distribution_generation.cpp src/random_numbers.cpp src/entropy.c)
     add_executable(cuda_dsmc ${SOURCES})
     target_link_libraries(cuda_dsmc pcg_random g3logger)
-ELSE ()
-    SET(SOURCES src/main.cpp src/distribution_generation.cpp src/distribution_generation.cu src/random_numbers.cpp src/random_numbers.cu src/entropy.c)
-    # add_definitions(-DCUDA)
-    cuda_add_executable(cuda_dsmc ${SOURCES})
-    target_link_libraries(cuda_dsmc pcg_random cudart g3logger)
 ENDIF ()
 
 # We probably don't want this to run on every build.
