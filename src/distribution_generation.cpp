@@ -17,6 +17,8 @@ const double a    = 5.3e-9;           // Constant cross-section formula
 const double kB   = 1.3806503e-23;    // Boltzmann's Constant
 const double hbar = 1.05457148e-34;   // hbar
 
+const double max_grid_width = 1.e-3;
+
 /** \fn void generate_thermal_velocities(int num_atoms,
  *                                       double temp,
  *                                       curandState *state,
@@ -86,4 +88,72 @@ double3 thermal_vel(double temp,
                                  V,
                                  state);
     return vel;
+}
+
+/** \fn void generate_thermal_positions(int num_atoms,
+ *                                      double temp,
+ *                                      trap_geo params,
+ *                                      pcg32_random_t *state,
+ *                                      double3 *pos)
+ *  \brief Calls the function to fill a `double3` array of thermal positions 
+ *  on the host with a distribution determined by the trapping potential.
+ *  \param num_atoms Number of atoms in the thermal gas.
+ *  \param temp Mean temperature of thermal gas, as defined by (TODO).
+ *  \param params TODO
+ *  \param *state Pointer to a `pcg32_random_t` host array of length `num_atoms`.
+ *  \param *pos Pointer to a `double3` host array of length `num_atoms`.
+ *  \exception not yet.
+ *  \return void
+*/
+
+void generate_thermal_positions(int num_atoms,
+                                double temp,
+                                trap_geo params,
+                                pcg32_random_t *state,
+                                double3 *pos) {
+    for (int atom = 0; atom < num_atoms; ++atom) {
+        pos[atom] = thermal_pos(temp,
+                                params,
+                                &state[atom]);
+    }
+
+    return;
+}
+
+/** \fn thermal_pos(double temp,
+ *                  trap_geo params,
+ *                  pcg32_random_t *state)
+ *  \brief Calls the function to generate a `double3` thermal pos on the
+ *  host with a distribution determined by the trapping potential.
+ *  \param temp Mean temperature of thermal gas, as defined by (TODO).
+ *  \param params TODO
+ *  \param *state Pointer to a single `pcg32_random_t` state on the host.
+ *  \exception not yet.
+ *  \return void
+*/
+
+double3 thermal_pos(double temp,
+                    trap_geo params,
+                    pcg32_random_t *state) {
+    bool no_atom_selected = true;
+    double3 pos = make_double3(0., 0., 0.);
+
+    while (no_atom_selected) {
+        double3 r = gaussian_point(0.,
+                                   1.,
+                                   state);
+        r = r * max_grid_width / 3.;
+
+        double magB = norm(B(r,
+                             params));
+        double U = 0.5 * (magB - params.B0) * gs * muB;
+        double Pr = exp(-U / kB / temp);
+
+        if (uniform_prng(state) < Pr) {
+            pos = r;
+            no_atom_selected = false;
+        }
+    }
+
+    return pos;
 }

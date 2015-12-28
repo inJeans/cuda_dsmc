@@ -10,7 +10,9 @@
 #include <cuda_runtime.h>
 #endif
 
+#include "trapping_potential.cuh"
 #include "random_numbers.hpp"
+#include "vector_math.cuh"
 
 #ifdef CUDA
 __host__ void generate_thermal_velocities(int num_atoms,
@@ -25,6 +27,16 @@ void generate_thermal_velocities(int num_atoms,
                                  double3 *vel);
 
 double3 thermal_vel(double temp,
+                    pcg32_random_t *state);
+
+void generate_thermal_positions(int num_atoms,
+                                double temp,
+                                trap_geo params,
+                                pcg32_random_t *state,
+                                double3 *pos);
+
+double3 thermal_pos(double temp,
+                    trap_geo params,
                     pcg32_random_t *state);
 
 #endif  // DISTRIBUTION_GENERATION_HPP_INCLUDED

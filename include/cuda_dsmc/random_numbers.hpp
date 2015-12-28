@@ -21,12 +21,13 @@
 
 #ifdef CUDA
 void initialise_rng_states(int n_states,
-                           curandState *state);
+                           curandState *state,
+                           bool non_deterministic_seed = false);
 #endif
 
 void initialise_rng_states(int n_states,
                            pcg32_random_t *state,
-                           bool non_deterministic_seed = true);
+                           bool non_deterministic_seed = false);
 
 double3 gaussian_point(double mean,
                        double std,
