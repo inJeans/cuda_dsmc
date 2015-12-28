@@ -6,13 +6,15 @@
 #ifndef RANDOM_NUMBERS_HPP_INCLUDED
 #define RANDOM_NUMBERS_HPP_INCLUDED 1
 
+#ifdef CUDA
 #include "random_numbers.cuh"
+#endif
 #include "pcg_variants.h"
 #include "entropy.h"
 
 #include <math.h>
-#ifdef CUDA
 #include <cuda_runtime.h>
+#ifdef CUDA
 #include <cuda.h>
 #include <curand_kernel.h>
 #endif

@@ -19,12 +19,14 @@
  *  \return void
 */
 
+#ifdef CUDA
 void initialise_rng_states(int n_states,
                            curandState *state,
                            bool non_deterministic_seed) {
     cu_initialise_rng_states(n_states,
                              state);
 }
+#endif
 
 /** \fn initialise_rng_states(int n_states,
  *                            bool non_deterministic_seed,
