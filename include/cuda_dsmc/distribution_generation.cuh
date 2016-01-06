@@ -10,6 +10,7 @@
 
 #include "trapping_potential.cuh"
 #include "random_numbers.hpp"
+#include "vector_math.cuh"
 
 __host__ void cu_generate_thermal_velocities(int num_atoms,
                                              double temp,
@@ -26,17 +27,18 @@ __device__ double3 d_thermal_vel(double temp,
 
 __host__ void cu_generate_thermal_positions(int num_atoms,
                                             double temp,
+                                            trap_geo params,
                                             curandState *state,
-                                            double3 *vel);
+                                            double3 *pos);
 
-void g_generate_thermal_positions(int num_atoms,
-                                  double temp,
-                                  trap_geo params,
-                                  curandState *state,
-                                  double3 *pos);
+__global__ void g_generate_thermal_positions(int num_atoms,
+                                             double temp,
+                                             trap_geo params,
+                                             curandState *state,
+                                             double3 *pos);
 
-double3 thermal_pos(double temp,
-                    trap_geo params,
-                    curandState *state);
+__device__ double3 thermal_pos(double temp,
+                               trap_geo params,
+                               curandState *state);
 
 #endif    // DISTRIBUTION_GENERATION_CUH_INCLUDED

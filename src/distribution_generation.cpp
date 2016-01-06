@@ -10,14 +10,7 @@
 #include "distribution_generation.cuh"
 #endif
 
-const double gs   =  0.5;             // Gyromagnetic ratio
-const double MF   = -1.0;             // Magnetic quantum number
-const double muB  = 9.27400915e-24;   // Bohr magneton
-const double mass = 1.443160648e-25;  // 87Rb mass
-const double pi   = 3.14159265;       // Pi
-const double a    = 5.3e-9;           // Constant cross-section formula
-const double kB   = 1.3806503e-23;    // Boltzmann's Constant
-const double hbar = 1.05457148e-34;   // hbar
+#include "declare_host_constants.hpp"
 
 const double max_grid_width = 1.e-3;
 
@@ -93,6 +86,37 @@ double3 thermal_vel(double temp,
                                  state);
     return vel;
 }
+
+/** \fn void generate_thermal_positions(int num_atoms,
+ *                                      double temp,
+ *                                      trap_geo params,
+ *                                      curandState *state,
+ *                                      double3 *pos)
+ *  \brief Calls the function to fill a `double3` array of thermal positions 
+ *  on the device with a distribution determined by the trapping potential.
+ *  \param num_atoms Number of atoms in the thermal gas.
+ *  \param temp Mean temperature of thermal gas, as defined by (TODO).
+ *  \param params TODO
+ *  \param *state Pointer to a `curandState` device array of length `num_atoms`.
+ *  \param *pos Pointer to a `double3` device array of length `num_atoms`.
+ *  \exception not yet.
+ *  \return void
+*/
+#ifdef CUDA
+void generate_thermal_positions(int num_atoms,
+                                double temp,
+                                trap_geo params,
+                                curandState *state,
+                                double3 *pos) {
+    cu_generate_thermal_positions(num_atoms,
+                                  temp,
+                                  params,
+                                  state,
+                                  pos);
+
+    return;
+}
+#endif
 
 /** \fn void generate_thermal_positions(int num_atoms,
  *                                      double temp,

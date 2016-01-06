@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 #Project cmake
 SET( CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG "Debug")
 SET( CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE "Release")
@@ -23,7 +22,7 @@ IF (NOT WIN32)
     include_directories("${CUDA_INCLUDE_DIRS}" "/usr/local/include")
 ENDIF ()
 
-link_directories("${PROJECT_SOURCE_DIR}/lib")
+# link_directories("${PROJECT_SOURCE_DIR}/lib")
 IF (UNIX)
     link_directories("/usr/local/lib/")
     IF (APPLE)
@@ -34,11 +33,11 @@ IF (UNIX)
 ENDIF ()
 
 IF (WIN32)
-    SET(SOURCES src/main.cpp src/main.cpp src/distribution_generation.cpp src/trapping_potential.cu src/random_numbers.cpp src/vector_math.cu src/entropy.c)
+    SET(SOURCES src/main.cpp src/main.cpp src/distribution_generation.cpp src/distribution_evolution.cpp src/trapping_potential.cpp src/random_numbers.cpp src/vector_math.cu src/entropy.c)
     add_executable(cuda_dsmc ${SOURCES})
     target_link_libraries(cuda_dsmc pcg_random g3logger)
 ELSE ()
-    SET(SOURCES src/main.cpp src/distribution_generation.cpp src/distribution_generation.cu src/trapping_potential.cu src/random_numbers.cpp src/random_numbers.cu src/vector_math.cu src/entropy.c)
+    SET(SOURCES src/main.cpp src/distribution_generation.cpp src/distribution_generation.cu src/distribution_evolution.cpp src/distribution_evolution.cu src/trapping_potential.cpp src/trapping_potential.cu src/random_numbers.cpp src/random_numbers.cu src/vector_math.cu src/entropy.c)
     add_definitions(-DCUDA)
     cuda_add_executable(cuda_dsmc ${SOURCES})
     target_link_libraries(cuda_dsmc pcg_random cudart g3logger)
@@ -69,7 +68,7 @@ add_custom_target(run
 # cmake clean command
 # ============================================================================
 IF (NOT MSVC)
-   MESSAGE("\n\n
+   MESSAGE("\n
       *******************************************************************
       Please do 'make clean-cmake' before next cmake generation. 
       It is a good idea to purge your build directory of CMake 
@@ -84,12 +83,12 @@ ENDIF()
 # does the application run
 enable_testing()
 
-# SET( TEST_SOURCES test/distribution_generation_test.cpp src/random_numbers.cpp )
-# add_executable(distribution_generation_test ${TEST_SOURCES})
-# target_link_libraries(distribution_generation_test pcg_random testu01)
+SET(TEST_SOURCES test/distribution_generation_test.cu src/distribution_generation.cpp src/distribution_generation.cu src/trapping_potential.cu src/random_numbers.cpp src/random_numbers.cu src/vector_math.cu src/entropy.c)
+cuda_add_executable(distribution_generation_test ${TEST_SOURCES})
+target_link_libraries(distribution_generation_test pcg_random cudart g3logger)
 
 add_test (cuda_dmsc_runs cuda_dsmc)
-#add_test (distribution_generation distribution_generation_test -s)
+add_test (distribution_generation distribution_generation_test -s -o test.out)
 
 # does it have the correct output
 # add_test (hello_world_test hello)

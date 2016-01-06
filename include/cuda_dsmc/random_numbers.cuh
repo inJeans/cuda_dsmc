@@ -13,6 +13,8 @@
 #include <iostream>
 #include <iomanip>
 
+#include "vector_math.cuh"
+
 __host__ void cu_initialise_rng_states(int n_states,
                                        curandState *state);
 

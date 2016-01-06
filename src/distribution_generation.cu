@@ -7,16 +7,9 @@
 
 #include "distribution_generation.cuh"
 
-__constant__ double d_gs   =  0.5;      // Gyromagnetic ratio
-__constant__ double d_MF   = -1.0;      // Magnetic quantum number
-__constant__ double d_muB  = 9.27400915e-24;  // Bohr magneton
-__constant__ double d_mass = 1.443160648e-25;// 87Rb mass
-__constant__ double d_pi   = 3.14159265;    // Pi
-__constant__ double d_a    = 5.3e-9;      // Constant cross-section formula
-__constant__ double d_kB   = 1.3806503e-23; // Boltzmann's Constant
-__constant__ double d_hbar = 1.05457148e-34;  // hbar
+#include "define_device_constants.cuh"
 
-__constant__ double d_max_grid_width = 1.e-3;
+__constant__ double d_max_grid_width = 2.e-3;
 
 /** \fn __host__ void cu_generate_thermal_velocities(int num_atoms,
  *                                                   double temp,
@@ -111,7 +104,7 @@ __device__ double3 d_thermal_vel(double temp,
 /** \fn __host__ void cu_generate_thermal_positions(int num_atoms,
  *                                                  double temp,
  *                                                  curandState *state,
- *                                                  double3 *vel) 
+ *                                                  double3 *pos) 
  *  \brief Calls the `__global__` function to fill an array of thermal 
  *  velocties with a mean temperature of `temp`.
  *  \param temp Mean temperature of the thermal gas, as defined by (TODO).
@@ -121,8 +114,9 @@ __device__ double3 d_thermal_vel(double temp,
 
 __host__ void cu_generate_thermal_positions(int num_atoms,
                                             double temp,
+                                            trap_geo params,
                                             curandState *state,
-                                            double3 *vel) {
+                                            double3 *pos) {
     LOGF(DEBUG, "\nCalculating optimal launch configuration for the velocity "
                 "initialisation kernel.\n");
     int block_size = 0;
@@ -143,16 +137,16 @@ __host__ void cu_generate_thermal_positions(int num_atoms,
                                   temp,
                                   params,
                                   state,
-                                  vel);  
+                                  pos);  
 
     return;
 }
 
-/** \fn void g_generate_thermal_positions(int num_atoms,
- *                                        double temp,
- *                                        trap_geo params,
- *                                        curandState *state,
- *                                        double3 *pos)
+/** \fn __global__ void g_generate_thermal_positions(int num_atoms,
+ *                                                   double temp,
+ *                                                   trap_geo params,
+ *                                                   curandState *state,
+ *                                                   double3 *pos)
  *  \brief Calls the function to fill a `double3` array of thermal positions 
  *  on the host with a distribution determined by the trapping potential.
  *  \param num_atoms Number of atoms in the thermal gas.
@@ -164,11 +158,11 @@ __host__ void cu_generate_thermal_positions(int num_atoms,
  *  \return void
 */
 
-void g_generate_thermal_positions(int num_atoms,
-                                  double temp,
-                                  trap_geo params,
-                                  curandState *state,
-                                  double3 *pos) {
+__global__ void g_generate_thermal_positions(int num_atoms,
+                                             double temp,
+                                             trap_geo params,
+                                             curandState *state,
+                                             double3 *pos) {
     for (int atom = blockIdx.x * blockDim.x + threadIdx.x;
          atom < num_atoms;
          atom += blockDim.x * gridDim.x) {
@@ -180,9 +174,9 @@ void g_generate_thermal_positions(int num_atoms,
     return;
 }
 
-/** \fn thermal_pos(double temp,
- *                  trap_geo params,
- *                  curandState *state)
+/** \fn __device__ thermal_pos(double temp,
+ *                             trap_geo params,
+ *                             scurandState *state)
  *  \brief Calls the function to generate a `double3` thermal pos on the
  *  host with a distribution determined by the trapping potential.
  *  \param temp Mean temperature of thermal gas, as defined by (TODO).
@@ -192,9 +186,9 @@ void g_generate_thermal_positions(int num_atoms,
  *  \return void
 */
 
-double3 thermal_pos(double temp,
-                    trap_geo params,
-                    curandState *state) {
+__device__ double3 thermal_pos(double temp,
+                               trap_geo params,
+                               curandState *state) {
     bool no_atom_selected = true;
     double3 pos = make_double3(0., 0., 0.);
 
@@ -202,11 +196,11 @@ double3 thermal_pos(double temp,
         double3 r = d_gaussian_point(0.,
                                      1.,
                                      state);
-        r = r * d_max_grid_width / 3.;
+        r = r * d_max_grid_width;
 
         double magB = norm(B(r,
                              params));
-        double U = 0.5 * (magB - params.B0) * gs * muB;
+        double U = 0.5 * (magB - params.B0) * d_gs * d_muB;
         double Pr = exp(-U / d_kB / temp);
 
         if (curand_uniform(state) < Pr) {

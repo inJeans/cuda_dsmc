@@ -19,7 +19,9 @@
 
 #include "custom_sink.hpp"
 #include "helper_cuda.h"
+#include "define_host_constants.hpp"
 #include "distribution_generation.hpp"
+#include "distribution_evolution.hpp"
 
 #define NUM_ATOMS 2
 
@@ -120,6 +122,27 @@ int main(int argc, char const *argv[]) {
                                state,
                                pos);
 
+    // Initialise accelerations
+    LOGF(INFO, "\nInitialising the acceleration array.");
+    double3 *acc;
+#ifdef CUDA
+    LOGF(DEBUG, "\nAllocating %i double3 elements on the device.",
+         NUM_ATOMS);
+    checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&acc),
+                               NUM_ATOMS*sizeof(double3)));
+#else
+    LOGF(DEBUG, "\nAllocating %i double3 elements on the host.",
+         NUM_ATOMS);
+    acc = reinterpret_cast<double3*>(calloc(NUM_ATOMS,
+                                            sizeof(double3)));
+#endif
+
+    // Generate accelerations
+    update_atom_accelerations(NUM_ATOMS,
+                              trap_parameters,
+                              pos,
+                              acc);
+
 #ifdef CUDA
     double3 h_vel[NUM_ATOMS];
     cudaMemcpy(&h_vel,
@@ -133,17 +156,28 @@ int main(int argc, char const *argv[]) {
                NUM_ATOMS*sizeof(double3),
                cudaMemcpyDeviceToHost);
 
+    double3 h_acc[NUM_ATOMS];
+    cudaMemcpy(&h_acc,
+               acc,
+               NUM_ATOMS*sizeof(double3),
+               cudaMemcpyDeviceToHost);
+
     LOGF(DEBUG, "\nv1 = { %f,%f,%f }, v2 = { %f,%f,%f }\n", h_vel[0].x, h_vel[0].y, h_vel[0].z,
                                                             h_vel[1].x, h_vel[1].y, h_vel[1].z);
     LOGF(DEBUG, "\np1 = { %f,%f,%f }, p2 = { %f,%f,%f }\n", h_pos[0].x, h_pos[0].y, h_pos[0].z,
                                                             h_pos[1].x, h_pos[1].y, h_pos[1].z);
+    LOGF(DEBUG, "\na1 = { %f,%f,%f }, a2 = { %f,%f,%f }\n", h_acc[0].x, h_acc[0].y, h_acc[0].z,
+                                                            h_acc[1].x, h_acc[1].y, h_acc[1].z);
     cudaFree(h_vel);
     cudaFree(h_pos);
+    cudaFree(h_acc);
 #else 
     LOGF(DEBUG, "\nv1 = { %f,%f,%f }, v2 = { %f,%f,%f }\n", vel[0].x, vel[0].y, vel[0].z,
                                                             vel[1].x, vel[1].y, vel[1].z);
     LOGF(DEBUG, "\np1 = { %f,%f,%f }, p2 = { %f,%f,%f }\n", pos[0].x, pos[0].y, pos[0].z,
                                                             pos[1].x, pos[1].y, pos[1].z);
+    LOGF(DEBUG, "\na1 = { %f,%f,%f }, a2 = { %f,%f,%f }\n", acc[0].x, acc[0].y, acc[0].z,
+                                                            acc[1].x, acc[1].y, acc[1].z);
 #endif
 
 #ifdef CUDA
@@ -151,27 +185,16 @@ int main(int argc, char const *argv[]) {
     cudaFree(state);
     cudaFree(vel);
     cudaFree(pos);
+    cudaFree(acc);
 #else
     LOGF(INFO, "\nCleaning up local memory.");
     free(state);
     free(vel);
     free(pos);
+    free(acc);
 #endif
 
     g3::internal::shutDownLogging();
 
     return 0;
-}
-
-/** \fn void doxygen_test( double x )
- *  \brief Short description
- *  \param x double that gets printed
- *  \warning What does this do?
- *  Detailed description starts here.
- *  \return void
- */
-
-void doxygen_test(double x) {
-    printf("%f\n", x);
-    return;
 }

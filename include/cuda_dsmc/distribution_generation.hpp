@@ -27,6 +27,14 @@ void generate_thermal_velocities(int num_atoms,
 double3 thermal_vel(double temp,
                     pcg32_random_t *state);
 
+#ifdef CUDA
+__host__ void generate_thermal_positions(int num_atoms,
+                                         double temp,
+                                         trap_geo params,
+                                         curandState *state,
+                                         double3 *pos);
+#endif
+
 void generate_thermal_positions(int num_atoms,
                                 double temp,
                                 trap_geo params,
