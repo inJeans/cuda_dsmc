@@ -7,6 +7,7 @@
 #define DISTRIBUTION_GENERATION_CUH_INCLUDED 1
 
 #include <cuda_runtime.h>
+#include <g3log/g3log.hpp>
 
 #include "trapping_potential.cuh"
 #include "random_numbers.hpp"

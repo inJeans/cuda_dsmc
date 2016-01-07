@@ -14,10 +14,10 @@
 
 #include <math.h>
 #include <cuda_runtime.h>
-#ifdef CUDA
+// #ifdef CUDA
 #include <cuda.h>
 #include <curand_kernel.h>
-#endif
+// #endif
 
 #include <iostream>
 

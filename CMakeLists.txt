@@ -1,13 +1,17 @@
 #Project cmake
-SET( CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG "Debug")
-SET( CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE "Release")
+SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG "Debug")
+SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE "Release")
 
 # Add project cmake modules to path.
 SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake)
 
 cmake_minimum_required (VERSION 2.8)
 project (cuda_dsmc)
-IF (NOT WIN32)
+
+# We will optionally build with CUDA.
+option(CUDA "Compile with GPU acceleration" OFF)
+
+IF(NOT WIN32)
     find_package(CUDA QUIET REQUIRED)
     SET(CUDA_NVCC_FLAGS "-std=c++11")
     SET(CUDA_SEPARABLE_COMPILATION ON)
@@ -18,35 +22,35 @@ SET(CMAKE_C_FLAGS "-std=c99 ${CMAKE_CXX_FLAGS}")
 SET(CMAKE_CXX_FLAGS "-std=gnu++11 ${CMAKE_CXX_FLAGS}")
 
 include_directories("${PROJECT_SOURCE_DIR}/include" "${PROJECT_SOURCE_DIR}/include/cuda_dsmc")
-IF (NOT WIN32)
+IF(CUDA)
     include_directories("${CUDA_INCLUDE_DIRS}" "/usr/local/include")
-ENDIF ()
+ENDIF()
 
 # link_directories("${PROJECT_SOURCE_DIR}/lib")
-IF (UNIX)
+IF(UNIX)
     link_directories("/usr/local/lib/")
-    IF (APPLE)
+    IF(APPLE)
         link_directories("${CUDA_TOOLKIT_ROOT_DIR}/lib")
-    ELSE ()
+    ELSE()
         link_directories("${CUDA_TOOLKIT_ROOT_DIR}/lib64")
     ENDIF()
-ENDIF ()
+ENDIF()
 
-IF (WIN32)
-    SET(SOURCES src/main.cpp src/main.cpp src/distribution_generation.cpp src/distribution_evolution.cpp src/trapping_potential.cpp src/random_numbers.cpp src/vector_math.cu src/entropy.c)
-    add_executable(cuda_dsmc ${SOURCES})
-    target_link_libraries(cuda_dsmc pcg_random g3logger)
-ELSE ()
+IF(CUDA)
     SET(SOURCES src/main.cpp src/distribution_generation.cpp src/distribution_generation.cu src/distribution_evolution.cpp src/distribution_evolution.cu src/trapping_potential.cpp src/trapping_potential.cu src/random_numbers.cpp src/random_numbers.cu src/vector_math.cu src/entropy.c)
     add_definitions(-DCUDA)
     cuda_add_executable(cuda_dsmc ${SOURCES})
     target_link_libraries(cuda_dsmc pcg_random cudart g3logger)
-ENDIF ()
+ELSE()
+    SET(SOURCES src/main.cpp src/main.cpp src/distribution_generation.cpp src/distribution_evolution.cpp src/trapping_potential.cu src/trapping_potential.cpp src/random_numbers.cpp src/vector_math.cu src/entropy.c)
+    cuda_add_executable(cuda_dsmc ${SOURCES})
+    target_link_libraries(cuda_dsmc pcg_random g3logger)
+ENDIF()
 
 # We probably don't want this to run on every build.
 option(COVERALLS "Generate coveralls data" OFF)
 
-IF (COVERALLS)
+IF(COVERALLS)
     include(cmake/Coveralls.cmake)
     coveralls_turn_on_coverage()
     SET(COVERAGE_SRCS "${SOURCES}")
@@ -67,7 +71,7 @@ add_custom_target(run
 # ============================================================================
 # cmake clean command
 # ============================================================================
-IF (NOT MSVC)
+IF(NOT MSVC)
    MESSAGE("\n
       *******************************************************************
       Please do 'make clean-cmake' before next cmake generation. 
@@ -83,16 +87,21 @@ ENDIF()
 # does the application run
 enable_testing()
 
-SET(TEST_SOURCES test/distribution_generation_test.cu src/distribution_generation.cpp src/distribution_generation.cu src/trapping_potential.cu src/random_numbers.cpp src/random_numbers.cu src/vector_math.cu src/entropy.c)
-cuda_add_executable(device_distribution_generation_test ${TEST_SOURCES})
-target_link_libraries(device_distribution_generation_test pcg_random cudart g3logger)
-SET(TEST_SOURCES test/distribution_generation_test.cpp src/distribution_generation.cpp src/distribution_generation.cu src/trapping_potential.cpp src/trapping_potential.cu src/random_numbers.cpp src/random_numbers.cu src/vector_math.cu src/entropy.c)
+IF(CUDA)
+    SET(TEST_SOURCES test/distribution_generation_test.cu src/distribution_generation.cpp src/distribution_generation.cu src/trapping_potential.cu src/random_numbers.cpp src/random_numbers.cu src/vector_math.cu src/entropy.c)
+    cuda_add_executable(device_distribution_generation_test ${TEST_SOURCES})
+    target_link_libraries(device_distribution_generation_test pcg_random cudart g3logger)
+ENDIF()
+
+SET(TEST_SOURCES test/distribution_generation_test.cpp src/distribution_generation.cpp src/trapping_potential.cpp src/trapping_potential.cu src/random_numbers.cpp src/vector_math.cu src/entropy.c)
 cuda_add_executable(host_distribution_generation_test ${TEST_SOURCES})
 target_link_libraries(host_distribution_generation_test pcg_random cudart g3logger testu01)
 
-# add_test (cuda_dmsc_runs cuda_dsmc)
-# add_test (distribution_generation device_distribution_generation_test -s -o test.out)
-add_test (distribution_generation host_distribution_generation_test -s -o test.out)
+add_test(cuda_dmsc_runs cuda_dsmc)
+add_test(distribution_generation host_distribution_generation_test -s -o test.out)
+IF(CUDA)
+    add_test(distribution_generation device_distribution_generation_test -s -o test.out)
+ENDIF()
 
 # does it have the correct output
 # add_test (hello_world_test hello)
