@@ -19,8 +19,8 @@ extern "C"
 #include "bbattery.h" 
 }
 
-#include "helper_cuda.h"
 #include "random_numbers.hpp"
+#include "helper_cuda.h"
 #include "distribution_generation.hpp"
 #include "distribution_generation_tests.cuh"
 

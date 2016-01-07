@@ -1,0 +1,9 @@
+/**
+ *  More detailed description
+ *  Copyright 2015 Christopher Watkins
+ */
+
+#ifndef DISTRIBUTION_EVOLUTION_TESTS_CUH_INCLUDED
+#define DISTRIBUTION_EVOLUTION_TESTS_CUH_INCLUDED 1
+
+#endif  // DISTRIBUTION_EVOLUTION_TESTS_CUH_INCLUDED

@@ -6,9 +6,9 @@
 #ifndef RANDOM_NUMBERS_HPP_INCLUDED
 #define RANDOM_NUMBERS_HPP_INCLUDED 1
 
-#ifdef CUDA
+// #ifdef CUDA
 #include "random_numbers.cuh"
-#endif
+// #endif
 #include "pcg_variants.h"
 #include "entropy.h"
 
