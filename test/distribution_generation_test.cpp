@@ -162,7 +162,7 @@ SCENARIO("[HOST] Thermal velocity distribution", "[h-veldist]") {
 //                                    num_test*sizeof(curandState)));
 //         initialise_rng_states(num_test,
 //                               state);
-
+//
 //         WHEN("We generate 5,000 thermal positions with an initial temperature of 20uK") {
 //             double init_temp = 20.e-6;
 //             trap_geo trap_parameters;
