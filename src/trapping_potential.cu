@@ -5,19 +5,19 @@
  *  Copyright 2015 Christopher Watkins
  */
 
-#include "declare_device_constants.cuh"
+#include "define_device_constants.cuh"
 #include "trapping_potential.cuh"
 
 __host__ __device__ double3 B(double3 pos,
                                trap_geo params) {
-    double3 mag_field = make_double3( 0., 0., 0.);
+    double3 mag_field = make_double3(0., 0., 0.);
 
     mag_field.x = 0.5 * params.Bz * pos.x;
     mag_field.y = 0.5 * params.Bz * pos.y;
     mag_field.z =-1.0 * params.Bz * pos.z;
 
     return mag_field;
- }
+}
 
 __host__ __device__ double3 dB_dx(double3 pos,
                                   trap_geo params) {

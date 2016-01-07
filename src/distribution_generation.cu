@@ -7,7 +7,7 @@
 
 #include "distribution_generation.cuh"
 
-#include "define_device_constants.cuh"
+#include "declare_device_constants.cuh"
 
 __constant__ double d_max_grid_width = 2.e-3;
 

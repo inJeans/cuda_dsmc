@@ -19,7 +19,11 @@ extern "C"
 }
 
 #include "random_numbers.hpp"
-#include "distribution_generation_tests.cuh"
+#include "distribution_generation.hpp"
+#include "distribution_generation_tests.hpp"
+
+#include "define_host_constants.hpp"
+#include "declare_device_constants.cuh"
 
 pcg32_random_t g_rng;
 

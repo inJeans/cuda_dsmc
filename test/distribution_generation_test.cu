@@ -36,7 +36,7 @@ SCENARIO("[DEVICE] Uniform random number generation", "[d-urng]") {
 
         WHEN("The random number generator is called") {
             double r;
-            uniform_prng(1, 
+            uniform_prng(1,
                          state,
                          &r);
 

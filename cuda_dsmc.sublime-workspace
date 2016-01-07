@@ -19,16 +19,16 @@
 			"file": "src/main.cpp",
 			"settings":
 			{
-				"buffer_size": 5718,
-				"line_ending": "Unix"
+				"buffer_size": 6853,
+				"line_ending": "Windows"
 			}
 		},
 		{
 			"file": "src/distribution_generation.cpp",
 			"settings":
 			{
-				"buffer_size": 7165,
-				"line_ending": "Unix"
+				"buffer_size": 6748,
+				"line_ending": "Windows"
 			}
 		},
 		{
@@ -43,8 +43,8 @@
 			"file": "src/distribution_generation.cu",
 			"settings":
 			{
-				"buffer_size": 8924,
-				"line_ending": "Unix"
+				"buffer_size": 8460,
+				"line_ending": "Windows"
 			}
 		},
 		{
@@ -75,16 +75,16 @@
 			"file": "src/vector_math.cu",
 			"settings":
 			{
-				"buffer_size": 266,
-				"line_ending": "Unix"
+				"buffer_size": 437,
+				"line_ending": "Windows"
 			}
 		},
 		{
 			"file": "include/cuda_dsmc/vector_math.cuh",
 			"settings":
 			{
-				"buffer_size": 670,
-				"line_ending": "Unix"
+				"buffer_size": 1143,
+				"line_ending": "Windows"
 			}
 		},
 		{
@@ -131,24 +131,24 @@
 			"file": "test/distribution_generation_test.cu",
 			"settings":
 			{
-				"buffer_size": 4232,
-				"line_ending": "Unix"
+				"buffer_size": 14749,
+				"line_ending": "Windows"
 			}
 		},
 		{
 			"file": "include/distribution_generation_tests.cuh",
 			"settings":
 			{
-				"buffer_size": 485,
-				"line_ending": "Unix"
+				"buffer_size": 1339,
+				"line_ending": "Windows"
 			}
 		},
 		{
 			"file": "CMakeLists.txt",
 			"settings":
 			{
-				"buffer_size": 3393,
-				"line_ending": "Unix"
+				"buffer_size": 3616,
+				"line_ending": "Windows"
 			}
 		}
 	],
@@ -159,7 +159,7 @@
 	"build_varint": "",
 	"command_palette":
 	{
-		"height": 267.0,
+		"height": 311.0,
 		"last_filter": "insta",
 		"selected_items":
 		[
@@ -168,7 +168,7 @@
 				"Package Control: Install Package"
 			]
 		],
-		"width": 467.0
+		"width": 416.0
 	},
 	"console":
 	{
@@ -248,15 +248,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 5718,
+						"buffer_size": 6853,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								4263,
-								4263
+								0,
+								0
 							]
 						],
 						"settings":
@@ -285,15 +285,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 7165,
+						"buffer_size": 6748,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								4783,
-								4783
+								0,
+								0
 							]
 						],
 						"settings":
@@ -355,15 +355,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 8924,
+						"buffer_size": 8460,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								7340,
-								7351
+								0,
+								0
 							]
 						],
 						"settings":
@@ -372,7 +372,7 @@
 							"remote_loading": false,
 							"synced": false,
 							"syntax": "Packages/CUDA C++/cuda-c++.tmLanguage",
-							"tab_size": 4,
+							"tab_size": 2,
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
@@ -405,7 +405,7 @@
 							"remote_loading": false,
 							"synced": false,
 							"syntax": "Packages/CUDA C++/cuda-c++.tmLanguage",
-							"tab_size": 4,
+							"tab_size": 2,
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
@@ -489,7 +489,7 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 266,
+						"buffer_size": 437,
 						"regions":
 						{
 						},
@@ -520,7 +520,7 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 670,
+						"buffer_size": 1143,
 						"regions":
 						{
 						},
@@ -706,40 +706,7 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 4232,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								3094,
-								3094
-							]
-						],
-						"settings":
-						{
-							"incomplete_sync": null,
-							"remote_loading": false,
-							"synced": false,
-							"syntax": "Packages/CUDA C++/cuda-c++.tmLanguage",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 1,
-					"type": "text"
-				},
-				{
-					"buffer": 15,
-					"file": "include/distribution_generation_tests.cuh",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 485,
+						"buffer_size": 14749,
 						"regions":
 						{
 						},
@@ -755,7 +722,42 @@
 							"incomplete_sync": null,
 							"remote_loading": false,
 							"synced": false,
-							"syntax": "Packages/CUDA C++/cuda-c++.tmLanguage"
+							"syntax": "Packages/CUDA C++/cuda-c++.tmLanguage",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 1,
+					"type": "text"
+				},
+				{
+					"buffer": 15,
+					"file": "include/distribution_generation_tests.cuh",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 1339,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"incomplete_sync": null,
+							"remote_loading": false,
+							"synced": false,
+							"syntax": "Packages/CUDA C++/cuda-c++.tmLanguage",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
 						"translation.y": 0.0,
@@ -770,15 +772,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 3393,
+						"buffer_size": 3616,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								2101,
-								2101
+								1863,
+								1863
 							]
 						],
 						"settings":
@@ -786,7 +788,7 @@
 							"incomplete_sync": null,
 							"remote_loading": false,
 							"synced": false,
-							"syntax": "Packages/CMakeEditor/CMakeEditor.tmLanguage",
+							"syntax": "Packages/Text/Plain text.tmLanguage",
 							"tab_size": 2,
 							"translate_tabs_to_spaces": true
 						},

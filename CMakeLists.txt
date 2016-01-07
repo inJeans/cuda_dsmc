@@ -84,11 +84,15 @@ ENDIF()
 enable_testing()
 
 SET(TEST_SOURCES test/distribution_generation_test.cu src/distribution_generation.cpp src/distribution_generation.cu src/trapping_potential.cu src/random_numbers.cpp src/random_numbers.cu src/vector_math.cu src/entropy.c)
-cuda_add_executable(distribution_generation_test ${TEST_SOURCES})
-target_link_libraries(distribution_generation_test pcg_random cudart g3logger)
+cuda_add_executable(device_distribution_generation_test ${TEST_SOURCES})
+target_link_libraries(device_distribution_generation_test pcg_random cudart g3logger)
+SET(TEST_SOURCES test/distribution_generation_test.cpp src/distribution_generation.cpp src/distribution_generation.cu src/trapping_potential.cpp src/trapping_potential.cu src/random_numbers.cpp src/random_numbers.cu src/vector_math.cu src/entropy.c)
+cuda_add_executable(host_distribution_generation_test ${TEST_SOURCES})
+target_link_libraries(host_distribution_generation_test pcg_random cudart g3logger testu01)
 
-add_test (cuda_dmsc_runs cuda_dsmc)
-add_test (distribution_generation distribution_generation_test -s -o test.out)
+# add_test (cuda_dmsc_runs cuda_dsmc)
+# add_test (distribution_generation device_distribution_generation_test -s -o test.out)
+add_test (distribution_generation host_distribution_generation_test -s -o test.out)
 
 # does it have the correct output
 # add_test (hello_world_test hello)
