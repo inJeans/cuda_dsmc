@@ -88,6 +88,10 @@ ENDIF()
 enable_testing()
 
 IF(CUDA)
+    # DEVICE - Random number generation tests
+    SET(TEST_SOURCES test/random_number_generation_test.cu src/random_numbers.cpp src/random_numbers.cu src/vector_math.cu src/entropy.c)
+    cuda_add_executable(device_random_number_generation_test ${TEST_SOURCES})
+    target_link_libraries(device_random_number_generation_test pcg_random cudart g3logger)
     # DEVICE - Distribution generation tests
     SET(TEST_SOURCES test/distribution_generation_test.cu src/distribution_generation.cpp src/distribution_generation.cu src/trapping_potential.cu src/random_numbers.cpp src/random_numbers.cu src/vector_math.cu src/entropy.c)
     cuda_add_executable(device_distribution_generation_test ${TEST_SOURCES})
@@ -98,6 +102,10 @@ IF(CUDA)
     target_link_libraries(device_distribution_evolution_test pcg_random cudart g3logger)
 ENDIF()
 
+# HOST - Random number generation tests
+SET(TEST_SOURCES test/random_number_generation_test.cpp src/random_numbers.cpp src/random_numbers.cu src/vector_math.cu src/entropy.c)
+cuda_add_executable(host_random_number_generation_test ${TEST_SOURCES})
+target_link_libraries(host_random_number_generation_test pcg_random cudart g3logger testu01)
 # HOST - Distribution generation tests
 SET(TEST_SOURCES test/distribution_generation_test.cpp src/distribution_generation.cpp src/distribution_generation.cu src/trapping_potential.cpp src/trapping_potential.cu src/random_numbers.cpp src/random_numbers.cu src/vector_math.cu src/entropy.c)
 cuda_add_executable(host_distribution_generation_test ${TEST_SOURCES})
@@ -108,11 +116,13 @@ cuda_add_executable(host_distribution_evolution_test ${TEST_SOURCES})
 target_link_libraries(host_distribution_evolution_test pcg_random cudart g3logger)
 
 add_test(cuda_dmsc_runs cuda_dsmc)
-add_test(host_distribution_generation host_distribution_generation_test -s -o test.out)
-add_test(host_distribution_evolution host_distribution_evolution_test -s -o test.out)
+add_test(host_random_number_generation host_random_number_generation_test -s -o h_rng_test.out)
+add_test(host_distribution_generation host_distribution_generation_test -s -o h_dist_gen_test.out)
+add_test(host_distribution_evolution host_distribution_evolution_test -s -o h_dist_ev_test.out)
 IF(CUDA)
-    add_test(device_distribution_generation device_distribution_generation_test -s -o test.out)
-    add_test(device_distribution_evolution device_distribution_evolution_test -s -o test.out)
+    add_test(device_random_number_generation device_random_number_generation_test -s -o d_rng_test.out)
+    add_test(device_distribution_generation device_distribution_generation_test -s -o d_dist_gen_test.out)
+    add_test(device_distribution_evolution device_distribution_evolution_test -s -o d_dist_ev_test.out)
 ENDIF()
 
 # does it have the correct output
