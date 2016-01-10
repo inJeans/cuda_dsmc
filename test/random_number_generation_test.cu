@@ -23,6 +23,8 @@ extern "C"
 #include "helper_cuda.h"
 #include "random_number_generation_tests.cuh"
 
+#include "define_host_constants.hpp"
+
 SCENARIO("[DEVICE] Uniform random number generation", "[d-urng]") {
     GIVEN("An appropriate seed") {
         curandState *state;

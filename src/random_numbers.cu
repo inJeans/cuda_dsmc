@@ -87,5 +87,5 @@ __device__ double3 d_gaussian_point(double mean,
     p.y = curand_normal(state);
     p.z = curand_normal(state);
 
-    return mean + std*p;
+    return mean + std * p;
 }
