@@ -56,13 +56,6 @@ SCENARIO("[DEVICE] Thermal velocity distribution", "[d-veldist]") {
                                        num_test*sizeof(double3),
                                        cudaMemcpyDeviceToHost));
 
-            printf("v0 = {%.3f, %.3f, %.3f}\n", test_vel[0].x,
-                                                test_vel[0].y,
-                                                test_vel[0].z);
-            printf("v1 = {%.3f, %.3f, %.3f}\n", test_vel[1].x,
-                                                test_vel[1].y,
-                                                test_vel[1].z);
-
             THEN("The result give a mean speed and standard deviation as predicted by standard kinetic gas theory") {
                 double speed_mean = mean_norm(test_vel,
                                                num_test);

@@ -53,9 +53,6 @@ SCENARIO("[HOST] Acceleration Update", "[h-acc]") {
                                    state,
                                    pos);
 
-        printf("\np1 = { %f,%f,%f }, p2 = { %f,%f,%f }\n", pos[0].x, pos[0].y, pos[0].z,
-                                                            pos[1].x, pos[1].y, pos[1].z);
-
         WHEN("The update_atom_accelerations function is called") {
             // Initialise accelerations
             double3 *test_acc;
@@ -67,9 +64,6 @@ SCENARIO("[HOST] Acceleration Update", "[h-acc]") {
                                       trap_parameters,
                                       pos,
                                       test_acc);
-
-            printf("\na1 = { %f,%f,%f }, a2 = { %f,%f,%f }\n", test_acc[0].x, test_acc[0].y, test_acc[0].z,
-                                                            test_acc[1].x, test_acc[1].y, test_acc[1].z);
 
             double mean_acc_x = mean_x(test_acc,
                                        num_test);
@@ -86,24 +80,25 @@ SCENARIO("[HOST] Acceleration Update", "[h-acc]") {
                                          num_test);
 
             THEN("The mean in each direction should be 0.") {
-                REQUIRE(mean_acc_x >= 0. + std_acc_x / sqrt(num_test));
-                REQUIRE(mean_acc_x <= 0. - std_acc_x / sqrt(num_test));
-                REQUIRE(mean_acc_y >= 0. + std_acc_y / sqrt(num_test));
-                REQUIRE(mean_acc_y <= 0. - std_acc_y / sqrt(num_test));
-                REQUIRE(mean_acc_z >= 0. + std_acc_z / sqrt(num_test));
-                REQUIRE(mean_acc_z <= 0. - std_acc_z / sqrt(num_test));
+                REQUIRE(mean_acc_x <= 0. + std_acc_x / sqrt(num_test));
+                REQUIRE(mean_acc_x >= 0. - std_acc_x / sqrt(num_test));
+                REQUIRE(mean_acc_y <= 0. + std_acc_y / sqrt(num_test));
+                REQUIRE(mean_acc_y >= 0. - std_acc_y / sqrt(num_test));
+                REQUIRE(mean_acc_z <= 0. + std_acc_z / sqrt(num_test));
+                REQUIRE(mean_acc_z >= 0. - std_acc_z / sqrt(num_test));
             }
 
-            double expected_std_x_y = sqrt(128. * kB*kB*kB * pi *init_T*init_T*init_T /
-                                           (3. * trap_parameters.Bz*trap_parameters.Bz * gs*gs * mass * muB*muB));
-
+            double expected_std_x_y = sqrt(trap_parameters.Bz*trap_parameters.Bz * gs*gs * muB*muB / 
+                                           (48. * mass*mass));
+            double expected_std_z = sqrt(trap_parameters.Bz*trap_parameters.Bz * gs*gs * muB*muB / 
+                                           (12. * mass*mass));
             THEN("The standard deviation in each direction should be given by blah") {
-                REQUIRE(std_acc_x >= expected_std_x_y + std_acc_x / sqrt(num_test));
-                REQUIRE(std_acc_x <= expected_std_x_y - std_acc_x / sqrt(num_test));
-                REQUIRE(std_acc_y >= expected_std_x_y + std_acc_y / sqrt(num_test));
-                REQUIRE(std_acc_y <= expected_std_x_y - std_acc_y / sqrt(num_test));
-                // REQUIRE(std_acc_z >= 0. + std_acc_z / sqrt(num_test));
-                // REQUIRE(std_acc_z <= 0. - std_acc_z / sqrt(num_test));
+                REQUIRE(std_acc_x <= expected_std_x_y + std_acc_x / sqrt(num_test));
+                REQUIRE(std_acc_x >= expected_std_x_y - std_acc_x / sqrt(num_test));
+                REQUIRE(std_acc_y <= expected_std_x_y + std_acc_y / sqrt(num_test));
+                REQUIRE(std_acc_y >= expected_std_x_y - std_acc_y / sqrt(num_test));
+                REQUIRE(std_acc_z <= expected_std_z + std_acc_z / sqrt(num_test));
+                REQUIRE(std_acc_z >= expected_std_z - std_acc_z / sqrt(num_test));
             }
 
             free(test_acc);
@@ -111,15 +106,6 @@ SCENARIO("[HOST] Acceleration Update", "[h-acc]") {
 
         free(pos);
     }
-}
-
-double mean(double3 *array,
-            int num_elements) {
-    double mean = 0.;
-    for (int i = 0; i < num_elements; ++i)
-        mean += array[i].x + array[i].y + array[i].z;
-
-    return mean / num_elements / 3.;
 }
 
 double mean_x(double3 *array,

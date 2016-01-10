@@ -6,9 +6,6 @@
 #ifndef DISTRIBUTION_EVOLUTION_TESTS_HPP_INCLUDED
 #define DISTRIBUTION_EVOLUTION_TESTS_HPP_INCLUDED 1
 
-double mean(double3 *array,
-            int num_elements);
-
 double mean_x(double3 *array,
               int num_elements);
 
