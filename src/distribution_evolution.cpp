@@ -15,9 +15,9 @@
 void velocity_verlet_update(int num_atoms,
                             double dt,
                             trap_geo params,
-                            double3 pos,
-                            double3 vel,
-                            double3 acc) {
+                            double3 *pos,
+                            double3 *vel,
+                            double3 *acc) {
     update_velocities(num_atoms,
                       0.5*dt,
                       acc,
@@ -40,9 +40,9 @@ void velocity_verlet_update(int num_atoms,
 void sympletic_euler_update(int num_atoms,
                             double dt,
                             trap_geo params,
-                            double3 pos,
-                            double3 vel,
-                            double3 acc) {
+                            double3 *pos,
+                            double3 *vel,
+                            double3 *acc) {
     update_velocities(num_atoms,
                       dt,
                       acc,
@@ -80,10 +80,10 @@ void update_positions(int num_atoms,
                       double3 *vel,
                       double3 *pos) {
 #ifdef CUDA
-    cu_update_positions(int num_atoms,
-                        double dt,
-                        double3 *acc,
-                        double3 *vel);
+    cu_update_positions(num_atoms,
+                        dt,
+                        vel,
+                        pos);
 #else
     for (int atom = 0; atom < num_atoms; ++atom) {
         pos[atom] = update_atom_position(dt,
@@ -122,10 +122,10 @@ void update_velocities(int num_atoms,
                        double3 *acc,
                        double3 *vel) {
 #ifdef CUDA
-    cu_update_velocities(int num_atoms,
-                         double dt,
-                         double3 *acc,
-                         double3 *vel);
+    cu_update_velocities(num_atoms,
+                         dt,
+                         acc,
+                         vel);
 #else
     for (int atom = 0; atom < num_atoms; ++atom) {
         vel[atom] = update_atom_velocity(dt,
@@ -166,9 +166,9 @@ void update_accelerations(int num_atoms,
                           double3 *acc) {
 #ifdef CUDA
     cu_update_accelerations(num_atoms,
-                                 params,
-                                 pos,
-                                 acc);
+                            params,
+                            pos,
+                            acc);
 #else
     for (int atom = 0; atom < num_atoms; ++atom) {
         acc[atom] = update_atom_acceleration(params,

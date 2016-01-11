@@ -60,7 +60,7 @@ SCENARIO("[DEVICE] Acceleration Update", "[d-acc]") {
 
             // Generate accelerations
             update_accelerations(num_test,
-                                 params,
+                                 trap_parameters,
                                  d_pos,
                                  d_test_acc);;
 

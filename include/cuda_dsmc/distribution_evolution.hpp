@@ -16,6 +16,20 @@
 void velocity_verlet_update(int num_atoms,
                             double dt,
                             trap_geo params,
+                            double3 *pos,
+                            double3 *vel,
+                            double3 *acc);
+
+void sympletic_euler_update(int num_atoms,
+                            double dt,
+                            trap_geo params,
+                            double3 *pos,
+                            double3 *vel,
+                            double3 *acc);
+
+void velocity_verlet_update(int num_atoms,
+                            double dt,
+                            trap_geo params,
                             double3 pos,
                             double3 vel,
                             double3 acc);
