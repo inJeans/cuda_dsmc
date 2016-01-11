@@ -6,7 +6,8 @@ services:
     - docker
 
 env:
-    - COVERALLS_SERVICE_NAME=travis-ci COVERALLS_REPO_TOKEN=DyDqgIext3FRE6wXaymSOndUnxxNqXExA
+    - COVERALLS_SERVICE_NAME=travis-ci 
+    - COVERALLS_REPO_TOKEN=DyDqgIext3FRE6wXaymSOndUnxxNqXExA
 
 before_install:
     - docker pull injeans/cuda_dsmc:latest

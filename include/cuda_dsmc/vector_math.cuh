@@ -27,6 +27,11 @@ static __inline__ __host__ __device__ double3 operator/(double3 a,
     return make_double3(a.x/b, a.y/b, a.z/b);
 }
 
+static __inline__ __host__ __device__ double3 operator+(double3 a, 
+                                                        double3 b) {
+    return make_double3(a.x+b.x, a.y+b.y, a.z+b.z);
+}
+
 static __inline__ __host__ __device__ double3 operator+(double a, 
                                                         double3 b) {
     return make_double3(a+b.x, a+b.y, a+b.z);

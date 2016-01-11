@@ -60,10 +60,10 @@ SCENARIO("[HOST] Acceleration Update", "[h-acc]") {
                                                          sizeof(double3)));
 
             // Generate accelerations
-            update_atom_accelerations(num_test,
-                                      trap_parameters,
-                                      pos,
-                                      test_acc);
+            update_accelerations(num_test,
+                                 trap_parameters,
+                                 pos,
+                                 test_acc);
 
             double mean_acc_x = mean_x(test_acc,
                                        num_test);

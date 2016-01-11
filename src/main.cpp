@@ -138,10 +138,10 @@ int main(int argc, char const *argv[]) {
 #endif
 
     // Generate accelerations
-    update_atom_accelerations(NUM_ATOMS,
-                              trap_parameters,
-                              pos,
-                              acc);
+    update_accelerations(NUM_ATOMS,
+                         trap_parameters,
+                         pos,
+                         acc);
 
 #ifdef CUDA
     double3 h_vel[NUM_ATOMS];

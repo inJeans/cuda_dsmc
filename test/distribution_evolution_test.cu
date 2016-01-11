@@ -59,10 +59,10 @@ SCENARIO("[DEVICE] Acceleration Update", "[d-acc]") {
                                        num_test*sizeof(double3)));
 
             // Generate accelerations
-            update_atom_accelerations(num_test,
-                                      trap_parameters,
-                                      d_pos,
-                                      d_test_acc);
+            update_accelerations(num_test,
+                                 params,
+                                 d_pos,
+                                 d_test_acc);;
 
             double3 *test_acc;
             test_acc = reinterpret_cast<double3*>(calloc(num_test,
