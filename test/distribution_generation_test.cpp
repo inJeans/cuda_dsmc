@@ -12,11 +12,6 @@
 
 #define CATCH_CONFIG_MAIN
 #include "catch.hpp"
-extern "C"
-{
-#include "unif01.h"
-#include "bbattery.h" 
-}
 
 #include "random_numbers.hpp"
 #include "distribution_generation.hpp"
