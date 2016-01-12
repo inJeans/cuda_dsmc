@@ -28,6 +28,17 @@ IF(PCG_INCLUDE_PATH)
     include_directories("${PCG_INCLUDE_PATH}")
 ENDIF()
 
+# User defined pcg library destintation
+IF(TESTU01_LIBRARY_PATH)
+    link_directories("${TESTU01_LIBRARY_PATH}")
+ENDIF()
+
+# User defined g3log header destintation
+IF(TESTU01_INCLUDE_PATH)
+    include_directories("${TESTU01_INCLUDE_PATH}")
+ENDIF()
+
+
 # We will optionally build with CUDA.
 option(CUDA "Compile with GPU acceleration" OFF)
 
