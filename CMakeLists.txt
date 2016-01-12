@@ -129,7 +129,7 @@ target_link_libraries(host_random_number_generation_test pcg_random cudart g3log
 # HOST - Distribution generation tests
 SET(TEST_SOURCES test/distribution_generation_test.cpp src/distribution_generation.cpp src/distribution_generation.cu src/trapping_potential.cpp src/trapping_potential.cu src/random_numbers.cpp src/random_numbers.cu src/vector_math.cu src/entropy.c)
 cuda_add_executable(host_distribution_generation_test ${TEST_SOURCES})
-target_link_libraries(host_distribution_generation_test pcg_random cudart g3logger testu01)
+target_link_libraries(host_distribution_generation_test pcg_random cudart g3logger)
 # HOST - Distribution evolution tests
 SET(TEST_SOURCES test/distribution_evolution_test.cpp src/distribution_evolution.cpp src/distribution_evolution.cu src/distribution_generation.cpp src/distribution_generation.cu src/trapping_potential.cpp src/trapping_potential.cu src/random_numbers.cpp src/random_numbers.cu src/vector_math.cu src/entropy.c)
 cuda_add_executable(host_distribution_evolution_test ${TEST_SOURCES})
