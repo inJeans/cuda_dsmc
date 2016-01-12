@@ -8,6 +8,26 @@ SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake)
 cmake_minimum_required (VERSION 2.8)
 project (cuda_dsmc)
 
+# User defined g3log library destintation
+IF(G3LOG_LIBRARY_PATH)
+    link_directories("${G3LOG_LIBRARY_PATH}")
+ENDIF()
+
+# User defined g3log header destintation
+IF(G3LOG_INCLUDE_PATH)
+    include_directories("${G3LOG_INCLUDE_PATH}")
+ENDIF()
+
+# User defined pcg library destintation
+IF(PCG_LIBRARY_PATH)
+    link_directories("${PCG_LIBRARY_PATH}")
+ENDIF()
+
+# User defined g3log header destintation
+IF(PCG_INCLUDE_PATH)
+    include_directories("${PCG_INCLUDE_PATH}")
+ENDIF()
+
 # We will optionally build with CUDA.
 option(CUDA "Compile with GPU acceleration" OFF)
 
