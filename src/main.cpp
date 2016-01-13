@@ -9,6 +9,7 @@
 #include <float.h>
 #ifdef CUDA
 #include <cuda_runtime.h>
+#include "cublas_v2.h"
 #endif
 
 #include <g3log/g3log.hpp>
@@ -23,7 +24,7 @@
 #include "distribution_generation.hpp"
 #include "distribution_evolution.hpp"
 
-#define NUM_ATOMS 2
+#define NUM_ATOMS 100000
 
 #if (defined(WIN32) || defined(_WIN32) || defined(__WIN32__))
     const std::string path_to_log_file = "./";
@@ -42,7 +43,7 @@ int main(int argc, char const *argv[]) {
                                              call(&g3::FileSink::fileName);
     std::cout << "\n All logging output will be written to: "
               << log_file_name.get() << std::endl;
-    // g3::only_change_at_initialization::setLogLevel(DEBUG, false);
+    g3::only_change_at_initialization::setLogLevel(DEBUG, false);
 
     printf("****************************\n");
     printf("*                          *\n");
@@ -62,7 +63,7 @@ int main(int argc, char const *argv[]) {
 
     // Initialise computational parameters
     double dt = 1.e-6;
-    int num_time_steps = 100;
+    int num_time_steps = 10000;
 
     // Initialise rng
     LOGF(INFO, "\nInitialising the rng state array.");
@@ -166,34 +167,38 @@ int main(int argc, char const *argv[]) {
                NUM_ATOMS*sizeof(double3),
                cudaMemcpyDeviceToHost);
 
-    LOGF(DEBUG, "\nv1 = { %f,%f,%f }, v2 = { %f,%f,%f }\n", h_vel[0].x, h_vel[0].y, h_vel[0].z,
-                                                            h_vel[1].x, h_vel[1].y, h_vel[1].z);
-    LOGF(DEBUG, "\np1 = { %f,%f,%f }, p2 = { %f,%f,%f }\n", h_pos[0].x, h_pos[0].y, h_pos[0].z,
-                                                            h_pos[1].x, h_pos[1].y, h_pos[1].z);
-    LOGF(DEBUG, "\na1 = { %f,%f,%f }, a2 = { %f,%f,%f }\n", h_acc[0].x, h_acc[0].y, h_acc[0].z,
-                                                            h_acc[1].x, h_acc[1].y, h_acc[1].z);
+    LOGF(INFO, "\nv1 = { %f,%f,%f }, v2 = { %f,%f,%f }\n", h_vel[0].x, h_vel[0].y, h_vel[0].z,
+                                                           h_vel[1].x, h_vel[1].y, h_vel[1].z);
+    LOGF(INFO, "\np1 = { %f,%f,%f }, p2 = { %f,%f,%f }\n", h_pos[0].x, h_pos[0].y, h_pos[0].z,
+                                                           h_pos[1].x, h_pos[1].y, h_pos[1].z);
+    LOGF(INFO, "\na1 = { %f,%f,%f }, a2 = { %f,%f,%f }\n", h_acc[0].x, h_acc[0].y, h_acc[0].z,
+                                                           h_acc[1].x, h_acc[1].y, h_acc[1].z);
     cudaFree(h_vel);
     cudaFree(h_pos);
     cudaFree(h_acc);
 #else 
-    LOGF(DEBUG, "\nv1 = { %f,%f,%f }, v2 = { %f,%f,%f }\n", vel[0].x, vel[0].y, vel[0].z,
-                                                            vel[1].x, vel[1].y, vel[1].z);
-    LOGF(DEBUG, "\np1 = { %f,%f,%f }, p2 = { %f,%f,%f }\n", pos[0].x, pos[0].y, pos[0].z,
-                                                            pos[1].x, pos[1].y, pos[1].z);
-    LOGF(DEBUG, "\na1 = { %f,%f,%f }, a2 = { %f,%f,%f }\n", acc[0].x, acc[0].y, acc[0].z,
-                                                            acc[1].x, acc[1].y, acc[1].z);
+    LOGF(INFO, "\nv1 = { %f,%f,%f }, v2 = { %f,%f,%f }\n", vel[0].x, vel[0].y, vel[0].z,
+                                                           vel[1].x, vel[1].y, vel[1].z);
+    LOGF(INFO, "\np1 = { %f,%f,%f }, p2 = { %f,%f,%f }\n", pos[0].x, pos[0].y, pos[0].z,
+                                                           pos[1].x, pos[1].y, pos[1].z);
+    LOGF(INFO, "\na1 = { %f,%f,%f }, a2 = { %f,%f,%f }\n", acc[0].x, acc[0].y, acc[0].z,
+                                                           acc[1].x, acc[1].y, acc[1].z);
 #endif
 
     // Evolve many time step
     LOGF(INFO, "\nEvolving distribution for %i time steps.", num_time_steps);
+    cublasHandle_t handle;
+    // cublasCreate(&handle);
     for (int i = 0; i < num_time_steps; ++i) {
         velocity_verlet_update(NUM_ATOMS,
                            dt,
                            trap_parameters,
                            pos,
                            vel,
-                           acc);
+                           acc,
+                           handle);
     }
+    cublasDestroy(handle);
 
     LOGF(DEBUG, "\nAfter time evolution.\n");
     #ifdef CUDA
@@ -210,22 +215,22 @@ int main(int argc, char const *argv[]) {
                NUM_ATOMS*sizeof(double3),
                cudaMemcpyDeviceToHost);
 
-    LOGF(DEBUG, "\nv1 = { %f,%f,%f }, v2 = { %f,%f,%f }\n", h_vel[0].x, h_vel[0].y, h_vel[0].z,
-                                                            h_vel[1].x, h_vel[1].y, h_vel[1].z);
-    LOGF(DEBUG, "\np1 = { %f,%f,%f }, p2 = { %f,%f,%f }\n", h_pos[0].x, h_pos[0].y, h_pos[0].z,
-                                                            h_pos[1].x, h_pos[1].y, h_pos[1].z);
-    LOGF(DEBUG, "\na1 = { %f,%f,%f }, a2 = { %f,%f,%f }\n", h_acc[0].x, h_acc[0].y, h_acc[0].z,
-                                                            h_acc[1].x, h_acc[1].y, h_acc[1].z);
+    LOGF(INFO, "\nv1 = { %f,%f,%f }, v2 = { %f,%f,%f }\n", h_vel[0].x, h_vel[0].y, h_vel[0].z,
+                                                           h_vel[1].x, h_vel[1].y, h_vel[1].z);
+    LOGF(INFO, "\np1 = { %f,%f,%f }, p2 = { %f,%f,%f }\n", h_pos[0].x, h_pos[0].y, h_pos[0].z,
+                                                           h_pos[1].x, h_pos[1].y, h_pos[1].z);
+    LOGF(INFO, "\na1 = { %f,%f,%f }, a2 = { %f,%f,%f }\n", h_acc[0].x, h_acc[0].y, h_acc[0].z,
+                                                           h_acc[1].x, h_acc[1].y, h_acc[1].z);
     cudaFree(h_vel);
     cudaFree(h_pos);
     cudaFree(h_acc);
 #else 
-    LOGF(DEBUG, "\nv1 = { %f,%f,%f }, v2 = { %f,%f,%f }\n", vel[0].x, vel[0].y, vel[0].z,
-                                                            vel[1].x, vel[1].y, vel[1].z);
-    LOGF(DEBUG, "\np1 = { %f,%f,%f }, p2 = { %f,%f,%f }\n", pos[0].x, pos[0].y, pos[0].z,
-                                                            pos[1].x, pos[1].y, pos[1].z);
-    LOGF(DEBUG, "\na1 = { %f,%f,%f }, a2 = { %f,%f,%f }\n", acc[0].x, acc[0].y, acc[0].z,
-                                                            acc[1].x, acc[1].y, acc[1].z);
+    LOGF(INFO, "\nv1 = { %f,%f,%f }, v2 = { %f,%f,%f }\n", vel[0].x, vel[0].y, vel[0].z,
+                                                           vel[1].x, vel[1].y, vel[1].z);
+    LOGF(INFO, "\np1 = { %f,%f,%f }, p2 = { %f,%f,%f }\n", pos[0].x, pos[0].y, pos[0].z,
+                                                           pos[1].x, pos[1].y, pos[1].z);
+    LOGF(INFO, "\na1 = { %f,%f,%f }, a2 = { %f,%f,%f }\n", acc[0].x, acc[0].y, acc[0].z,
+                                                           acc[1].x, acc[1].y, acc[1].z);
 #endif
 
 #ifdef CUDA

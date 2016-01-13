@@ -7,6 +7,7 @@
 #define DISTRIBUTION_EVOLUTION_CUH_INCLUDED 1
 
 #include <cuda_runtime.h>
+#include "cublas_v2.h"
 
 #include "distribution_evolution.hpp"
 #include "trapping_potential.cuh"
@@ -14,7 +15,8 @@
 __host__ void cu_update_positions(int num_atoms,
                                   double dt,
                                   double3 *vel,
-                                  double3 *pos);
+                                  double3 *pos,
+                                  cublasHandle_t handle);
 
 __global__ void g_update_atom_position(int num_atoms,
                                        double dt,
@@ -28,7 +30,8 @@ __device__ double3 d_update_atom_position(double dt,
 __host__ void cu_update_velocities(int num_atoms,
                                    double dt,
                                    double3 *acc,
-                                   double3 *vel);
+                                   double3 *vel,
+                                   cublasHandle_t handle);
 
 __global__ void g_update_atom_velocity(int num_atoms,
                                        double dt,

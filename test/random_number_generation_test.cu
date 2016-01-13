@@ -67,7 +67,7 @@ SCENARIO("[DEVICE] Uniform random number generation", "[d-urng]") {
 
 SCENARIO("[DEVICE] Normally distributed random number generation", "[d-nrng]") {
     GIVEN("An array of appropriate seeds") {
-        int num_test = 5000;
+        int num_test = 10000;
 
         curandState *state;
         checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&state),
@@ -75,7 +75,7 @@ SCENARIO("[DEVICE] Normally distributed random number generation", "[d-nrng]") {
         initialise_rng_states(num_test,
                               state);
 
-        WHEN("We generate 5,000 numbers using a mean of 0 and a std of 1") {
+        WHEN("We generate 10,000 numbers using a mean of 0 and a std of 1") {
             double *d_test_values;
             checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&d_test_values),
                                        num_test*sizeof(double)));
