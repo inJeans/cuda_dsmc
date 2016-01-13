@@ -14,27 +14,42 @@
 __host__ void cu_update_positions(int num_atoms,
                                   double dt,
                                   double3 *vel,
-                                  double3 *pos) {
-    LOGF(DEBUG, "\nCalculating optimal launch configuration for the position "
-                "update kernel.\n");
-    int block_size = 0;
-    int min_grid_size = 0;
-    int grid_size = 0;
-    cudaOccupancyMaxPotentialBlockSize(&min_grid_size,
-                                       &block_size,
-                                       (const void *) g_update_atom_position,
-                                       0,
-                                       num_atoms);
-    grid_size = (num_atoms + block_size - 1) / block_size;
-    LOGF(DEBUG, "\nLaunch config set as <<<%i,%i>>>\n",
-                grid_size, block_size);
+                                  double3 *pos,
+                                  cublasHandle_t handle) {
+    // LOGF(DEBUG, "\nCalculating optimal launch configuration for the position "
+    //             "update kernel.\n");
+    // int block_size = 0;
+    // int min_grid_size = 0;
+    // int grid_size = 0;
+    // cudaOccupancyMaxPotentialBlockSize(&min_grid_size,
+    //                                    &block_size,
+    //                                    (const void *) g_update_atom_position,
+    //                                    0,
+    //                                    num_atoms);
+    // grid_size = (num_atoms + block_size - 1) / block_size;
+    // LOGF(DEBUG, "\nLaunch config set as <<<%i,%i>>>\n",
+    //             grid_size, block_size);
 
-    g_update_atom_position<<<grid_size,
-                             block_size>>>
-                            (num_atoms,
-                             dt,
-                             vel,
-                             pos); 
+    // g_update_atom_position<<<grid_size,
+    //                          block_size>>>
+    //                         (num_atoms,
+    //                          dt,
+    //                          vel,
+    //                          pos); 
+
+    // cublasHandle_t handle;
+    // cublasCreate(&handle);
+
+    cublasDaxpy(handle, 
+                3*num_atoms, 
+                &dt, 
+                (double *)vel, 
+                1, 
+                (double *)pos, 
+                1); 
+
+    // cublasDestroy(handle);
+
     return;
 }
 
@@ -62,40 +77,41 @@ __device__ double3 d_update_atom_position(double dt,
 __host__ void cu_update_velocities(int num_atoms,
                                    double dt,
                                    double3 *acc,
-                                   double3 *vel) {
-    LOGF(DEBUG, "\nCalculating optimal launch configuration for the velocity "
-                "update kernel.\n");
-    int block_size = 0;
-    int min_grid_size = 0;
-    int grid_size = 0;
-    cudaOccupancyMaxPotentialBlockSize(&min_grid_size,
-                                       &block_size,
-                                       (const void *) g_update_atom_velocity,
-                                       0,
-                                       num_atoms);
-    grid_size = (num_atoms + block_size - 1) / block_size;
-    LOGF(DEBUG, "\nLaunch config set as <<<%i,%i>>>\n",
-                grid_size, block_size);
+                                   double3 *vel,
+                                  cublasHandle_t handle) {
+    // LOGF(DEBUG, "\nCalculating optimal launch configuration for the velocity "
+    //             "update kernel.\n");
+    // int block_size = 0;
+    // int min_grid_size = 0;
+    // int grid_size = 0;
+    // cudaOccupancyMaxPotentialBlockSize(&min_grid_size,
+    //                                    &block_size,
+    //                                    (const void *) g_update_atom_velocity,
+    //                                    0,
+    //                                    num_atoms);
+    // grid_size = (num_atoms + block_size - 1) / block_size;
+    // LOGF(DEBUG, "\nLaunch config set as <<<%i,%i>>>\n",
+    //             grid_size, block_size);
 
-    g_update_atom_velocity<<<grid_size,
-                                  block_size>>>
-                                 (num_atoms,
-                                  dt,
-                                  acc,
-                                  vel);  
+    // g_update_atom_velocity<<<grid_size,
+    //                               block_size>>>
+    //                              (num_atoms,
+    //                               dt,
+    //                               acc,
+    //                               vel);  
 
-    cublasHandle_t handle;
-    cublasCreate(&handle);
+    // cublasHandle_t handle;
+    // cublasCreate(&handle);
 
     cublasDaxpy(handle, 
-                num_atoms, 
+                3*num_atoms, 
                 &dt, 
                 (double *)acc, 
                 1, 
                 (double *)vel, 
                 1); 
 
-    cublasDestroy(handle);
+    // cublasDestroy(handle);
 
     return;
 }

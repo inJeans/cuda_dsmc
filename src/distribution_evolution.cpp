@@ -17,15 +17,18 @@ void velocity_verlet_update(int num_atoms,
                             trap_geo params,
                             double3 *pos,
                             double3 *vel,
-                            double3 *acc) {
+                            double3 *acc,
+                            cublasHandle_t handle) {
     update_velocities(num_atoms,
                       0.5*dt,
                       acc,
-                      vel);
+                      vel,
+                      handle);
     update_positions(num_atoms,
                      dt,
                      vel,
-                     pos);
+                     pos,
+                     handle);
     update_accelerations(num_atoms,
                          params,
                          pos,
@@ -33,31 +36,32 @@ void velocity_verlet_update(int num_atoms,
     update_velocities(num_atoms,
                       0.5*dt,
                       acc,
-                      vel);
+                      vel,
+                      handle);
     return;
 }
 
-void sympletic_euler_update(int num_atoms,
-                            double dt,
-                            trap_geo params,
-                            double3 *pos,
-                            double3 *vel,
-                            double3 *acc) {
-    update_velocities(num_atoms,
-                      dt,
-                      acc,
-                      vel);
-    update_positions(num_atoms,
-                     dt,
-                     vel,
-                     pos);
-    update_accelerations(num_atoms,
-                         params,
-                         pos,
-                         acc);
+// void sympletic_euler_update(int num_atoms,
+//                             double dt,
+//                             trap_geo params,
+//                             double3 *pos,
+//                             double3 *vel,
+//                             double3 *acc) {
+//     update_velocities(num_atoms,
+//                       dt,
+//                       acc,
+//                       vel);
+//     update_positions(num_atoms,
+//                      dt,
+//                      vel,
+//                      pos);
+//     update_accelerations(num_atoms,
+//                          params,
+//                          pos,
+//                          acc);
 
-    return;
-}
+//     return;
+// }
 
 /** \fn void update_positions(int num_atoms,
  *                            double dt,
@@ -78,12 +82,14 @@ void sympletic_euler_update(int num_atoms,
 void update_positions(int num_atoms,
                       double dt,
                       double3 *vel,
-                      double3 *pos) {
+                      double3 *pos,
+                      cublasHandle_t handle) {
 #ifdef CUDA
     cu_update_positions(num_atoms,
                         dt,
                         vel,
-                        pos);
+                        pos,
+                        handle);
 #else
     for (int atom = 0; atom < num_atoms; ++atom) {
         pos[atom] = update_atom_position(dt,
@@ -120,12 +126,14 @@ double3 update_atom_position(double dt,
 void update_velocities(int num_atoms,
                        double dt,
                        double3 *acc,
-                       double3 *vel) {
+                       double3 *vel,
+                       cublasHandle_t handle) {
 #ifdef CUDA
     cu_update_velocities(num_atoms,
                          dt,
                          acc,
-                         vel);
+                         vel,
+                         handle);
 #else
     for (int atom = 0; atom < num_atoms; ++atom) {
         vel[atom] = update_atom_velocity(dt,
