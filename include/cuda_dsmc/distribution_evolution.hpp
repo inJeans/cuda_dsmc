@@ -9,6 +9,8 @@
 #include <cuda_runtime.h>
 #include "cublas_v2.h"
 
+#include <mkl.h>
+
 #include <g3log/g3log.hpp>
 
 #include "trapping_potential.hpp"
@@ -17,23 +19,24 @@
 void velocity_verlet_update(int num_atoms,
                             double dt,
                             trap_geo params,
+                            cublasHandle_t cublas_handle,
                             double3 *pos,
                             double3 *vel,
-                            double3 *acc,
-                            cublasHandle_t handle);
+                            double3 *acc);
 
 void sympletic_euler_update(int num_atoms,
                             double dt,
                             trap_geo params,
+                            cublasHandle_t cublas_handle,
                             double3 *pos,
                             double3 *vel,
                             double3 *acc);
 
 void update_positions(int num_atoms,
                       double dt,
+                      cublasHandle_t cublas_handle,
                       double3 *vel,
-                      double3 *pos,
-                      cublasHandle_t handle);
+                      double3 *pos);
 
 double3 update_atom_position(double dt,
                              double3 pos,
@@ -41,9 +44,9 @@ double3 update_atom_position(double dt,
 
 void update_velocities(int num_atoms,
                        double dt,
+                       cublasHandle_t cublas_handle,
                        double3 *acc,
-                       double3 *vel,
-                       cublasHandle_t handle);
+                       double3 *vel);
 
 double3 update_atom_velocity(double dt,
                              double3 vel,

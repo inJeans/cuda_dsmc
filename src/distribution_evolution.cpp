@@ -15,53 +15,56 @@
 void velocity_verlet_update(int num_atoms,
                             double dt,
                             trap_geo params,
+                            cublasHandle_t cublas_handle,
                             double3 *pos,
                             double3 *vel,
-                            double3 *acc,
-                            cublasHandle_t handle) {
+                            double3 *acc) {
     update_velocities(num_atoms,
                       0.5*dt,
+                      cublas_handle,
                       acc,
-                      vel,
-                      handle);
+                      vel);
     update_positions(num_atoms,
                      dt,
+                     cublas_handle,
                      vel,
-                     pos,
-                     handle);
+                     pos);
     update_accelerations(num_atoms,
                          params,
                          pos,
                          acc);
     update_velocities(num_atoms,
                       0.5*dt,
+                      cublas_handle,
                       acc,
-                      vel,
-                      handle);
+                      vel);
     return;
 }
 
-// void sympletic_euler_update(int num_atoms,
-//                             double dt,
-//                             trap_geo params,
-//                             double3 *pos,
-//                             double3 *vel,
-//                             double3 *acc) {
-//     update_velocities(num_atoms,
-//                       dt,
-//                       acc,
-//                       vel);
-//     update_positions(num_atoms,
-//                      dt,
-//                      vel,
-//                      pos);
-//     update_accelerations(num_atoms,
-//                          params,
-//                          pos,
-//                          acc);
+void sympletic_euler_update(int num_atoms,
+                            double dt,
+                            trap_geo params,
+                            cublasHandle_t cublas_handle,
+                            double3 *pos,
+                            double3 *vel,
+                            double3 *acc) {
+    update_velocities(num_atoms,
+                      dt,
+                      cublas_handle,
+                      acc,
+                      vel);
+    update_positions(num_atoms,
+                     dt,
+                     cublas_handle,
+                     vel,
+                     pos);
+    update_accelerations(num_atoms,
+                         params,
+                         pos,
+                         acc);
 
-//     return;
-// }
+    return;
+}
 
 /** \fn void update_positions(int num_atoms,
  *                            double dt,
@@ -81,15 +84,23 @@ void velocity_verlet_update(int num_atoms,
 
 void update_positions(int num_atoms,
                       double dt,
+                      cublasHandle_t cublas_handle,
                       double3 *vel,
-                      double3 *pos,
-                      cublasHandle_t handle) {
+                      double3 *pos) {
 #ifdef CUDA
     cu_update_positions(num_atoms,
                         dt,
+                        cublas_handle,
                         vel,
-                        pos,
-                        handle);
+                        pos);
+#endif
+#ifdef MKL
+    cblas_daxpy(3*num_atoms, 
+                dt,
+                reinterpret_cast<double *>(vel),
+                1,
+                reinterpret_cast<double *>(pos),
+                1);
 #else
     for (int atom = 0; atom < num_atoms; ++atom) {
         pos[atom] = update_atom_position(dt,
@@ -125,15 +136,23 @@ double3 update_atom_position(double dt,
 
 void update_velocities(int num_atoms,
                        double dt,
+                       cublasHandle_t cublas_handle,
                        double3 *acc,
-                       double3 *vel,
-                       cublasHandle_t handle) {
+                       double3 *vel) {
 #ifdef CUDA
     cu_update_velocities(num_atoms,
                          dt,
+                         cublas_handle,
                          acc,
-                         vel,
-                         handle);
+                         vel);
+#endif
+#ifdef MKL
+    cblas_daxpy(3*num_atoms, 
+                dt,
+                reinterpret_cast<double *>(acc),
+                1,
+                reinterpret_cast<double *>(vel),
+                1);
 #else
     for (int atom = 0; atom < num_atoms; ++atom) {
         vel[atom] = update_atom_velocity(dt,

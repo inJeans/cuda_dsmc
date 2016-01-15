@@ -24,7 +24,7 @@
 #include "distribution_generation.hpp"
 #include "distribution_evolution.hpp"
 
-#define NUM_ATOMS 100000
+#define NUM_ATOMS 10000
 
 #if (defined(WIN32) || defined(_WIN32) || defined(__WIN32__))
     const std::string path_to_log_file = "./";
@@ -185,20 +185,28 @@ int main(int argc, char const *argv[]) {
                                                            acc[1].x, acc[1].y, acc[1].z);
 #endif
 
+#ifdef CUDA
+    LOGF(DEBUG, "\nCreating the cuBLAS handle.\n");
+    cublasHandle_t cublas_handle;
+    cublasCreate(&cublas_handle);
+#else
+    cublasHandle_t cublas_handle;
+#endif
     // Evolve many time step
     LOGF(INFO, "\nEvolving distribution for %i time steps.", num_time_steps);
-    cublasHandle_t handle;
-    // cublasCreate(&handle);
     for (int i = 0; i < num_time_steps; ++i) {
         velocity_verlet_update(NUM_ATOMS,
-                           dt,
-                           trap_parameters,
-                           pos,
-                           vel,
-                           acc,
-                           handle);
+                               dt,
+                               trap_parameters,
+                               cublas_handle,
+                               pos,
+                               vel,
+                               acc);
     }
-    cublasDestroy(handle);
+#ifdef CUDA
+    LOGF(DEBUG, "\Destroying the cuBLAS handle.\n");
+    cublasDestroy(cublas_handle);
+#endif
 
     LOGF(DEBUG, "\nAfter time evolution.\n");
     #ifdef CUDA
