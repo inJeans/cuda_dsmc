@@ -5,22 +5,9 @@
  *  Copyright 2015 Christopher Watkins
  */
 
-#include <cuda_runtime.h>
-
-#include <float.h>
-#include <algorithm>
-
-#define CATCH_CONFIG_MAIN
-#include "catch.hpp"
-
-#include "random_numbers.hpp"
-#include "distribution_evolution.hpp"
-#include "distribution_generation.hpp"
-#include "trapping_potential.hpp"
 #include "distribution_evolution_tests.hpp"
 
-#include "define_host_constants.hpp"
-#include "declare_device_constants.cuh"
+double tol = 1.e-6;
 
 SCENARIO("[HOST] Acceleration Update", "[h-acc]") {
     GIVEN("A thermal distribution of 5000 positions, help in a quadrupole trap with a Bz = 2.0") {
@@ -46,7 +33,7 @@ SCENARIO("[HOST] Acceleration Update", "[h-acc]") {
         pos = reinterpret_cast<double3*>(calloc(num_test,
                                                 sizeof(double3)));
 
-        // Generate velocity distribution
+        // Generate position distribution
         generate_thermal_positions(num_test,
                                    init_T,
                                    trap_parameters,
@@ -108,65 +95,84 @@ SCENARIO("[HOST] Acceleration Update", "[h-acc]") {
     }
 }
 
-double mean_x(double3 *array,
-              int num_elements) {
-    double mean = 0.;
-    for (int i = 0; i < num_elements; ++i)
-        mean += array[i].x;
+SCENARIO("[HOST] Velocity Update", "[h-vel]") {
+    GIVEN("A thermal distribution of 5000 positions, help in a quadrupole trap with a Bz = 2.0") {
+        double init_T = 20.e-6;
+        int num_test = 5000;
 
-    return mean / num_elements;
-}
+        // Initialise trapping parameters
+        trap_geo trap_parameters;
+        trap_parameters.Bz = 2.0;
+        trap_parameters.B0 = 0.;
 
-double mean_y(double3 *array,
-              int num_elements) {
-    double mean = 0.;
-    for (int i = 0; i < num_elements; ++i)
-        mean += array[i].y;
+        // Initialise rng
+        pcg32_random_t *state;
+        state = reinterpret_cast<pcg32_random_t*>(calloc(num_test,
+                                                         sizeof(pcg32_random_t)));
 
-    return mean / num_elements;
-}
+        initialise_rng_states(num_test,
+                              state,
+                              false);
 
-double mean_z(double3 *array,
-              int num_elements) {
-    double mean = 0.;
-    for (int i = 0; i < num_elements; ++i)
-        mean += array[i].z;
+        // Initialise positions
+        double3 *pos;
+        pos = reinterpret_cast<double3*>(calloc(num_test,
+                                                sizeof(double3)));
 
-    return mean / num_elements;
-}
+        // Generate position distribution
+        generate_thermal_positions(num_test,
+                                   init_T,
+                                   trap_parameters,
+                                   state,
+                                   pos);
 
-double std_dev_x(double3 *array,
-                 int num_elements) {
-    double mu = mean_x(array,
-                       num_elements);
-    double sum = 0.;
-    for (int i = 0; i < num_elements; ++i) {
-        sum += (array[i].x-mu) * (array[i].x-mu);
+        // Initialise accelerations
+            double3 *acc;
+            acc = reinterpret_cast<double3*>(calloc(num_test,
+                                                    sizeof(double3)));
+
+            // Generate accelerations
+            update_accelerations(num_test,
+                                 trap_parameters,
+                                 pos,
+                                 acc);
+
+        WHEN("The update_velocities function is called with dt=1.e-6") {
+            double dt = 1.e-6;
+            // Initialise velocities
+            double3 *test_vel;
+            test_vel = reinterpret_cast<double3*>(calloc(num_test,
+                                                  sizeof(double3)));
+
+            // Generate velocity distribution
+            generate_thermal_velocities(num_test,
+                                        init_T,
+                                        state,
+                                        test_vel);
+
+            double initial_kinetic_energy = mean_kinetic_energy(num_test,
+                                                                test_vel);
+
+            cublasHandle_t cublas_handle;
+            update_velocities(num_test,
+                              dt,
+                              cublas_handle,
+                              acc,
+                              test_vel);
+
+            double final_kinetic_energy = mean_kinetic_energy(num_test,
+                                                              test_vel);
+
+            THEN("The change in kinetic energy should be 0") {
+                REQUIRE(final_kinetic_energy - initial_kinetic_energy > -tol);
+                REQUIRE(final_kinetic_energy - initial_kinetic_energy < tol);
+            }
+
+            free(test_vel);
+            
+        }
+
+        free(pos);
+        free(acc);
     }
-
-    return sqrt(sum / num_elements);
-}
-
-double std_dev_y(double3 *array,
-                 int num_elements) {
-    double mu = mean_y(array,
-                       num_elements);
-    double sum = 0.;
-    for (int i = 0; i < num_elements; ++i) {
-        sum += (array[i].y-mu) * (array[i].y-mu);
-    }
-
-    return sqrt(sum / num_elements);
-}
-
-double std_dev_z(double3 *array,
-                 int num_elements) {
-    double mu = mean_z(array,
-                       num_elements);
-    double sum = 0.;
-    for (int i = 0; i < num_elements; ++i) {
-        sum += (array[i].z-mu) * (array[i].z-mu);
-    }
-
-    return sqrt(sum / num_elements);
 }

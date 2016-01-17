@@ -6,38 +6,22 @@
 #ifndef DISTRIBUTION_GENERATION_TESTS_CUH_INCLUDED
 #define DISTRIBUTION_GENERATION_TESTS_CUH_INCLUDED 1
 
-__host__ void uniform_prng(int num_elements,
-                           curandState *state,
-                           double *h_r);
+#include <cuda_runtime.h>
+#include <curand.h>
 
-__global__ void g_uniform_prng(int num_elements,
-                               curandState *state,
-                               double *r);
+#include <float.h>
+#include <algorithm>
 
-__host__ void gaussian_prng(int num_elements,
-                           curandState *state,
-                           double *h_r);
+#define CATCH_CONFIG_MAIN
+#include "catch.hpp"
 
-__global__ void g_gaussian_prng(int num_elements,
-                                curandState *state,
-                                double *r);
+#include "random_numbers.hpp"
+#include "helper_cuda.h"
+#include "test_helpers.hpp"
+#include "test_helpers.cuh"
+#include "distribution_generation.hpp"
 
-double mean(double3 *array,
-            int num_elements);
-
-double mean_norm(double3 *array,
-                 int num_elements);
-
-double mean_modified_radius(double3 *pos,
-                            int num_elements);
-
-double std_dev(double3 *array,
-               int num_elements);
-
-double std_norm(double3 *vel,
-                int num_elements);
-
-double std_modified_radius(double3 *pos,
-                           int num_elements);
+#include "define_host_constants.hpp"
+#include "declare_device_constants.cuh"
 
 #endif  // DISTRIBUTION_GENERATION_TESTS_CUH_INCLUDED

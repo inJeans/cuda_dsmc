@@ -5,23 +5,9 @@
  *  Copyright 2015 Christopher Watkins
  */
 
-#include <cuda_runtime.h>
-
-#include <float.h>
-#include <algorithm>
-
-#define CATCH_CONFIG_MAIN
-#include "catch.hpp"
-extern "C"
-{
-#include "unif01.h"
-#include "bbattery.h" 
-}
-
-#include "random_numbers.hpp"
 #include "random_number_generation_tests.hpp"
 
-#include "define_host_constants.hpp"
+double g_uniform_prng(void);
 
 pcg32_random_t g_rng;
 
@@ -113,30 +99,4 @@ SCENARIO("[HOST] Normally distributed random number generation", "[h-nrng]") {
 
 double g_uniform_prng(void) {
     return uniform_prng(&g_rng);
-}
-
-double mean(double *array,
-            int num_elements) {
-    double mean = 0.;
-    for (int i = 0; i < num_elements; ++i)
-        mean += array[i];
-
-    return mean / num_elements;
-}
-
-double std_dev(double *array,
-               int num_elements) {
-    double mu = mean(array,
-                     num_elements);
-    double sum = 0.;
-    for (int i = 0; i < num_elements; ++i)
-        sum += (array[i]-mu) * (array[i]-mu);
-
-    return sqrt(sum / num_elements);
-}
-
-double z_score(double value,
-               double mean,
-               double std) {
-    return (value - mean) / std;
 }

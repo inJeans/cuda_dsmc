@@ -6,30 +6,25 @@
 #ifndef RANDOM_NUMBER_GENERATION_TESTS_CUH_INCLUDED
 #define RANDOM_NUMBER_GENERATION_TESTS_CUH_INCLUDED 1
 
-__host__ void uniform_prng(int num_elements,
-                           curandState *state,
-                           double *h_r);
+#include <cuda_runtime.h>
+#include <curand.h>
 
-__global__ void g_uniform_prng(int num_elements,
-                               curandState *state,
-                               double *r);
+#include <float.h>
+#include <algorithm>
 
-__host__ void gaussian_prng(int num_elements,
-                           curandState *state,
-                           double *h_r);
+#define CATCH_CONFIG_MAIN
+#include "catch.hpp"
+extern "C"
+{
+#include "unif01.h"
+#include "bbattery.h" 
+}
 
-__global__ void g_gaussian_prng(int num_elements,
-                                curandState *state,
-                                double *r);
+#include "random_numbers.hpp"
+#include "helper_cuda.h"
+#include "test_helpers.hpp"
+#include "test_helpers.cuh"
 
-double mean(double *array,
-            int num_elements);
-
-double std_dev(double *array,
-               int num_elements);
-
-double z_score(double value,
-               double mean,
-               double std);
+#include "define_host_constants.hpp"
 
 #endif  // RANDOM_NUMBER_GENERATION_TESTS_CUH_INCLUDED

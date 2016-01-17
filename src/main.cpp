@@ -120,7 +120,7 @@ int main(int argc, char const *argv[]) {
                                             sizeof(double3)));
 #endif
 
-    // Generate velocity distribution
+    // Generate position distribution
     generate_thermal_positions(NUM_ATOMS,
                                20.e-6,
                                trap_parameters,
@@ -148,7 +148,7 @@ int main(int argc, char const *argv[]) {
                          pos,
                          acc);
     LOGF(DEBUG, "\nBefore time evolution.\n");
-    #ifdef CUDA
+#ifdef CUDA
     double3 h_vel[NUM_ATOMS];
     cudaMemcpy(&h_vel,
                vel,
@@ -173,9 +173,6 @@ int main(int argc, char const *argv[]) {
                                                            h_pos[1].x, h_pos[1].y, h_pos[1].z);
     LOGF(INFO, "\na1 = { %f,%f,%f }, a2 = { %f,%f,%f }\n", h_acc[0].x, h_acc[0].y, h_acc[0].z,
                                                            h_acc[1].x, h_acc[1].y, h_acc[1].z);
-    cudaFree(h_vel);
-    cudaFree(h_pos);
-    cudaFree(h_acc);
 #else 
     LOGF(INFO, "\nv1 = { %f,%f,%f }, v2 = { %f,%f,%f }\n", vel[0].x, vel[0].y, vel[0].z,
                                                            vel[1].x, vel[1].y, vel[1].z);
@@ -185,12 +182,10 @@ int main(int argc, char const *argv[]) {
                                                            acc[1].x, acc[1].y, acc[1].z);
 #endif
 
+    cublasHandle_t cublas_handle;
 #ifdef CUDA
     LOGF(DEBUG, "\nCreating the cuBLAS handle.\n");
-    cublasHandle_t cublas_handle;
-    cublasCreate(&cublas_handle);
-#else
-    cublasHandle_t cublas_handle;
+    checkCudaErrors(cublasCreate(&cublas_handle));
 #endif
     // Evolve many time step
     LOGF(INFO, "\nEvolving distribution for %i time steps.", num_time_steps);
@@ -229,9 +224,6 @@ int main(int argc, char const *argv[]) {
                                                            h_pos[1].x, h_pos[1].y, h_pos[1].z);
     LOGF(INFO, "\na1 = { %f,%f,%f }, a2 = { %f,%f,%f }\n", h_acc[0].x, h_acc[0].y, h_acc[0].z,
                                                            h_acc[1].x, h_acc[1].y, h_acc[1].z);
-    cudaFree(h_vel);
-    cudaFree(h_pos);
-    cudaFree(h_acc);
 #else 
     LOGF(INFO, "\nv1 = { %f,%f,%f }, v2 = { %f,%f,%f }\n", vel[0].x, vel[0].y, vel[0].z,
                                                            vel[1].x, vel[1].y, vel[1].z);

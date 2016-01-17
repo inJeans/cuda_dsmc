@@ -5,20 +5,7 @@
  *  Copyright 2015 Christopher Watkins
  */
 
-#include <cuda_runtime.h>
-
-#include <float.h>
-#include <algorithm>
-
-#define CATCH_CONFIG_MAIN
-#include "catch.hpp"
-
-#include "random_numbers.hpp"
-#include "distribution_generation.hpp"
 #include "distribution_generation_tests.hpp"
-
-#include "define_host_constants.hpp"
-#include "declare_device_constants.cuh"
 
 SCENARIO("[HOST] Thermal velocity distribution", "[h-veldist]") {
     GIVEN("An array of appropriate seeds") {
@@ -147,80 +134,4 @@ SCENARIO("[HOST] Thermal position distribution", "[h-posdist]") {
 
         free(state);
     }
-}
-
-double mean(double3 *array,
-            int num_elements) {
-    double mean = 0.;
-    for (int i = 0; i < num_elements; ++i)
-        mean += array[i].x + array[i].y + array[i].z;
-
-    return mean / num_elements / 3.;
-}
-
-double mean_norm(double3 *array,
-                 int num_elements) {
-    double mean = 0.;
-    for (int i = 0; i < num_elements; ++i)
-        mean += norm(array[i]);
-
-    return mean / num_elements;
-}
-
-double mean_modified_radius(double3 *pos,
-                            int num_elements) {
-    double mean = 0.;
-    for (int i = 0; i < num_elements; ++i)
-        mean += sqrt(pos[i].x*pos[i].x +
-                     pos[i].y*pos[i].y + 
-                     4*pos[i].z*pos[i].z);
-
-    return mean / num_elements;
-}
-
-double std_dev(double3 *array,
-               int num_elements) {
-    double mu = mean(array,
-                     num_elements);
-    double sum = 0.;
-    for (int i = 0; i < num_elements; ++i) {
-        sum += (array[i].x-mu) * (array[i].x-mu);
-        sum += (array[i].y-mu) * (array[i].y-mu);
-        sum += (array[i].z-mu) * (array[i].z-mu);
-    }
-
-    return sqrt(sum / num_elements / 3.);
-}
-
-double std_norm(double3 *vel,
-                int num_elements) {
-    double mu = mean_norm(vel,
-                          num_elements);
-    double sum = 0.;
-    for (int i = 0; i < num_elements; ++i)
-        sum += (norm(vel[i])-mu) * (norm(vel[i])-mu);
-
-    return sqrt(sum / num_elements);
-}
-
-double std_modified_radius(double3 *pos,
-                           int num_elements) {
-    double mu = mean_modified_radius(pos,
-                                     num_elements);
-    double sum = 0.;
-    for (int i = 0; i < num_elements; ++i)
-        sum += (sqrt(pos[i].x*pos[i].x +
-                     pos[i].y*pos[i].y + 
-                     4*pos[i].z*pos[i].z) - mu) * 
-               (sqrt(pos[i].x*pos[i].x +
-                     pos[i].y*pos[i].y + 
-                     4*pos[i].z*pos[i].z) - mu);
-
-    return sqrt(sum / num_elements);
-}
-
-double z_score(double value,
-               double mean,
-               double std) {
-    return (value - mean) / std;
 }

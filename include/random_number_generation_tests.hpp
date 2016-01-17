@@ -6,16 +6,22 @@
 #ifndef RANDOM_NUMBER_GENERATION_TESTS_HPP_INCLUDED
 #define RANDOM_NUMBER_GENERATION_TESTS_HPP_INCLUDED 1
 
-double g_uniform_prng(void);
+#include <cuda_runtime.h>
 
-double mean(double *array,
-            int num_elements);
+#include <float.h>
+#include <algorithm>
 
-double std_dev(double *array,
-               int num_elements);
+#define CATCH_CONFIG_MAIN
+#include "catch.hpp"
+extern "C"
+{
+#include "unif01.h"
+#include "bbattery.h" 
+}
 
-double z_score(double value,
-               double mean,
-               double std);
+#include "random_numbers.hpp"
+#include "test_helpers.hpp"
+
+#include "define_host_constants.hpp"
 
 #endif  // RANDOM_NUMBER_GENERATION_TESTS_HPP_INCLUDED

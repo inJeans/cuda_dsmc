@@ -133,32 +133,32 @@ enable_testing()
 
 IF(CUDA)
     # DEVICE - Random number generation tests
-    SET(TEST_SOURCES test/random_number_generation_test.cu src/random_numbers.cpp src/random_numbers.cu src/vector_math.cu src/entropy.c)
+    SET(TEST_SOURCES test/random_number_generation_test.cu src/random_numbers.cpp src/trapping_potential.cpp src/trapping_potential.cu src/random_numbers.cu src/vector_math.cu src/entropy.c test/test_helpers.cpp test/test_helpers.cu)
     cuda_add_executable(device_random_number_generation_test ${TEST_SOURCES})
     target_link_libraries(device_random_number_generation_test pcg_random cudart g3logger)
     # target_compile_definitions(device_random_number_generation_test PUBLIC "CUDA")
     # DEVICE - Distribution generation tests
-    SET(TEST_SOURCES test/distribution_generation_test.cu src/distribution_generation.cpp src/distribution_generation.cu src/trapping_potential.cu src/random_numbers.cpp src/random_numbers.cu src/vector_math.cu src/entropy.c)
+    SET(TEST_SOURCES test/distribution_generation_test.cu src/distribution_generation.cpp src/distribution_generation.cu src/trapping_potential.cpp src/trapping_potential.cu src/random_numbers.cpp src/random_numbers.cu src/vector_math.cu src/entropy.c test/test_helpers.cpp test/test_helpers.cu)
     cuda_add_executable(device_distribution_generation_test ${TEST_SOURCES})
     target_link_libraries(device_distribution_generation_test pcg_random cudart g3logger)
     # target_compile_definitions(device_distribution_generation_test PUBLIC "CUDA")
     # DEVICE - Distribution evolution tests
-    SET(TEST_SOURCES test/distribution_evolution_test.cu src/distribution_evolution.cpp src/distribution_evolution.cu src/distribution_generation.cpp src/distribution_generation.cu src/trapping_potential.cpp src/trapping_potential.cu src/random_numbers.cpp src/random_numbers.cu src/vector_math.cu src/entropy.c)
+    SET(TEST_SOURCES test/distribution_evolution_test.cu src/distribution_evolution.cpp src/distribution_evolution.cu src/distribution_generation.cpp src/distribution_generation.cu src/trapping_potential.cpp src/trapping_potential.cu src/random_numbers.cpp src/random_numbers.cu src/vector_math.cu src/entropy.c test/test_helpers.cpp test/test_helpers.cu)
     cuda_add_executable(device_distribution_evolution_test ${TEST_SOURCES})
     target_link_libraries(device_distribution_evolution_test pcg_random cudart cublas g3logger)
     # target_compile_definitions(device_distribution_evolution_test PUBLIC "CUDA")
 ENDIF()
 
 # HOST - Random number generation tests
-SET(TEST_SOURCES test/random_number_generation_test.cpp src/random_numbers.cpp src/random_numbers.cu src/vector_math.cu src/entropy.c)
+SET(TEST_SOURCES test/random_number_generation_test.cpp src/trapping_potential.cpp src/trapping_potential.cu src/random_numbers.cpp src/random_numbers.cu src/vector_math.cu src/entropy.c test/test_helpers.cpp)
 cuda_add_executable(host_random_number_generation_test ${TEST_SOURCES})
 target_link_libraries(host_random_number_generation_test pcg_random cudart g3logger testu01 mylib probdist)
 # HOST - Distribution generation tests
-SET(TEST_SOURCES test/distribution_generation_test.cpp src/distribution_generation.cpp src/distribution_generation.cu src/trapping_potential.cpp src/trapping_potential.cu src/random_numbers.cpp src/random_numbers.cu src/vector_math.cu src/entropy.c)
+SET(TEST_SOURCES test/distribution_generation_test.cpp src/distribution_generation.cpp src/distribution_generation.cu src/trapping_potential.cpp src/trapping_potential.cu src/random_numbers.cpp src/random_numbers.cu src/vector_math.cu src/entropy.c test/test_helpers.cpp)
 cuda_add_executable(host_distribution_generation_test ${TEST_SOURCES})
 target_link_libraries(host_distribution_generation_test pcg_random cudart g3logger)
 # HOST - Distribution evolution tests
-SET(TEST_SOURCES test/distribution_evolution_test.cpp src/distribution_evolution.cpp src/distribution_evolution.cu src/distribution_generation.cpp src/distribution_generation.cu src/trapping_potential.cpp src/trapping_potential.cu src/random_numbers.cpp src/random_numbers.cu src/vector_math.cu src/entropy.c)
+SET(TEST_SOURCES test/distribution_evolution_test.cpp src/distribution_evolution.cpp src/distribution_evolution.cu src/distribution_generation.cpp src/distribution_generation.cu src/trapping_potential.cpp src/trapping_potential.cu src/random_numbers.cpp src/random_numbers.cu src/vector_math.cu src/entropy.c test/test_helpers.cpp)
 cuda_add_executable(host_distribution_evolution_test ${TEST_SOURCES})
 target_link_libraries(host_distribution_evolution_test pcg_random cudart cublas g3logger)
 

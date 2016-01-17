@@ -6,26 +6,19 @@
 #ifndef DISTRIBUTION_GENERATION_TESTS_HPP_INCLUDED
 #define DISTRIBUTION_GENERATION_TESTS_HPP_INCLUDED 1
 
-double mean(double3 *array,
-            int num_elements);
+#include <cuda_runtime.h>
 
-double mean_norm(double3 *array,
-                 int num_elements);
+#include <float.h>
+#include <algorithm>
 
-double mean_modified_radius(double3 *pos,
-                            int num_elements);
+#define CATCH_CONFIG_MAIN
+#include "catch.hpp"
 
-double std_dev(double3 *array,
-               int num_elements);
+#include "random_numbers.hpp"
+#include "test_helpers.hpp"
+#include "distribution_generation.hpp"
 
-double std_norm(double3 *vel,
-                int num_elements);
-
-double std_modified_radius(double3 *pos,
-                           int num_elements);
-
-double z_score(double value,
-               double mean,
-               double std);
+#include "define_host_constants.hpp"
 
 #endif  // DISTRIBUTION_GENERATION_TESTS_HPP_INCLUDED
+ 

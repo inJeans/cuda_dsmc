@@ -6,22 +6,21 @@
 #ifndef DISTRIBUTION_EVOLUTION_TESTS_HPP_INCLUDED
 #define DISTRIBUTION_EVOLUTION_TESTS_HPP_INCLUDED 1
 
-double mean_x(double3 *array,
-              int num_elements);
+#include <cuda_runtime.h>
 
-double mean_y(double3 *array,
-              int num_elements);
+#include <float.h>
+#include <algorithm>
 
-double mean_z(double3 *array,
-              int num_elements);
+#define CATCH_CONFIG_MAIN
+#include "catch.hpp"
 
-double std_dev_x(double3 *array,
-                 int num_elements);
+#include "random_numbers.hpp"
+#include "distribution_evolution.hpp"
+#include "distribution_generation.hpp"
+#include "trapping_potential.hpp"
+#include "test_helpers.hpp"
 
-double std_dev_y(double3 *array,
-                 int num_elements);
-
-double std_dev_z(double3 *array,
-                 int num_elements);
+#include "define_host_constants.hpp"
+#include "declare_device_constants.cuh"
 
 #endif  // DISTRIBUTION_EVOLUTION_TESTS_HPP_INCLUDED

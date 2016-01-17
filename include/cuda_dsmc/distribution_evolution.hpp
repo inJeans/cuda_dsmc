@@ -6,12 +6,11 @@
 #ifndef DISTRIBUTION_EVOLUTION_HPP_INCLUDED
 #define DISTRIBUTION_EVOLUTION_HPP_INCLUDED 1
 
+#include <mkl.h>
+#include <g3log/g3log.hpp>
+
 #include <cuda_runtime.h>
 #include "cublas_v2.h"
-
-#include <mkl.h>
-
-#include <g3log/g3log.hpp>
 
 #include "trapping_potential.hpp"
 #include "vector_math.cuh"

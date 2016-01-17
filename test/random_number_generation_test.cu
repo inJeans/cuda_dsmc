@@ -5,25 +5,7 @@
  *  Copyright 2015 Christopher Watkins
  */
 
-#include <cuda_runtime.h>
-#include <curand.h>
-
-#include <float.h>
-#include <algorithm>
-
-#define CATCH_CONFIG_MAIN
-#include "catch.hpp"
-extern "C"
-{
-#include "unif01.h"
-#include "bbattery.h" 
-}
-
-#include "random_numbers.hpp"
-#include "helper_cuda.h"
 #include "random_number_generation_tests.cuh"
-
-#include "define_host_constants.hpp"
 
 SCENARIO("[DEVICE] Uniform random number generation", "[d-urng]") {
     GIVEN("An appropriate seed") {
@@ -35,9 +17,9 @@ SCENARIO("[DEVICE] Uniform random number generation", "[d-urng]") {
 
         WHEN("The random number generator is called") {
             double r;
-            uniform_prng(1,
-                         state,
-                         &r);
+            uniform_prng_launcher(1,
+                                  state,
+                                  &r);
 
             THEN("The result should be between 0 and 1") {
                 REQUIRE(r >= 0.);
@@ -118,92 +100,4 @@ SCENARIO("[DEVICE] Normally distributed random number generation", "[d-nrng]") {
 
         cudaFree(state);
     }
-}
-
-__host__ void uniform_prng(int num_elements,
-                           curandState *state,
-                           double *h_r) {
-    double *d_r;
-    checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&d_r),
-                               num_elements*sizeof(double)));
-
-    g_uniform_prng<<<1,1>>>(num_elements,
-                            state,
-                            d_r);
-
-    checkCudaErrors(cudaMemcpy(h_r,
-                               d_r,
-                               num_elements*sizeof(double),
-                               cudaMemcpyDeviceToHost));
-
-    return;
-}
-
-__global__ void g_uniform_prng(int num_elements,
-                               curandState *state,
-                               double *r) {
-    for (int i = blockIdx.x * blockDim.x + threadIdx.x;
-         i < num_elements;
-         i += blockDim.x * gridDim.x) {
-        r[i] = curand_uniform(state);
-    }
-
-    return;
-}
-
-__host__ void gaussian_prng(int num_elements,
-                           curandState *state,
-                           double *h_r) {
-    double *d_r;
-    checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&d_r),
-                               num_elements*sizeof(double)));
-
-    g_gaussian_prng<<<num_elements,1>>>(num_elements,
-                                        state,
-                                        d_r);
-
-    checkCudaErrors(cudaMemcpy(h_r,
-                               d_r,
-                               num_elements*sizeof(double),
-                               cudaMemcpyDeviceToHost));
-
-    return;
-}
-
-__global__ void g_gaussian_prng(int num_elements,
-                                curandState *state,
-                                double *r) {
-    for (int i = blockIdx.x * blockDim.x + threadIdx.x;
-         i < num_elements;
-         i += blockDim.x * gridDim.x) {
-        r[i] = curand_normal(state);
-    }
-
-    return;
-}
-
-double mean(double *array,
-            int num_elements) {
-    double mean = 0.;
-    for (int i = 0; i < num_elements; ++i)
-        mean += array[i];
-
-    return mean / num_elements;
-}
-
-double std_dev(double *array,
-               int num_elements) {
-    double mu = mean(array,
-                     num_elements);
-    double sum = 0.;
-    for (int i = 0; i < num_elements; ++i)
-        sum += (array[i]-mu) * (array[i]-mu);
-
-    return sqrt(sum / num_elements);
-}
-
-double z_score(double value,
-               double mean,
-               double std) {
-    return (value - mean) / std;
 }

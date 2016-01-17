@@ -87,15 +87,14 @@ void update_positions(int num_atoms,
                       cublasHandle_t cublas_handle,
                       double3 *vel,
                       double3 *pos) {
-#ifdef CUDA
+#if defined(CUDA)
     cu_update_positions(num_atoms,
                         dt,
                         cublas_handle,
                         vel,
                         pos);
-#endif
-#ifdef MKL
-    cblas_daxpy(3*num_atoms, 
+#elif defined(MKL)
+    cblas_daxpy(3*num_atoms,
                 dt,
                 reinterpret_cast<double *>(vel),
                 1,
@@ -139,15 +138,14 @@ void update_velocities(int num_atoms,
                        cublasHandle_t cublas_handle,
                        double3 *acc,
                        double3 *vel) {
-#ifdef CUDA
+#if defined(CUDA)
     cu_update_velocities(num_atoms,
                          dt,
                          cublas_handle,
                          acc,
                          vel);
-#endif
-#ifdef MKL
-    cblas_daxpy(3*num_atoms, 
+#elif defined(MKL)
+    cblas_daxpy(3*num_atoms,
                 dt,
                 reinterpret_cast<double *>(acc),
                 1,
