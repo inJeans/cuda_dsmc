@@ -35,6 +35,8 @@ double3 gaussian_point(double mean,
                        double std,
                        pcg32_random_t *state);
 
+double2 box_muller(pcg32_random_t *state);
+
 double gaussian_ziggurat(pcg32_random_t *state);
 
 double uniform_prng(pcg32_random_t *state);

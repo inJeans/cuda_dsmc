@@ -21,27 +21,27 @@ __host__ __device__ double3 B(double3 pos,
 
 __host__ __device__ double3 dB_dx(double3 pos,
                                   trap_geo params) {
-    double3 dBdx = make_double3(0., 0., 0.);
-
-    dBdx.x = 0.5 * params.Bz;
+    double3 dBdx = make_double3(0.5 * params.Bz,
+                                0.,
+                                0.);
 
     return dBdx;
 }
 
 __host__ __device__ double3 dB_dy(double3 pos,
                                   trap_geo params) {
-    double3 dBdy = make_double3(0., 0., 0.);
-
-    dBdy.y = 0.5 * params.Bz;
+    double3 dBdy = make_double3(0.,
+                                0.5 * params.Bz,
+                                0.);
 
     return dBdy;
 }
 
 __host__ __device__ double3 dB_dz(double3 pos,
                                   trap_geo params) {
-    double3 dBdz = make_double3(0., 0., 0.);
-
-    dBdz.z =-1.0 * params.Bz;
+    double3 dBdz = make_double3(0.,
+                                0.,
+                                -1.0 * params.Bz);
 
     return dBdz;
 }
