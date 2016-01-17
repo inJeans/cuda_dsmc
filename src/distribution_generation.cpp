@@ -12,7 +12,7 @@
 
 #include "declare_host_constants.hpp"
 
-const double max_grid_width = 1.e-3;
+const double max_grid_width = 2.e-3;
 
 /** \fn void generate_thermal_velocities(int num_atoms,
  *                                       double temp,
@@ -167,10 +167,14 @@ double3 thermal_pos(double temp,
     double3 pos = make_double3(0., 0., 0.);
 
     while (no_atom_selected) {
-        double3 r = gaussian_point(0.,
-                                   1.,
-                                   state);
-        r = r * max_grid_width / 3.;
+        // double3 r = gaussian_point(0.,
+        //                            1.,
+        //                            state);
+        double3 r = make_double3(0., 0., 0.);
+        r.x = 2. * uniform_prng(state) - 1.;
+        r.y = 2. * uniform_prng(state) - 1.;
+        r.z = 2. * uniform_prng(state) - 1.;
+        r = r * max_grid_width;
 
         double magB = norm(B(r,
                              params));
