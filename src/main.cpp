@@ -199,7 +199,7 @@ int main(int argc, char const *argv[]) {
                                acc);
     }
 #ifdef CUDA
-    LOGF(DEBUG, "\Destroying the cuBLAS handle.\n");
+    LOGF(DEBUG, "\nDestroying the cuBLAS handle.\n");
     cublasDestroy(cublas_handle);
 #endif
 
