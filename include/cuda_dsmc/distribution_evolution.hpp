@@ -6,7 +6,9 @@
 #ifndef DISTRIBUTION_EVOLUTION_HPP_INCLUDED
 #define DISTRIBUTION_EVOLUTION_HPP_INCLUDED 1
 
+#if defined(MKL)
 #include <mkl.h>
+#endif
 #include <g3log/g3log.hpp>
 
 #include <cuda_runtime.h>
