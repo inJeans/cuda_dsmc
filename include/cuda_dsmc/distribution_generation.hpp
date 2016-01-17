@@ -12,6 +12,14 @@
 #include "random_numbers.hpp"
 #include "vector_math.cuh"
 
+#include "cuComplex.h"
+struct __device_builtin__ __builtin_align__(16) zomplex2 {
+    cuDoubleComplex x, y;
+};
+
+zomplex2 aligned_spin(trap_geo params,
+                      double3 pos);
+
 #ifdef CUDA
 __host__ void generate_thermal_velocities(int num_atoms,
                                           double temp,

@@ -53,6 +53,8 @@ int main(int argc, char const *argv[]) {
 
 #ifdef CUDA
     LOGF(INFO, "\nRunnning on your local CUDA device.");
+    findCudaDevice(argc,
+                   argv);
 #endif
 
     // Initialise trapping parameters
