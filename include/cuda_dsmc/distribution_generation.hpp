@@ -12,10 +12,10 @@
 #include "random_numbers.hpp"
 #include "vector_math.cuh"
 
-#include "cuComplex.h"
-struct __device_builtin__ __builtin_align__(16) zomplex2 {
-    cuDoubleComplex x, y;
-};
+void generate_aligned_spins(int num_atoms,
+                            trap_geo params,
+                            double3 *pos,
+                            zomplex2 *psi);
 
 zomplex2 aligned_spin(trap_geo params,
                       double3 pos);

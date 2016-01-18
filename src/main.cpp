@@ -24,7 +24,7 @@
 #include "distribution_generation.hpp"
 #include "distribution_evolution.hpp"
 
-#define NUM_ATOMS 10000
+#define NUM_ATOMS 2
 
 #if (defined(WIN32) || defined(_WIN32) || defined(__WIN32__))
     const std::string path_to_log_file = "./";
@@ -149,6 +149,29 @@ int main(int argc, char const *argv[]) {
                          trap_parameters,
                          pos,
                          acc);
+
+// Initialise wavefunction
+    LOGF(INFO, "\nInitialising the wavefunction array.");
+    zomplex2 *psi;
+#ifdef CUDA
+    LOGF(DEBUG, "\nAllocating %i zomplex2 elements on the device.",
+         NUM_ATOMS);
+    printf("cudaMalloc\n");
+    checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&psi),
+                               NUM_ATOMS*sizeof(zomplex2)));
+#else
+    LOGF(DEBUG, "\nAllocating %i zomplex2 elements on the host.",
+         NUM_ATOMS);
+    psi = reinterpret_cast<zomplex2*>(calloc(NUM_ATOMS,
+                                             sizeof(zomplex2)));
+#endif
+
+    // Generate wavefunction
+    generate_aligned_spins(NUM_ATOMS,
+                           trap_parameters,
+                           pos,
+                           psi);
+
     LOGF(DEBUG, "\nBefore time evolution.\n");
 #ifdef CUDA
     double3 h_vel[NUM_ATOMS];
@@ -169,12 +192,21 @@ int main(int argc, char const *argv[]) {
                NUM_ATOMS*sizeof(double3),
                cudaMemcpyDeviceToHost);
 
+    zomplex2 h_psi[NUM_ATOMS];
+    cudaMemcpy(&h_psi,
+               psi,
+               NUM_ATOMS*sizeof(zomplex2),
+               cudaMemcpyDeviceToHost);
+
     LOGF(INFO, "\nv1 = { %f,%f,%f }, v2 = { %f,%f,%f }\n", h_vel[0].x, h_vel[0].y, h_vel[0].z,
                                                            h_vel[1].x, h_vel[1].y, h_vel[1].z);
     LOGF(INFO, "\np1 = { %f,%f,%f }, p2 = { %f,%f,%f }\n", h_pos[0].x, h_pos[0].y, h_pos[0].z,
                                                            h_pos[1].x, h_pos[1].y, h_pos[1].z);
     LOGF(INFO, "\na1 = { %f,%f,%f }, a2 = { %f,%f,%f }\n", h_acc[0].x, h_acc[0].y, h_acc[0].z,
                                                            h_acc[1].x, h_acc[1].y, h_acc[1].z);
+    LOGF(INFO, "\npsi1 = { %f%+fi,%f%+fi }, psi2 = { %f%+fi,%f%+fi }\n", 
+               h_psi[0].up.x, h_psi[0].up.y, h_psi[0].dn.x, h_psi[0].dn.y,
+               h_psi[1].up.x, h_psi[1].up.y, h_psi[1].dn.x, h_psi[1].dn.y);
 #else 
     LOGF(INFO, "\nv1 = { %f,%f,%f }, v2 = { %f,%f,%f }\n", vel[0].x, vel[0].y, vel[0].z,
                                                            vel[1].x, vel[1].y, vel[1].z);
@@ -182,6 +214,9 @@ int main(int argc, char const *argv[]) {
                                                            pos[1].x, pos[1].y, pos[1].z);
     LOGF(INFO, "\na1 = { %f,%f,%f }, a2 = { %f,%f,%f }\n", acc[0].x, acc[0].y, acc[0].z,
                                                            acc[1].x, acc[1].y, acc[1].z);
+    LOGF(INFO, "\npsi1 = { %f%+fi,%f%+fi }, psi2 = { %f%+fi,%f%+fi }\n", 
+               psi[0].up.x, psi[0].up.y, psi[0].dn.x, psi[0].dn.y,
+               psi[1].up.x, psi[1].up.y, psi[1].dn.x, psi[1].dn.y);
 #endif
 
     cublasHandle_t cublas_handle;
@@ -226,6 +261,9 @@ int main(int argc, char const *argv[]) {
                                                            h_pos[1].x, h_pos[1].y, h_pos[1].z);
     LOGF(INFO, "\na1 = { %f,%f,%f }, a2 = { %f,%f,%f }\n", h_acc[0].x, h_acc[0].y, h_acc[0].z,
                                                            h_acc[1].x, h_acc[1].y, h_acc[1].z);
+    LOGF(INFO, "\npsi1 = { %f%+fi,%f%+fi }, psi2 = { %f%+fi,%f%+fi }\n", 
+               h_psi[0].up.x, h_psi[0].up.y, h_psi[0].dn.x, h_psi[0].dn.y,
+               h_psi[1].up.x, h_psi[1].up.y, h_psi[1].dn.x, h_psi[1].dn.y);
 #else 
     LOGF(INFO, "\nv1 = { %f,%f,%f }, v2 = { %f,%f,%f }\n", vel[0].x, vel[0].y, vel[0].z,
                                                            vel[1].x, vel[1].y, vel[1].z);
@@ -233,6 +271,9 @@ int main(int argc, char const *argv[]) {
                                                            pos[1].x, pos[1].y, pos[1].z);
     LOGF(INFO, "\na1 = { %f,%f,%f }, a2 = { %f,%f,%f }\n", acc[0].x, acc[0].y, acc[0].z,
                                                            acc[1].x, acc[1].y, acc[1].z);
+    LOGF(INFO, "\npsi1 = { %f%+fi,%f%+fi }, psi2 = { %f%+fi,%f%+fi }\n", 
+               psi[0].up.x, psi[0].up.y, psi[0].dn.x, psi[0].dn.y,
+               psi[1].up.x, psi[1].up.y, psi[1].dn.x, psi[1].dn.y);
 #endif
 
 #ifdef CUDA
@@ -241,12 +282,14 @@ int main(int argc, char const *argv[]) {
     cudaFree(vel);
     cudaFree(pos);
     cudaFree(acc);
+    cudaFree(psi);
 #else
     LOGF(INFO, "\nCleaning up local memory.");
     free(state);
     free(vel);
     free(pos);
     free(acc);
+    free(psi);
 #endif
 
     g3::internal::shutDownLogging();

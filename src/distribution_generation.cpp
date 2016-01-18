@@ -12,16 +12,12 @@
 
 #include "declare_host_constants.hpp"
 
-static __inline__ __host__ __device__ zomplex2 make_zomplex2(double x, double y, double z, double w) {
-  zomplex2 t; t.x.x = x; t.x.y = y; t.y.x = z; t.y.y = w; return t;
-}
-
 const double max_grid_width = 2.e-3;
 
 /* \fn void generate_aligned_spins(int num_atoms,
- *                                  trap_geo params,
- *                                  double3 *pos,
-                                    zomplex2 *psi) 
+ *                                 trap_geo params,
+ *                                 double3 *pos,
+ *                                 zomplex2 *psi) 
  *  \brief Calls the function to fill a `zomplex2` array of aligned spins 
  *  on the host or device with a mean projection of 1.
  *  \param num_atoms Number of atoms in the thermal gas.
@@ -36,24 +32,32 @@ void generate_aligned_spins(int num_atoms,
                             trap_geo params,
                             double3 *pos,
                             zomplex2 *psi) {
-    #ifdef CUDA
-    // cu_generate_aligned_spins(num_atoms,
-    //                           params,
-    //                           pos,
-    //                           psi);
-    #endif
-
+#if defined(CUDA)
+    cu_generate_aligned_spins(num_atoms,
+                              params,
+                              pos,
+                              psi);
+#else
     for (int atom = 0; atom < num_atoms; ++atom) {
         psi[atom] = aligned_spin(params,
                                  pos[atom]);
     }
-
+#endif
     return;
 }
 
 zomplex2 aligned_spin(trap_geo params,
                       double3 pos) {
     zomplex2 psi = make_zomplex2(0., 0., 0., 0.);
+
+    double3 Bn = unit(B(pos,
+                        params));
+
+    psi.up.x = 0.5 * (1. + Bn.x + Bn.z) / sqrt(1 + Bn.x);
+    psi.up.y = 0.5 * (-1.*Bn.y) / sqrt(1 + Bn.x);
+    psi.dn.x = 0.5 * (1. + Bn.x - Bn.z) / sqrt(1 + Bn.x);
+    psi.dn.y = 0.5 * (Bn.y) / sqrt(1 + Bn.x);
+
     return psi;
 }
 

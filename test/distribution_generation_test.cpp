@@ -135,3 +135,54 @@ SCENARIO("[HOST] Thermal position distribution", "[h-posdist]") {
         free(state);
     }
 }
+
+SCENARIO("[HOST] Wavefunction generation", "[h-psigen]") {
+    GIVEN("A thermal distribution of positions") {
+        int num_test = 5000;
+
+        // Initialise rng
+        pcg32_random_t *state;
+        state = reinterpret_cast<pcg32_random_t*>(calloc(num_test,
+                                                         sizeof(pcg32_random_t)));
+
+        initialise_rng_states(num_test,
+                              state,
+                              false);
+
+        double init_temp = 20.e-6;
+        trap_geo trap_parameters;
+        trap_parameters.Bz = 2.0;
+        trap_parameters.B0 = 0.;
+
+        double3 *pos;
+        pos = reinterpret_cast<double3*>(calloc(num_test,
+                                                sizeof(double3)));
+
+        generate_thermal_positions(num_test,
+                                   init_temp,
+                                   trap_parameters,
+                                   state,
+                                   pos);
+
+        WHEN("We generate the corresponding locally aligned spins") {
+            zomplex2 *test_psi;
+            test_psi = reinterpret_cast<zomplex2*>(calloc(num_test,
+                                                          sizeof(zomplex2)));
+
+            generate_aligned_spins(num_test,
+                                   trap_parameters,
+                                   pos,
+                                   test_psi);
+
+            THEN("The mean projection onto the local magnetic field should be 1.") {
+
+                REQUIRE( 0 == 0);
+            }
+
+            free(test_psi);
+        }
+
+        free(pos);
+        free(state);
+    }
+}

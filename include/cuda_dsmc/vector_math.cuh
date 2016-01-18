@@ -12,6 +12,16 @@
 
 #include <math.h>
 
+#include "cuComplex.h"
+struct zomplex2 {
+    cuDoubleComplex up, dn;
+};
+typedef struct zomplex2 zomplex2;
+
+static __inline__ __host__ __device__ zomplex2 make_zomplex2(double x, double y, double z, double w) {
+  zomplex2 t; t.up.x = x; t.up.y = y; t.dn.x = z; t.dn.y = w; return t;
+}
+
 static __inline__ __host__ __device__ double3 operator*(double3 a, 
                                                         double b) {
     return make_double3(a.x*b, a.y*b, a.z*b);
