@@ -61,4 +61,12 @@ void update_accelerations(int num_atoms,
 double3 update_atom_acceleration(trap_geo params,
                                  double3 pos);
 
+void update_wavefunctions(int num_atoms,
+                          trap_geo params,
+                          double3 *pos,
+                          zomplex2 *psi);
+
+zomplex2 update_atom_wavefunction(trap_geo params,
+                                  double3 pos);
+
 #endif  // DISTRIBUTION_EVOLUTION_HPP_INCLUDED

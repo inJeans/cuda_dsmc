@@ -179,3 +179,85 @@ __device__ double3 d_update_atom_acceleration(double3 pos,
 
     return acc;
 }
+
+/** \fn __host__ void cu_update_wavefunctions(int num_atoms,
+ *                                                 trap_geo params,
+ *                                                 double3 *pos,
+ *                                                 zomplex2 *psi)
+ *  \brief Calls the `__global__` function to TODO.
+ *  \param num_atoms Total number of atoms in the gas.
+ *  \param params Customized structure of type `trap_geo` containing the 
+ *  necessary constants for describing the trapping potential.
+ *  \param *pos A `double3` array of length `num_atoms` containing the position
+ *  of each atom.
+ *  \param *psi A `zomplex2` array of length `num_atoms` containing the
+ *  acceleration of each atom.
+ *  \exception not yet.
+ *  \return void
+*/
+
+__host__ void cu_update_wavefunctions(int num_atoms,
+                                      trap_geo params,
+                                      double3 *pos,
+                                      zomplex2 *psi) {
+    LOGF(DEBUG, "\nCalculating optimal launch configuration for the wavefunction "
+                "update kernel.\n");
+    int block_size = 0;
+    int min_grid_size = 0;
+    int grid_size = 0;
+    cudaOccupancyMaxPotentialBlockSize(&min_grid_size,
+                                       &block_size,
+                                       (const void *) g_update_atom_wavefunction,
+                                       0,
+                                       num_atoms);
+    grid_size = (num_atoms + block_size - 1) / block_size;
+    LOGF(DEBUG, "\nLaunch config set as <<<%i,%i>>>\n",
+                grid_size, block_size);
+
+    g_update_atom_wavefunction<<<grid_size,
+                                 block_size>>>
+                                (num_atoms,
+                                 params,
+                                 pos,
+                                 psi);  
+
+    return;
+}
+
+/** \fn __global__ void g_update_atom_wavefunction(int num_atoms,
+ *                                                 trap_geo params,
+ *                                                 double3 *pos,
+ *                                                 zomplex2 *psi)
+ *  \brief `__global__` function for filling a `double3` array of length
+ *  `num_atoms` TODO.
+ *  \param num_atoms Total number of atoms in the gas.
+ *  \param params Customized structure of type `trap_geo` containing the 
+ *  necessary constants for describing the trapping potential.
+ *  \param *pos Pointer to an input `double3` array of length `num_atoms` for
+ *  storing the gas positions.
+ *  \param *psi Pointer to an output `zomplex2` array of length `num_atoms` for
+ *  storing the gas wavefunctions.
+ *  \exception not yet.
+ *  \return void
+*/
+
+__global__ void g_update_atom_wavefunction(int num_atoms,
+                                           trap_geo params,
+                                           double3 *pos,
+                                           zomplex2 *psi) {
+    for (int atom = blockIdx.x * blockDim.x + threadIdx.x;
+         atom < num_atoms;
+         atom += blockDim.x * gridDim.x) {
+        psi[atom] = d_update_atom_wavefunction(pos[atom],
+                                               params);
+    }
+
+    return;
+}
+
+__device__ zomplex2 d_update_atom_wavefunction(double3 pos,
+                                               trap_geo params) {
+    zomplex2 psi = make_zomplex2(0., 0., 0., 0.);
+
+    return psi;
+}

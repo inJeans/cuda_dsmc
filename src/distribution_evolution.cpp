@@ -217,3 +217,45 @@ double3 update_atom_acceleration(trap_geo params,
 
     return acc;
 }
+
+/** \fn void update_wavefunctions(int num_atoms,
+ *                                trap_geo params,
+ *                                double3 *pos,
+ *                                zomplex2 *psi) 
+ *  \brief TODO.
+ *  \param params Customized structure of type `trap_geo` containing the 
+ *  necessary constants for describing the trapping potential.
+ *  \param *pos Pointer to a `double3` host or device array of length
+ *  `num_atoms` containing the positions.
+ *  \param *psi Pointer to a `zomplex2` host or device array of length
+ *  `num_atoms` containing the wavefunctions.
+ *  \exception not yet.
+ *  \return void
+*/
+
+void update_wavefunctions(int num_atoms,
+                          trap_geo params,
+                          double3 *pos,
+                          zomplex2 *psi) {
+#ifdef CUDA
+    cu_update_wavefunctions(num_atoms,
+                            params,
+                            pos,
+                            psi);
+#else
+    for (int atom = 0; atom < num_atoms; ++atom) {
+        psi[atom] = update_atom_wavefunction(params,
+                                             pos[atom]);
+    }
+#endif
+
+    return;
+}
+
+zomplex2 update_atom_wavefunction(trap_geo params,
+                                  double3 pos) {
+    zomplex2 psi = make_zomplex2(0., 0., 0., 0.);
+
+
+    return psi;
+}
