@@ -47,7 +47,7 @@ __host__ void cu_generate_aligned_spins(int num_atoms,
                             (num_atoms,
                              params,
                              pos,
-                             psi);  
+                             psi);
 
     return;
 }

@@ -7,6 +7,8 @@
 
 #include "distribution_generation_tests.hpp"
 
+double tol = 1.e-6;
+
 SCENARIO("[HOST] Thermal velocity distribution", "[h-veldist]") {
     GIVEN("An array of appropriate seeds") {
         int num_test = 5000;
@@ -31,13 +33,6 @@ SCENARIO("[HOST] Thermal velocity distribution", "[h-veldist]") {
                                         init_temp,
                                         state,
                                         test_vel);
-
-            printf("v0 = {%.3f, %.3f, %.3f}\n", test_vel[0].x,
-                                                test_vel[0].y,
-                                                test_vel[0].z);
-            printf("v1 = {%.3f, %.3f, %.3f}\n", test_vel[1].x,
-                                                test_vel[1].y,
-                                                test_vel[1].z);
 
             THEN("The result give a mean speed and standard deviation as predicted by standard kinetic gas theory") {
                 double speed_mean = mean_norm(test_vel,
@@ -174,9 +169,21 @@ SCENARIO("[HOST] Wavefunction generation", "[h-psigen]") {
                                    pos,
                                    test_psi);
 
-            THEN("The mean projection onto the local magnetic field should be 1.") {
+            cuDoubleComplex P = make_cuDoubleComplex(0., 0.);
+            for (int atom = 0; atom < num_test; ++atom)
+            {
+                double3 Bn = unit(B(pos[atom],
+                                trap_parameters));
+                P = P + project(Bn,
+                                test_psi[atom]);
+            }
+            P = P / num_test;
 
-                REQUIRE( 0 == 0);
+            THEN("The mean projection onto the local magnetic field should be real and equal to 1.") {
+                REQUIRE(P.x < 1. + tol);
+                REQUIRE(P.x > 1. - tol);
+                REQUIRE(P.y < 0. + tol);
+                REQUIRE(P.y > 0. - tol);
             }
 
             free(test_psi);

@@ -36,8 +36,8 @@ int main(int argc, char const *argv[]) {
     // Initialise logger
     auto worker = g3::LogWorker::createLogWorker();
     auto default_handle = worker->addDefaultLogger(argv[0], path_to_log_file);
-    auto output_handle = worker->addSink(std2::make_unique<CustomSink>(),
-                                       &CustomSink::ReceiveLogMessage);
+    // auto output_handle = worker->addSink(std2::make_unique<CustomSink>(),
+    //                                      &CustomSink::ReceiveLogMessage);
     g3::initializeLogging(worker.get());
     std::future<std::string> log_file_name = default_handle->
                                              call(&g3::FileSink::fileName);
@@ -156,7 +156,6 @@ int main(int argc, char const *argv[]) {
 #ifdef CUDA
     LOGF(DEBUG, "\nAllocating %i zomplex2 elements on the device.",
          NUM_ATOMS);
-    printf("cudaMalloc\n");
     checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&psi),
                                NUM_ATOMS*sizeof(zomplex2)));
 #else

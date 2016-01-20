@@ -52,6 +52,48 @@ static __inline__ __host__ __device__ double3 operator+(double3 a,
     return make_double3(a.x+b, a.y+b, a.z+b);
 }
 
+static __inline__ __host__ __device__ cuDoubleComplex operator*(cuDoubleComplex a, 
+                                                                cuDoubleComplex b) {
+    return cuCmul(a, b);
+}
+
+static __inline__ __host__ __device__ cuDoubleComplex operator*(double a, 
+                                                                cuDoubleComplex b) {
+    return make_cuDoubleComplex(a*b.x, a*b.y);
+}
+
+static __inline__ __host__ __device__ cuDoubleComplex operator/(cuDoubleComplex a, 
+                                                                int b) {
+    return make_cuDoubleComplex(a.x/b, a.y/b);
+}
+
+static __inline__ __host__ __device__ cuDoubleComplex operator+(cuDoubleComplex a, 
+                                                                cuDoubleComplex b) {
+    return cuCadd(a, b);
+}
+
+// static __inline__ __host__ __device__ cuDoubleComplex& operator+=(const cuDoubleComplex &a, 
+//                                                                   const cuDoubleComplex &b) {
+//     cuDoubleComplex output = cuCadd(a, b);
+//     return &output;
+// }
+
+static __inline__ __host__ __device__ cuDoubleComplex operator+(double a, 
+                                                                cuDoubleComplex b) {
+    return make_cuDoubleComplex(a+b.x, b.y);
+}
+
+static __inline__ __host__ __device__ cuDoubleComplex operator+(cuDoubleComplex a, 
+                                                                double b) {
+    return make_cuDoubleComplex(a.x+b, a.y);
+}
+
+
+static __inline__ __host__ __device__ cuDoubleComplex operator-(cuDoubleComplex a, 
+                                                                double b) {
+    return make_cuDoubleComplex(a.x-b, a.y);
+}
+
 __host__ __device__ double dot(double3 a, double3 b);
 
 __host__ __device__ double3 unit(double3 vec);

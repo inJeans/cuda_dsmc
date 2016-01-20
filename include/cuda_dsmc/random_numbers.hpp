@@ -21,11 +21,11 @@
 
 #include <iostream>
 
-#ifdef CUDA
+// #ifdef CUDA
 void initialise_rng_states(int n_states,
                            curandState *state,
                            bool non_deterministic_seed = false);
-#endif
+// #endif
 
 void initialise_rng_states(int n_states,
                            pcg32_random_t *state,

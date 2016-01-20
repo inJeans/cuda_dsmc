@@ -20,12 +20,12 @@ void generate_aligned_spins(int num_atoms,
 zomplex2 aligned_spin(trap_geo params,
                       double3 pos);
 
-#ifdef CUDA
+// #ifdef CUDA
 __host__ void generate_thermal_velocities(int num_atoms,
                                           double temp,
                                           curandState *state,
                                           double3 *vel);
-#endif
+// #endif
 
 void generate_thermal_velocities(int num_atoms,
                                  double temp,
@@ -35,13 +35,13 @@ void generate_thermal_velocities(int num_atoms,
 double3 thermal_vel(double temp,
                     pcg32_random_t *state);
 
-#ifdef CUDA
+// #ifdef CUDA
 __host__ void generate_thermal_positions(int num_atoms,
                                          double temp,
                                          trap_geo params,
                                          curandState *state,
                                          double3 *pos);
-#endif
+// #endif
 
 void generate_thermal_positions(int num_atoms,
                                 double temp,
