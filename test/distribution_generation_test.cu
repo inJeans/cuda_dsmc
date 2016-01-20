@@ -8,6 +8,8 @@
 
 #include "distribution_generation_tests.cuh"
 
+double tol = 1.e-6;
+
 SCENARIO("[DEVICE] Thermal velocity distribution", "[d-veldist]") {
     GIVEN("An array of appropriate seeds") {
         int num_test = 5000;
@@ -139,5 +141,97 @@ SCENARIO("[DEVICE] Thermal position distribution", "[d-posdist]") {
         }
 
         cudaFree(state);
+    }
+}
+
+SCENARIO("[DEVICE] Wavefunction generation", "[d-psigen]") {
+    GIVEN("A thermal distribution of positions") {
+        int num_test = 5000;
+
+        // Initialise rng
+        curandState *state;
+        checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&state),
+                                   num_test*sizeof(curandState)));
+        initialise_rng_states(num_test,
+                              state);
+
+        double init_temp = 20.e-6;
+        trap_geo trap_parameters;
+        trap_parameters.Bz = 2.0;
+        trap_parameters.B0 = 0.;
+
+        double3 *d_pos;
+        checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&d_pos),
+                                   num_test*sizeof(double3)));
+
+        generate_thermal_positions(num_test,
+                                   init_temp,
+                                   trap_parameters,
+                                   state,
+                                   d_pos);
+
+        WHEN("We generate the corresponding locally aligned spins") {
+            zomplex2 *d_test_psi;
+            checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&d_test_psi),
+                                       num_test*sizeof(zomplex2)));
+
+            generate_aligned_spins(num_test,
+                                   trap_parameters,
+                                   d_pos,
+                                   d_test_psi);
+
+            double3 *pos;
+            pos = reinterpret_cast<double3*>(calloc(num_test,
+                                                    sizeof(double3)));
+            checkCudaErrors(cudaMemcpy(pos,
+                                       d_pos,
+                                       num_test*sizeof(double3),
+                                       cudaMemcpyDeviceToHost));
+
+            zomplex2 *test_psi;
+            test_psi = reinterpret_cast<zomplex2*>(calloc(num_test,
+                                                   sizeof(zomplex2)));
+            checkCudaErrors(cudaMemcpy(test_psi,
+                                       d_test_psi,
+                                       num_test*sizeof(zomplex2),
+                                       cudaMemcpyDeviceToHost));
+
+            cuDoubleComplex P = make_cuDoubleComplex(0., 0.);
+            for (int atom = 0; atom < num_test; ++atom) {
+                double3 Bn = unit(B(pos[atom],
+                                trap_parameters));
+                P = P + project(Bn,
+                                test_psi[atom]);
+            }
+            P = P / num_test;
+
+            THEN("The mean projection onto the local magnetic field should be real and equal to 1.") {
+                REQUIRE(P.x < 1. + tol);
+                REQUIRE(P.x > 1. - tol);
+                REQUIRE(P.y < 0. + tol);
+                REQUIRE(P.y > 0. - tol);
+            }
+
+            double N = 0.;
+            for (int atom = 0; atom < num_test; ++atom) {
+                cuDoubleComplex N2 = cuConj(test_psi[atom].up) * test_psi[atom].up + 
+                                     cuConj(test_psi[atom].dn) * test_psi[atom].dn;
+                N += sqrt(N2.x);
+            }
+            N /= num_test;
+
+            THEN("The mean norm of the wavefunction should be equal to 1.") {
+                REQUIRE(N < 1. + tol);
+                REQUIRE(N > 1. - tol);
+            }
+
+
+            cudaFree(d_test_psi);
+            free(pos);
+            free(test_psi);
+        }
+
+        cudaFree(state);
+        cudaFree(d_pos);
     }
 }

@@ -7,6 +7,8 @@
 
 #include "distribution_generation_tests.hpp"
 
+double tol = 1.e-6;
+
 SCENARIO("[HOST] Thermal velocity distribution", "[h-veldist]") {
     GIVEN("An array of appropriate seeds") {
         int num_test = 5000;
@@ -31,13 +33,6 @@ SCENARIO("[HOST] Thermal velocity distribution", "[h-veldist]") {
                                         init_temp,
                                         state,
                                         test_vel);
-
-            printf("v0 = {%.3f, %.3f, %.3f}\n", test_vel[0].x,
-                                                test_vel[0].y,
-                                                test_vel[0].z);
-            printf("v1 = {%.3f, %.3f, %.3f}\n", test_vel[1].x,
-                                                test_vel[1].y,
-                                                test_vel[1].z);
 
             THEN("The result give a mean speed and standard deviation as predicted by standard kinetic gas theory") {
                 double speed_mean = mean_norm(test_vel,
@@ -132,6 +127,81 @@ SCENARIO("[HOST] Thermal position distribution", "[h-posdist]") {
             free(test_pos);
         }
 
+        free(state);
+    }
+}
+
+SCENARIO("[HOST] Wavefunction generation", "[h-psigen]") {
+    GIVEN("A thermal distribution of positions") {
+        int num_test = 5000;
+
+        // Initialise rng
+        pcg32_random_t *state;
+        state = reinterpret_cast<pcg32_random_t*>(calloc(num_test,
+                                                         sizeof(pcg32_random_t)));
+
+        initialise_rng_states(num_test,
+                              state,
+                              false);
+
+        double init_temp = 20.e-6;
+        trap_geo trap_parameters;
+        trap_parameters.Bz = 2.0;
+        trap_parameters.B0 = 0.;
+
+        double3 *pos;
+        pos = reinterpret_cast<double3*>(calloc(num_test,
+                                                sizeof(double3)));
+
+        generate_thermal_positions(num_test,
+                                   init_temp,
+                                   trap_parameters,
+                                   state,
+                                   pos);
+
+        WHEN("We generate the corresponding locally aligned spins") {
+            zomplex2 *test_psi;
+            test_psi = reinterpret_cast<zomplex2*>(calloc(num_test,
+                                                          sizeof(zomplex2)));
+
+            generate_aligned_spins(num_test,
+                                   trap_parameters,
+                                   pos,
+                                   test_psi);
+
+            cuDoubleComplex P = make_cuDoubleComplex(0., 0.);
+            for (int atom = 0; atom < num_test; ++atom) {
+                double3 Bn = unit(B(pos[atom],
+                                trap_parameters));
+                P = P + project(Bn,
+                                test_psi[atom]);
+            }
+            P = P / num_test;
+
+            THEN("The mean projection onto the local magnetic field should be real and equal to 1.") {
+                REQUIRE(P.x < 1. + tol);
+                REQUIRE(P.x > 1. - tol);
+                REQUIRE(P.y < 0. + tol);
+                REQUIRE(P.y > 0. - tol);
+            }
+
+            double N = 0.;
+            for (int atom = 0; atom < num_test; ++atom) {
+                cuDoubleComplex N2 = cuConj(test_psi[atom].up) * test_psi[atom].up + 
+                                     cuConj(test_psi[atom].dn) * test_psi[atom].dn;
+                N += sqrt(N2.x);
+            }
+            N /= num_test;
+
+            THEN("The mean norm of the wavefunction should be equal to 1.") {
+                REQUIRE(N < 1. + tol);
+                REQUIRE(N > 1. - tol);
+            }
+
+            free(test_psi);
+        }
+
+        free(pos);
         free(state);
     }
 }
