@@ -170,8 +170,7 @@ SCENARIO("[HOST] Wavefunction generation", "[h-psigen]") {
                                    test_psi);
 
             cuDoubleComplex P = make_cuDoubleComplex(0., 0.);
-            for (int atom = 0; atom < num_test; ++atom)
-            {
+            for (int atom = 0; atom < num_test; ++atom) {
                 double3 Bn = unit(B(pos[atom],
                                 trap_parameters));
                 P = P + project(Bn,
@@ -184,6 +183,19 @@ SCENARIO("[HOST] Wavefunction generation", "[h-psigen]") {
                 REQUIRE(P.x > 1. - tol);
                 REQUIRE(P.y < 0. + tol);
                 REQUIRE(P.y > 0. - tol);
+            }
+
+            double N = 0.;
+            for (int atom = 0; atom < num_test; ++atom) {
+                cuDoubleComplex N2 = cuConj(test_psi[atom].up) * test_psi[atom].up + 
+                                     cuConj(test_psi[atom].dn) * test_psi[atom].dn;
+                N += sqrt(N2.x);
+            }
+            N /= num_test;
+
+            THEN("The mean norm of the wavefunction should be equal to 1.") {
+                REQUIRE(N < 1. + tol);
+                REQUIRE(N > 1. - tol);
             }
 
             free(test_psi);
