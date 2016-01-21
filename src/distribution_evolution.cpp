@@ -204,7 +204,8 @@ double3 update_atom_velocity(double dt,
 void update_accelerations(int num_atoms,
                           trap_geo params,
                           double3 *pos,
-                          double3 *acc) {
+                          double3 *acc,
+                          zomplex2 *psi) {
 #ifdef CUDA
     cu_update_accelerations(num_atoms,
                             params,
@@ -212,11 +213,16 @@ void update_accelerations(int num_atoms,
                             acc);
 #else
     for (int atom = 0; atom < num_atoms; ++atom) {
+#if defined(SPIN)
+        acc[atom] = update_atom_acceleration(params,
+                                             pos[atom],
+                                             psi[atom]);
+#else
         acc[atom] = update_atom_acceleration(params,
                                              pos[atom]);
+#endif // SPIN
     }
-#endif
-
+#endif // CUDA
     return;
 }
 
@@ -230,6 +236,24 @@ double3 update_atom_acceleration(trap_geo params,
                   params) / mass;
     acc.z = dV_dz(pos,
                   params) / mass;
+
+    return acc;
+}
+
+double3 update_atom_acceleration(trap_geo params,
+                                 double3 pos,
+                                 zomplex2 psi) {
+    double3 acc = make_double3(0., 0., 0.);
+
+    acc.x = expectation_dV_dx(params,
+                              pos,
+                              psi) / mass;
+    acc.y = expectation_dV_dy(params,
+                              pos,
+                              psi) / mass;
+    acc.z = expectation_dV_dz(params,
+                              pos,
+                              psi) / mass;
 
     return acc;
 }
