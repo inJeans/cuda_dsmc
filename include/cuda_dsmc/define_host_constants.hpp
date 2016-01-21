@@ -15,4 +15,6 @@ double a    = 5.3e-9;           // Constant cross-section formula
 double kB   = 1.3806503e-23;    // Boltzmann's Constant
 double hbar = 1.05457148e-34;   // hbar
 
+double tol = 1.e-6;
+
 #endif  // DEFINE_HOST_CONSTANTS_HPP_INCLUDED

@@ -7,8 +7,6 @@
 
 #include "distribution_evolution_tests.hpp"
 
-double tol = 1.e-6;
-
 SCENARIO("[HOST] Acceleration Update", "[h-acc]") {
     GIVEN("A thermal distribution of 5000 positions, help in a quadrupole trap with a Bz = 2.0") {
         double init_T = 20.e-6;
@@ -40,7 +38,7 @@ SCENARIO("[HOST] Acceleration Update", "[h-acc]") {
                                    state,
                                    pos);
 
-        WHEN("The update_atom_accelerations function is called") {
+        WHEN("The update_accelerations function is called") {
             // Initialise accelerations
             double3 *test_acc;
             test_acc = reinterpret_cast<double3*>(calloc(num_test,
@@ -174,5 +172,75 @@ SCENARIO("[HOST] Velocity Update", "[h-vel]") {
 
         free(pos);
         free(acc);
+    }
+}
+
+SCENARIO("[HOST] Wavfunction Update", "[h-psiev]") {
+    GIVEN("A thermal distribution of 5000 aligned atoms, help in a quadrupole trap with a Bz = 2.0") {
+        double init_T = 20.e-6;
+        int num_test = 5000;
+
+        // Initialise trapping parameters
+        trap_geo trap_parameters;
+        trap_parameters.Bz = 2.0;
+        trap_parameters.B0 = 0.;
+
+        // Initialise rng
+        pcg32_random_t *state;
+        state = reinterpret_cast<pcg32_random_t*>(calloc(num_test,
+                                                         sizeof(pcg32_random_t)));
+
+        initialise_rng_states(num_test,
+                              state,
+                              false);
+
+        // Initialise positions
+        double3 *pos;
+        pos = reinterpret_cast<double3*>(calloc(num_test,
+                                                sizeof(double3)));
+
+        // Generate position distribution
+        generate_thermal_positions(num_test,
+                                   init_T,
+                                   trap_parameters,
+                                   state,
+                                   pos);
+
+        // Initialise spins
+        zomplex2 *test_psi;
+        test_psi = reinterpret_cast<zomplex2*>(calloc(num_test,
+                                                      sizeof(zomplex2)));
+
+        generate_aligned_spins(num_test,
+                               trap_parameters,
+                               pos,
+                               test_psi);
+
+        WHEN("The update_wavefunctions function is called with a dt=1.e-6") {
+            double dt = 1.e-6;
+            // Update wavefunctions
+            update_wavefunctions(num_test,
+                                 dt,
+                                 trap_parameters,
+                                 pos,
+                                 test_psi);
+
+            double N = 0.;
+            for (int atom = 0; atom < num_test; ++atom) {
+                cuDoubleComplex N2 = cuConj(test_psi[atom].up) * test_psi[atom].up + 
+                                     cuConj(test_psi[atom].dn) * test_psi[atom].dn;
+                N += sqrt(N2.x);
+            }
+            N /= num_test;
+
+            THEN("Unitarity of the system should be maintained") {
+                REQUIRE(N < 1. + tol);
+                REQUIRE(N > 1. - tol);
+            }
+
+            free(test_psi);
+        }
+
+        free(pos);
     }
 }

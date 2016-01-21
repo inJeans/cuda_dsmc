@@ -57,16 +57,20 @@ __device__ double3 d_update_atom_acceleration(double3 pos,
                                               trap_geo params);
 
 __host__ void cu_update_wavefunctions(int num_atoms,
+                                      double dt,
                                       trap_geo params,
                                       double3 *pos,
                                       zomplex2 *psi);
 
 __global__ void g_update_atom_wavefunction(int num_atoms,
+                                           double dt,
                                            trap_geo params,
                                            double3 *pos,
                                            zomplex2 *psi);
 
-__device__ zomplex2 d_update_atom_wavefunction(double3 pos,
-                                               trap_geo params);
+__device__ zomplex2 d_update_atom_wavefunction(double dt,
+                                               trap_geo params,
+                                               double3 pos,
+                                               zomplex2 psi);
 
 #endif    // DISTRIBUTION_EVOLUTION_CUH_INCLUDED

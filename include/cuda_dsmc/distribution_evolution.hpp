@@ -23,7 +23,8 @@ void velocity_verlet_update(int num_atoms,
                             cublasHandle_t cublas_handle,
                             double3 *pos,
                             double3 *vel,
-                            double3 *acc);
+                            double3 *acc,
+                            zomplex2 *psi = NULL);
 
 void sympletic_euler_update(int num_atoms,
                             double dt,
@@ -31,7 +32,8 @@ void sympletic_euler_update(int num_atoms,
                             cublasHandle_t cublas_handle,
                             double3 *pos,
                             double3 *vel,
-                            double3 *acc);
+                            double3 *acc,
+                            zomplex2 *psi = NULL);
 
 void update_positions(int num_atoms,
                       double dt,
@@ -62,11 +64,14 @@ double3 update_atom_acceleration(trap_geo params,
                                  double3 pos);
 
 void update_wavefunctions(int num_atoms,
+                          double dt,
                           trap_geo params,
                           double3 *pos,
                           zomplex2 *psi);
 
-zomplex2 update_atom_wavefunction(trap_geo params,
-                                  double3 pos);
+zomplex2 update_atom_wavefunction(double dt,
+                                  trap_geo params,
+                                  double3 pos,
+                                  zomplex2 psi);
 
 #endif  // DISTRIBUTION_EVOLUTION_HPP_INCLUDED

@@ -7,8 +7,6 @@
 
 #include "distribution_evolution_tests.cuh"
 
-double tol = 1.e-6;
-
 SCENARIO("[DEVICE] Acceleration Update", "[d-acc]") {
     GIVEN("A thermal distribution of 5000 positions, help in a quadrupole trap with a Bz = 2.0") {
         int num_test = 5000;

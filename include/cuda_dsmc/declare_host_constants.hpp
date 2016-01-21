@@ -15,4 +15,6 @@ extern double a;     // Constant cross-section formula
 extern double kB;    // Boltzmann's Constant
 extern double hbar;  // hbar
 
+extern double tol;
+
 #endif  // DECLARE_HOST_CONSTANTS_HPP_INCLUDED

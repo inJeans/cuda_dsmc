@@ -7,8 +7,6 @@
 
 #include "distribution_generation_tests.hpp"
 
-double tol = 1.e-6;
-
 SCENARIO("[HOST] Thermal velocity distribution", "[h-veldist]") {
     GIVEN("An array of appropriate seeds") {
         int num_test = 5000;

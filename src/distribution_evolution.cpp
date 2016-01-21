@@ -18,12 +18,20 @@ void velocity_verlet_update(int num_atoms,
                             cublasHandle_t cublas_handle,
                             double3 *pos,
                             double3 *vel,
-                            double3 *acc) {
+                            double3 *acc,
+                            zomplex2 *psi) {
     update_velocities(num_atoms,
                       0.5*dt,
                       cublas_handle,
                       acc,
                       vel);
+#if defined(SPIN)
+    update_wavefunctions(num_atoms,
+                         dt,
+                         params,
+                         pos,
+                         psi);
+#endif
     update_positions(num_atoms,
                      dt,
                      cublas_handle,
@@ -47,12 +55,20 @@ void sympletic_euler_update(int num_atoms,
                             cublasHandle_t cublas_handle,
                             double3 *pos,
                             double3 *vel,
-                            double3 *acc) {
+                            double3 *acc,
+                            zomplex2 *psi) {
     update_velocities(num_atoms,
                       dt,
                       cublas_handle,
                       acc,
                       vel);
+#if defined(SPIN)
+    update_wavefunctions(num_atoms,
+                         dt,
+                         params,
+                         pos,
+                         psi);
+#endif
     update_positions(num_atoms,
                      dt,
                      cublas_handle,
@@ -219,10 +235,13 @@ double3 update_atom_acceleration(trap_geo params,
 }
 
 /** \fn void update_wavefunctions(int num_atoms,
+ *                                double dt,
  *                                trap_geo params,
  *                                double3 *pos,
  *                                zomplex2 *psi) 
  *  \brief TODO.
+ *  \param num_atoms Number of atoms in the array.
+ *  \param dt Size of the timestep over which to evolve.
  *  \param params Customized structure of type `trap_geo` containing the 
  *  necessary constants for describing the trapping potential.
  *  \param *pos Pointer to a `double3` host or device array of length
@@ -234,28 +253,53 @@ double3 update_atom_acceleration(trap_geo params,
 */
 
 void update_wavefunctions(int num_atoms,
+                          double dt,
                           trap_geo params,
                           double3 *pos,
                           zomplex2 *psi) {
 #ifdef CUDA
     cu_update_wavefunctions(num_atoms,
+                            dt,
                             params,
                             pos,
                             psi);
 #else
     for (int atom = 0; atom < num_atoms; ++atom) {
-        psi[atom] = update_atom_wavefunction(params,
-                                             pos[atom]);
+        psi[atom] = update_atom_wavefunction(dt,
+                                             params,
+                                             pos[atom],
+                                             psi[atom]);
     }
 #endif
 
     return;
 }
 
-zomplex2 update_atom_wavefunction(trap_geo params,
-                                  double3 pos) {
-    zomplex2 psi = make_zomplex2(0., 0., 0., 0.);
+zomplex2 update_atom_wavefunction(double dt,
+                                  trap_geo params,
+                                  double3 pos,
+                                  zomplex2 psi) {
+    double3 mag_field = B(pos,
+                          params);
+    double3 Bn = unit(mag_field);
+    double norm_B = norm(mag_field);
 
+    double delta_theta = 0.5*gs*muB*norm_B*dt / hbar; 
+    double cos_delta_theta = cos(delta_theta);
+    double sin_delta_theta = sin(delta_theta);
 
-    return psi;
+    cuDoubleComplex U11 = make_cuDoubleComplex(cos_delta_theta,
+                                               -Bn.z*sin_delta_theta);
+    cuDoubleComplex U12 = make_cuDoubleComplex(Bn.y*sin_delta_theta,
+                                               -Bn.x*sin_delta_theta);
+    cuDoubleComplex U21 = make_cuDoubleComplex(-Bn.y*sin_delta_theta,
+                                               -Bn.x*sin_delta_theta);
+    cuDoubleComplex U22 = make_cuDoubleComplex(cos_delta_theta,
+                                               Bn.z*sin_delta_theta);
+    
+    zomplex2 updated_psi = make_zomplex2(0., 0., 0., 0.);
+    updated_psi.up = U11*psi.up + U12*psi.dn;
+    updated_psi.dn = U21*psi.up + U22*psi.dn;
+
+    return updated_psi;
 }

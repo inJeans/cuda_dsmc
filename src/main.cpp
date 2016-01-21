@@ -64,8 +64,8 @@ int main(int argc, char const *argv[]) {
     trap_parameters.B0 = 0.;
 
     // Initialise computational parameters
-    double dt = 1.e-6;
-    int num_time_steps = 10000;
+    double dt = 1.e-3;
+    int num_time_steps = 2;
 
     // Initialise rng
     LOGF(INFO, "\nInitialising the rng state array.");
@@ -232,7 +232,8 @@ int main(int argc, char const *argv[]) {
                                cublas_handle,
                                pos,
                                vel,
-                               acc);
+                               acc,
+                               psi);
     }
 #ifdef CUDA
     LOGF(DEBUG, "\nDestroying the cuBLAS handle.\n");
@@ -252,6 +253,10 @@ int main(int argc, char const *argv[]) {
     cudaMemcpy(&h_acc,
                acc,
                NUM_ATOMS*sizeof(double3),
+               cudaMemcpyDeviceToHost);
+    cudaMemcpy(&h_psi,
+               psi,
+               NUM_ATOMS*sizeof(zomplex2),
                cudaMemcpyDeviceToHost);
 
     LOGF(INFO, "\nv1 = { %f,%f,%f }, v2 = { %f,%f,%f }\n", h_vel[0].x, h_vel[0].y, h_vel[0].z,
