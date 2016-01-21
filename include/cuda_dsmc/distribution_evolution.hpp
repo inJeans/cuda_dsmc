@@ -56,10 +56,15 @@ double3 update_atom_velocity(double dt,
 void update_accelerations(int num_atoms,
                           trap_geo params,
                           double3 *pos,
-                          double3 *acc);
+                          double3 *acc,
+                          zomplex2 *psi = NULL);
 
 double3 update_atom_acceleration(trap_geo params,
                                  double3 pos);
+
+double3 update_atom_acceleration(trap_geo params,
+                                 double3 pos,
+                                 zomplex2 psi);
 
 void update_wavefunctions(int num_atoms,
                           trap_geo params,
