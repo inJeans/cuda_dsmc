@@ -46,15 +46,21 @@ __device__ double3 d_update_atom_velocity(double dt,
 __host__ void cu_update_accelerations(int num_atoms,
                                       trap_geo params,
                                       double3 *pos,
+                                      zomplex2 *psi,
                                       double3 *acc);
 
 __global__ void g_update_atom_acceleration(int num_atoms,
                                            trap_geo params,
                                            double3 *pos,
+                                           zomplex2 *psi,
                                            double3 *acc);
 
-__device__ double3 d_update_atom_acceleration(double3 pos,
-                                              trap_geo params);
+__device__ double3 d_update_atom_acceleration(trap_geo params,
+                                              double3 pos);
+
+__device__ double3 d_update_atom_acceleration(trap_geo params,
+                                             double3 pos,
+                                             zomplex2 psi);
 
 __host__ void cu_update_wavefunctions(int num_atoms,
                                       double dt,

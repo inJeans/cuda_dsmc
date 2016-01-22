@@ -129,27 +129,6 @@ int main(int argc, char const *argv[]) {
                                state,
                                pos);
 
-    // Initialise accelerations
-    LOGF(INFO, "\nInitialising the acceleration array.");
-    double3 *acc;
-#ifdef CUDA
-    LOGF(DEBUG, "\nAllocating %i double3 elements on the device.",
-         NUM_ATOMS);
-    checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&acc),
-                               NUM_ATOMS*sizeof(double3)));
-#else
-    LOGF(DEBUG, "\nAllocating %i double3 elements on the host.",
-         NUM_ATOMS);
-    acc = reinterpret_cast<double3*>(calloc(NUM_ATOMS,
-                                            sizeof(double3)));
-#endif
-
-    // Generate accelerations
-    update_accelerations(NUM_ATOMS,
-                         trap_parameters,
-                         pos,
-                         acc);
-
 // Initialise wavefunction
     LOGF(INFO, "\nInitialising the wavefunction array.");
     zomplex2 *psi;
@@ -170,6 +149,28 @@ int main(int argc, char const *argv[]) {
                            trap_parameters,
                            pos,
                            psi);
+
+    // Initialise accelerations
+    LOGF(INFO, "\nInitialising the acceleration array.");
+    double3 *acc;
+#ifdef CUDA
+    LOGF(DEBUG, "\nAllocating %i double3 elements on the device.",
+         NUM_ATOMS);
+    checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&acc),
+                               NUM_ATOMS*sizeof(double3)));
+#else
+    LOGF(DEBUG, "\nAllocating %i double3 elements on the host.",
+         NUM_ATOMS);
+    acc = reinterpret_cast<double3*>(calloc(NUM_ATOMS,
+                                            sizeof(double3)));
+#endif
+
+    // Generate accelerations
+    update_accelerations(NUM_ATOMS,
+                         trap_parameters,
+                         pos,
+                         acc,
+                         psi);
 
     LOGF(DEBUG, "\nBefore time evolution.\n");
 #ifdef CUDA

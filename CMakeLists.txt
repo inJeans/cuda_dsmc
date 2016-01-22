@@ -74,6 +74,10 @@ IF(UNIX)
     ENDIF()
 ENDIF()
 
+IF(SPIN)
+    add_definitions(-DSPIN)
+ENDIF()
+
 IF(CUDA)
     # add_definitions(-DCUDA)
     SET(SOURCES src/main.cpp 
@@ -85,6 +89,9 @@ IF(CUDA)
     cuda_add_executable(cuda_dsmc ${SOURCES})
     target_link_libraries(cuda_dsmc pcg_random cudart cublas g3logger)
     target_compile_definitions(cuda_dsmc PRIVATE -DCUDA)
+    # if(SPIN)
+    #     target_compile_definitions(cuda_dsmc PRIVATE -DSPIN)
+    # ENDIF()
 ELSEIF(MKL)
     # add_definitions(-DMKL)
     SET(SOURCES src/main.cpp 
@@ -105,6 +112,9 @@ ELSE()
                 src/vector_math.cu src/entropy.c)
     cuda_add_executable(cuda_dsmc ${SOURCES})
     target_link_libraries(cuda_dsmc pcg_random g3logger)
+    # if(SPIN)
+    #     target_compile_definitions(cuda_dsmc PRIVATE -DSPIN)
+    # ENDIF()
 ENDIF()
 
 # We probably don't want this to run on every build.
@@ -157,6 +167,9 @@ IF(CUDA)
     cuda_add_executable(device_random_number_generation_test ${TEST_SOURCES})
     target_link_libraries(device_random_number_generation_test pcg_random cudart g3logger)
     target_compile_definitions(device_random_number_generation_test PRIVATE -DCUDA)
+    # if(SPIN)
+    #     target_compile_definitions(device_random_number_generation_test PRIVATE -DSPIN)
+    # ENDIF()
     # DEVICE - Distribution generation tests
     SET(TEST_SOURCES test/distribution_generation_test.cu 
                      src/distribution_generation.cpp src/distribution_generation.cu 
@@ -167,6 +180,9 @@ IF(CUDA)
     cuda_add_executable(device_distribution_generation_test ${TEST_SOURCES})
     target_link_libraries(device_distribution_generation_test pcg_random cudart g3logger)
     target_compile_definitions(device_distribution_generation_test PRIVATE -DCUDA)
+    # if(SPIN)
+    #     target_compile_definitions(device_distribution_generation_test PRIVATE -DSPIN)
+    # ENDIF()
     # DEVICE - Distribution evolution tests
     SET(TEST_SOURCES test/distribution_evolution_test.cu 
                      src/distribution_evolution.cpp src/distribution_evolution.cu 
@@ -178,6 +194,9 @@ IF(CUDA)
     cuda_add_executable(device_distribution_evolution_test ${TEST_SOURCES})
     target_link_libraries(device_distribution_evolution_test pcg_random cudart cublas g3logger)
     target_compile_definitions(device_distribution_evolution_test PRIVATE -DCUDA)
+    # if(SPIN)
+    #     target_compile_definitions(device_distribution_evolution_test PRIVATE -DSPIN)
+    # ENDIF()
 ENDIF()
 
 # HOST - Random number generation tests
@@ -188,6 +207,9 @@ SET(TEST_SOURCES test/random_number_generation_test.cpp
                  src/vector_math.cu src/entropy.c)
 cuda_add_executable(host_random_number_generation_test ${TEST_SOURCES})
 target_link_libraries(host_random_number_generation_test pcg_random cudart g3logger testu01 mylib probdist)
+# if(SPIN)
+#         target_compile_definitions(device_distribution_evolution_test PRIVATE -DSPIN)
+# ENDIF()
 # HOST - Distribution generation tests
 SET(TEST_SOURCES test/distribution_generation_test.cpp 
                  src/distribution_generation.cpp src/distribution_generation.cu 
@@ -197,6 +219,9 @@ SET(TEST_SOURCES test/distribution_generation_test.cpp
                  src/vector_math.cu src/entropy.c)
 cuda_add_executable(host_distribution_generation_test ${TEST_SOURCES})
 target_link_libraries(host_distribution_generation_test pcg_random cudart g3logger)
+# if(SPIN)
+#         target_compile_definitions(device_distribution_evolution_test PRIVATE -DSPIN)
+# ENDIF()
 # HOST - Distribution evolution tests
 SET(TEST_SOURCES test/distribution_evolution_test.cpp 
                  src/distribution_evolution.cpp src/distribution_evolution.cu 
@@ -207,6 +232,9 @@ SET(TEST_SOURCES test/distribution_evolution_test.cpp
                  src/vector_math.cu src/entropy.c)
 cuda_add_executable(host_distribution_evolution_test ${TEST_SOURCES})
 target_link_libraries(host_distribution_evolution_test pcg_random cudart cublas g3logger)
+# if(SPIN)
+#         target_compile_definitions(host_distribution_evolution_test PRIVATE -DSPIN)
+# ENDIF()
 
 add_test(cuda_dmsc_runs cuda_dsmc)
 add_test(host_random_number_generation host_random_number_generation_test -s -o h_rng_test.out)

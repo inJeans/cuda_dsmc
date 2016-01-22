@@ -109,6 +109,7 @@ __device__ double3 d_update_atom_velocity(double dt,
 __host__ void cu_update_accelerations(int num_atoms,
                                       trap_geo params,
                                       double3 *pos,
+                                      zomplex2 *psi,
                                       double3 *acc) {
     LOGF(DEBUG, "\nCalculating optimal launch configuration for the acceleration "
                 "update kernel.\n");
@@ -123,13 +124,13 @@ __host__ void cu_update_accelerations(int num_atoms,
     grid_size = (num_atoms + block_size - 1) / block_size;
     LOGF(DEBUG, "\nLaunch config set as <<<%i,%i>>>\n",
                 grid_size, block_size);
-
     g_update_atom_acceleration<<<grid_size,
                                  block_size>>>
                                 (num_atoms,
                                  params,
                                  pos,
-                                 acc);  
+                                 psi,
+                                 acc);
 
     return;
 }
@@ -155,19 +156,26 @@ __host__ void cu_update_accelerations(int num_atoms,
 __global__ void g_update_atom_acceleration(int num_atoms,
                                            trap_geo params,
                                            double3 *pos,
+                                           zomplex2 *psi,
                                            double3 *acc) {
     for (int atom = blockIdx.x * blockDim.x + threadIdx.x;
          atom < num_atoms;
          atom += blockDim.x * gridDim.x) {
-        acc[atom] = d_update_atom_acceleration(pos[atom],
-                                               params);
+#if defined(SPIN)
+        acc[atom] = d_update_atom_acceleration(params,
+                                               pos[atom],
+                                               psi[atom]);
+#else
+        acc[atom] = d_update_atom_acceleration(params,
+                                               pos[atom]);
+#endif
     }
 
     return;
 }
 
-__device__ double3 d_update_atom_acceleration(double3 pos,
-                                              trap_geo params) {
+__device__ double3 d_update_atom_acceleration(trap_geo params,
+                                              double3 pos) {
     double3 acc = make_double3(0., 0., 0.);
 
     acc.x = d_dV_dx(pos,
@@ -177,6 +185,23 @@ __device__ double3 d_update_atom_acceleration(double3 pos,
     acc.z = d_dV_dz(pos,
                     params) / d_mass;
 
+    return acc;
+}
+
+__device__ double3 d_update_atom_acceleration(trap_geo params,
+                                             double3 pos,
+                                             zomplex2 psi) {
+    double3 acc = make_double3(0., 0., 0.);
+
+    acc.x = d_expectation_dV_dx(params,
+                                pos,
+                                psi) / d_mass;
+    acc.y = d_expectation_dV_dy(params,
+                                pos,
+                                psi) / d_mass;
+    acc.z = d_expectation_dV_dz(params,
+                                pos,
+                                psi) / d_mass;
     return acc;
 }
 
@@ -277,18 +302,19 @@ __device__ zomplex2 d_update_atom_wavefunction(double dt,
     double cos_delta_theta = cos(delta_theta);
     double sin_delta_theta = sin(delta_theta);
 
-    cuDoubleComplex U11 = make_cuDoubleComplex(cos_delta_theta,
-                                               -Bn.z*sin_delta_theta);
-    cuDoubleComplex U12 = make_cuDoubleComplex(Bn.y*sin_delta_theta,
-                                               -Bn.x*sin_delta_theta);
-    cuDoubleComplex U21 = make_cuDoubleComplex(-Bn.y*sin_delta_theta,
-                                               -Bn.x*sin_delta_theta);
-    cuDoubleComplex U22 = make_cuDoubleComplex(cos_delta_theta,
-                                               Bn.z*sin_delta_theta);
+    cuDoubleComplex U[2][2] = {make_cuDoubleComplex(0.,0.)};
+    U[0][0] = make_cuDoubleComplex(cos_delta_theta,
+                                   -Bn.z*sin_delta_theta);
+    U[0][1] = make_cuDoubleComplex(Bn.y*sin_delta_theta,
+                                   -Bn.x*sin_delta_theta);
+    U[1][0] = make_cuDoubleComplex(-Bn.y*sin_delta_theta,
+                                   -Bn.x*sin_delta_theta);
+    U[1][1] = make_cuDoubleComplex(cos_delta_theta,
+                                   Bn.z*sin_delta_theta);
     
     zomplex2 updated_psi = make_zomplex2(0., 0., 0., 0.);
-    updated_psi.up = U11*psi.up + U12*psi.dn;
-    updated_psi.dn = U21*psi.up + U22*psi.dn;
+    updated_psi.up = U[0][0]*psi.up + U[0][1]*psi.dn;
+    updated_psi.dn = U[1][0]*psi.up + U[1][1]*psi.dn;
 
     return updated_psi;
 }

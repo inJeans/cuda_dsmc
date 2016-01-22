@@ -40,7 +40,8 @@ void velocity_verlet_update(int num_atoms,
     update_accelerations(num_atoms,
                          params,
                          pos,
-                         acc);
+                         acc,
+                         psi);
     update_velocities(num_atoms,
                       0.5*dt,
                       cublas_handle,
@@ -77,7 +78,8 @@ void sympletic_euler_update(int num_atoms,
     update_accelerations(num_atoms,
                          params,
                          pos,
-                         acc);
+                         acc,
+                         psi);
 
     return;
 }
@@ -210,6 +212,7 @@ void update_accelerations(int num_atoms,
     cu_update_accelerations(num_atoms,
                             params,
                             pos,
+                            psi,
                             acc);
 #else
     for (int atom = 0; atom < num_atoms; ++atom) {
@@ -254,7 +257,6 @@ double3 update_atom_acceleration(trap_geo params,
     acc.z = expectation_dV_dz(params,
                               pos,
                               psi) / mass;
-
     return acc;
 }
 
@@ -312,18 +314,19 @@ zomplex2 update_atom_wavefunction(double dt,
     double cos_delta_theta = cos(delta_theta);
     double sin_delta_theta = sin(delta_theta);
 
-    cuDoubleComplex U11 = make_cuDoubleComplex(cos_delta_theta,
-                                               -Bn.z*sin_delta_theta);
-    cuDoubleComplex U12 = make_cuDoubleComplex(Bn.y*sin_delta_theta,
-                                               -Bn.x*sin_delta_theta);
-    cuDoubleComplex U21 = make_cuDoubleComplex(-Bn.y*sin_delta_theta,
-                                               -Bn.x*sin_delta_theta);
-    cuDoubleComplex U22 = make_cuDoubleComplex(cos_delta_theta,
-                                               Bn.z*sin_delta_theta);
+    cuDoubleComplex U[2][2] = {make_cuDoubleComplex(0.,0.)};
+    U[0][0] = make_cuDoubleComplex(cos_delta_theta,
+                                   -Bn.z*sin_delta_theta);
+    U[0][1] = make_cuDoubleComplex(Bn.y*sin_delta_theta,
+                                   -Bn.x*sin_delta_theta);
+    U[1][0] = make_cuDoubleComplex(-Bn.y*sin_delta_theta,
+                                   -Bn.x*sin_delta_theta);
+    U[1][1] = make_cuDoubleComplex(cos_delta_theta,
+                                   Bn.z*sin_delta_theta);
     
     zomplex2 updated_psi = make_zomplex2(0., 0., 0., 0.);
-    updated_psi.up = U11*psi.up + U12*psi.dn;
-    updated_psi.dn = U21*psi.up + U22*psi.dn;
+    updated_psi.up = U[0][0]*psi.up + U[0][1]*psi.dn;
+    updated_psi.dn = U[1][0]*psi.up + U[1][1]*psi.dn;
 
     return updated_psi;
 }
