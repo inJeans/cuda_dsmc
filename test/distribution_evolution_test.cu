@@ -37,16 +37,16 @@ SCENARIO("[DEVICE] Acceleration Update", "[d-acc]") {
                                    d_pos);
 
         // Initialise spins
-        zomplex2 *psi;
+        zomplex2 *d_psi;
 #if defined(SPIN)
-        psi = reinterpret_cast<zomplex2*>(calloc(num_test,
-                                                     sizeof(zomplex2)));
-         generate_aligned_spins(num_test,
-                                   trap_parameters,
-                                   pos,
-                                   psi);
+        checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&d_psi),
+                                   num_test*sizeof(zomplex2)));
+        generate_aligned_spins(num_test,
+                               trap_parameters,
+                               d_pos,
+                               d_psi);
 #else
-            psi = NULL;
+            d_psi = NULL;
 #endif
 
         WHEN("The update_atom_accelerations function is called") {
@@ -59,7 +59,8 @@ SCENARIO("[DEVICE] Acceleration Update", "[d-acc]") {
             update_accelerations(num_test,
                                  trap_parameters,
                                  d_pos,
-                                 d_test_acc);;
+                                 d_test_acc,
+                                 d_psi);
 
             double3 *test_acc;
             test_acc = reinterpret_cast<double3*>(calloc(num_test,
@@ -110,6 +111,7 @@ SCENARIO("[DEVICE] Acceleration Update", "[d-acc]") {
         }
 
         cudaFree(d_pos);
+        cudaFree(d_psi);
     }
 }
 
@@ -144,6 +146,19 @@ SCENARIO("[DEVICE] Velocity Update", "[d-vel]") {
                                    state,
                                    d_pos);
 
+        // Initialise spins
+        zomplex2 *d_psi;
+#if defined(SPIN)
+        checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&d_psi),
+                                   num_test*sizeof(zomplex2)));
+        generate_aligned_spins(num_test,
+                               trap_parameters,
+                               d_pos,
+                               d_psi);
+#else
+            d_psi = NULL;
+#endif
+
         // Initialise accelerations
         double3 *d_acc;
         checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&d_acc),
@@ -153,7 +168,8 @@ SCENARIO("[DEVICE] Velocity Update", "[d-vel]") {
             update_accelerations(num_test,
                                  trap_parameters,
                                  d_pos,
-                                 d_acc);
+                                 d_acc,
+                                 d_psi);
 
         WHEN("The update_velocities function is called with dt=1.e-6") {
             double dt = 1.e-6;
@@ -202,10 +218,10 @@ SCENARIO("[DEVICE] Velocity Update", "[d-vel]") {
             }
 
             cudaFree(d_test_vel);
-            
         }
 
         cudaFree(d_pos);
+        cudaFree(d_psi);
         cudaFree(d_acc);
     }
 }
