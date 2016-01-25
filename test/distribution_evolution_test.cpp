@@ -44,11 +44,25 @@ SCENARIO("[HOST] Acceleration Update", "[h-acc]") {
             test_acc = reinterpret_cast<double3*>(calloc(num_test,
                                                          sizeof(double3)));
 
+            // Initialise spins
+            zomplex2 *psi;
+#if defined(SPIN)
+            psi = reinterpret_cast<zomplex2*>(calloc(num_test,
+                                                     sizeof(zomplex2)));
+            generate_aligned_spins(num_test,
+                                   trap_parameters,
+                                   pos,
+                                   psi);
+#else
+            psi = NULL;
+#endif
+
             // Generate accelerations
             update_accelerations(num_test,
                                  trap_parameters,
                                  pos,
-                                 test_acc);
+                                 test_acc,
+                                 psi);
 
             double mean_acc_x = mean_x(test_acc,
                                        num_test);
@@ -87,6 +101,7 @@ SCENARIO("[HOST] Acceleration Update", "[h-acc]") {
             }
 
             free(test_acc);
+            free(psi);
         }
 
         free(pos);
@@ -124,16 +139,30 @@ SCENARIO("[HOST] Velocity Update", "[h-vel]") {
                                    state,
                                    pos);
 
-        // Initialise accelerations
-            double3 *acc;
-            acc = reinterpret_cast<double3*>(calloc(num_test,
-                                                    sizeof(double3)));
+        // Initialise spins
+        zomplex2 *psi;
+#if defined(SPIN)
+            psi = reinterpret_cast<zomplex2*>(calloc(num_test,
+                                                     sizeof(zomplex2)));
+            generate_aligned_spins(num_test,
+                                   trap_parameters,
+                                   pos,
+                                   psi);
+#else
+            psi = NULL;
+#endif
 
-            // Generate accelerations
-            update_accelerations(num_test,
-                                 trap_parameters,
-                                 pos,
-                                 acc);
+        // Initialise accelerations
+        double3 *acc;
+        acc = reinterpret_cast<double3*>(calloc(num_test,
+                                                sizeof(double3)));
+
+        // Generate accelerations
+        update_accelerations(num_test,
+                             trap_parameters,
+                             pos,
+                             acc,
+                             psi);
 
         WHEN("The update_velocities function is called with dt=1.e-6") {
             double dt = 1.e-6;
@@ -171,6 +200,7 @@ SCENARIO("[HOST] Velocity Update", "[h-vel]") {
         }
 
         free(pos);
+        free(psi);
         free(acc);
     }
 }

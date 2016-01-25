@@ -36,6 +36,19 @@ SCENARIO("[DEVICE] Acceleration Update", "[d-acc]") {
                                    state,
                                    d_pos);
 
+        // Initialise spins
+        zomplex2 *psi;
+#if defined(SPIN)
+        psi = reinterpret_cast<zomplex2*>(calloc(num_test,
+                                                     sizeof(zomplex2)));
+         generate_aligned_spins(num_test,
+                                   trap_parameters,
+                                   pos,
+                                   psi);
+#else
+            psi = NULL;
+#endif
+
         WHEN("The update_atom_accelerations function is called") {
             // Initialise accelerations
             double3 *d_test_acc;
