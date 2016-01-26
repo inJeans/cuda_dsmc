@@ -26,17 +26,34 @@ void velocity_verlet_update(int num_atoms,
                       acc,
                       vel);
 #if defined(SPIN)
+#if defined(EHRENFEST)
     update_wavefunctions(num_atoms,
                          dt,
                          params,
                          pos,
                          psi);
-#endif
+#else
+    // Record spin projections
+    update_wavefunctions(num_atoms,
+                         dt,
+                         params,
+                         pos,
+                         psi);
+#endif // Ehrenfest
+#endif // Spin
     update_positions(num_atoms,
                      dt,
                      cublas_handle,
                      vel,
                      pos);
+#if defined(SPIN)
+#if defined(EHRENFEST)
+    // Do nothing
+#else
+    // Record updated spin projections
+    // Perform flip
+#endif // Ehrenfest
+#endif // Spin
     update_accelerations(num_atoms,
                          params,
                          pos,

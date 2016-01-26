@@ -22,6 +22,21 @@ static __inline__ __host__ __device__ zomplex2 make_zomplex2(double x, double y,
   zomplex2 t; t.up.x = x; t.up.y = y; t.dn.x = z; t.dn.y = w; return t;
 }
 
+struct wavefunction {
+    cuDoubleComplex up, dn;
+    bool isSpinUp = TRUE;
+};
+typedef struct wavefunction wavefunction;
+
+static __inline__ __host__ __device__ wavefunction make_wavefunction(double x, double y, double z, double w, bool isSpinUp) {
+  wavefunction t; 
+  
+  t.up.x = x; t.up.y = y; t.dn.x = z; t.dn.y = w; 
+  t.isSpinUp = isSpinUp;
+
+  return t;
+}
+
 static __inline__ __host__ __device__ double3 operator*(double3 a, 
                                                         double b) {
     return make_double3(a.x*b, a.y*b, a.z*b);
