@@ -25,7 +25,7 @@ static __inline__ __host__ __device__ zomplex2 make_zomplex2(double x, double y,
 
 struct wavefunction {
     cuDoubleComplex up, dn;
-    bool isSpinUp = TRUE;
+    bool isSpinUp = true;
 };
 typedef struct wavefunction wavefunction;
 
