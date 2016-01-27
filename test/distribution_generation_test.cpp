@@ -158,9 +158,9 @@ SCENARIO("[HOST] Wavefunction generation", "[h-psigen]") {
                                    pos);
 
         WHEN("We generate the corresponding locally aligned spins") {
-            zomplex2 *test_psi;
-            test_psi = reinterpret_cast<zomplex2*>(calloc(num_test,
-                                                          sizeof(zomplex2)));
+            wavefunction *test_psi;
+            test_psi = reinterpret_cast<wavefunction*>(calloc(num_test,
+                                                          sizeof(wavefunction)));
 
             generate_aligned_spins(num_test,
                                    trap_parameters,

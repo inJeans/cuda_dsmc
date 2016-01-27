@@ -19,27 +19,19 @@ void velocity_verlet_update(int num_atoms,
                             double3 *pos,
                             double3 *vel,
                             double3 *acc,
-                            zomplex2 *psi) {
+                            wavefunction *psi) {
     update_velocities(num_atoms,
                       0.5*dt,
                       cublas_handle,
                       acc,
                       vel);
 #if defined(SPIN)
-#if defined(EHRENFEST)
-    update_wavefunctions(num_atoms,
-                         dt,
-                         params,
-                         pos,
-                         psi);
-#else
     // Record spin projections
     update_wavefunctions(num_atoms,
                          dt,
                          params,
                          pos,
                          psi);
-#endif // Ehrenfest
 #endif // Spin
     update_positions(num_atoms,
                      dt,
@@ -47,12 +39,8 @@ void velocity_verlet_update(int num_atoms,
                      vel,
                      pos);
 #if defined(SPIN)
-#if defined(EHRENFEST)
-    // Do nothing
-#else
     // Record updated spin projections
     // Perform flip
-#endif // Ehrenfest
 #endif // Spin
     update_accelerations(num_atoms,
                          params,
@@ -74,7 +62,7 @@ void sympletic_euler_update(int num_atoms,
                             double3 *pos,
                             double3 *vel,
                             double3 *acc,
-                            zomplex2 *psi) {
+                            wavefunction *psi) {
     update_velocities(num_atoms,
                       dt,
                       cublas_handle,
@@ -206,7 +194,8 @@ double3 update_atom_velocity(double dt,
 /** \fn void update_accelerations(int num_atoms,
  *                                trap_geo params,
  *                                double3 *pos,
- *                                double3 *acc) 
+ *                                double3 *acc,
+ *                                wavefunction *psi) 
  *  \brief Calls the function to update a `double3` host or device array with
  *  accelerations based on the atoms position and the trapping potential.
  *  \param num_atoms Number of atoms in the thermal gas.
@@ -216,6 +205,8 @@ double3 update_atom_velocity(double dt,
  *  `num_atoms` containing the positions.
  *  \param *acc Pointer to a `double3` host or device array of length
  *  `num_atoms` containing the accelerations.
+ *  \param *psi Pointer to a `wavefunction` host or device array of length
+ *  `num_atoms` containing the atoms' wavefunctions.
  *  \exception not yet.
  *  \return void
 */
@@ -224,7 +215,7 @@ void update_accelerations(int num_atoms,
                           trap_geo params,
                           double3 *pos,
                           double3 *acc,
-                          zomplex2 *psi) {
+                          wavefunction *psi) {
 #ifdef CUDA
     cu_update_accelerations(num_atoms,
                             params,
@@ -262,7 +253,7 @@ double3 update_atom_acceleration(trap_geo params,
 
 double3 update_atom_acceleration(trap_geo params,
                                  double3 pos,
-                                 zomplex2 psi) {
+                                 wavefunction psi) {
     double3 acc = make_double3(0., 0., 0.);
 
     acc.x = expectation_dV_dx(params,
@@ -281,7 +272,7 @@ double3 update_atom_acceleration(trap_geo params,
  *                                double dt,
  *                                trap_geo params,
  *                                double3 *pos,
- *                                zomplex2 *psi) 
+ *                                wavefunction *psi) 
  *  \brief TODO.
  *  \param num_atoms Number of atoms in the array.
  *  \param dt Size of the timestep over which to evolve.
@@ -289,7 +280,7 @@ double3 update_atom_acceleration(trap_geo params,
  *  necessary constants for describing the trapping potential.
  *  \param *pos Pointer to a `double3` host or device array of length
  *  `num_atoms` containing the positions.
- *  \param *psi Pointer to a `zomplex2` host or device array of length
+ *  \param *psi Pointer to a `wavefunction` host or device array of length
  *  `num_atoms` containing the wavefunctions.
  *  \exception not yet.
  *  \return void
@@ -299,7 +290,7 @@ void update_wavefunctions(int num_atoms,
                           double dt,
                           trap_geo params,
                           double3 *pos,
-                          zomplex2 *psi) {
+                          wavefunction *psi) {
 #ifdef CUDA
     cu_update_wavefunctions(num_atoms,
                             dt,
@@ -318,10 +309,10 @@ void update_wavefunctions(int num_atoms,
     return;
 }
 
-zomplex2 update_atom_wavefunction(double dt,
-                                  trap_geo params,
-                                  double3 pos,
-                                  zomplex2 psi) {
+wavefunction update_atom_wavefunction(double dt,
+                                      trap_geo params,
+                                      double3 pos,
+                                      wavefunction psi) {
     double3 mag_field = B(pos,
                           params);
     double3 Bn = unit(mag_field);
@@ -341,7 +332,7 @@ zomplex2 update_atom_wavefunction(double dt,
     U[1][1] = make_cuDoubleComplex(cos_delta_theta,
                                    Bn.z*sin_delta_theta);
     
-    zomplex2 updated_psi = make_zomplex2(0., 0., 0., 0.);
+    wavefunction updated_psi = make_wavefunction(0., 0., 0., 0., psi.isSpinUp);
     updated_psi.up = U[0][0]*psi.up + U[0][1]*psi.dn;
     updated_psi.dn = U[1][0]*psi.up + U[1][1]*psi.dn;
 

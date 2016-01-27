@@ -45,10 +45,10 @@ SCENARIO("[HOST] Acceleration Update", "[h-acc]") {
                                                          sizeof(double3)));
 
             // Initialise spins
-            zomplex2 *psi;
+            wavefunction *psi;
 #if defined(SPIN)
-            psi = reinterpret_cast<zomplex2*>(calloc(num_test,
-                                                     sizeof(zomplex2)));
+            psi = reinterpret_cast<wavefunction*>(calloc(num_test,
+                                                     sizeof(wavefunction)));
             generate_aligned_spins(num_test,
                                    trap_parameters,
                                    pos,
@@ -140,10 +140,10 @@ SCENARIO("[HOST] Velocity Update", "[h-vel]") {
                                    pos);
 
         // Initialise spins
-        zomplex2 *psi;
+        wavefunction *psi;
 #if defined(SPIN)
-            psi = reinterpret_cast<zomplex2*>(calloc(num_test,
-                                                     sizeof(zomplex2)));
+            psi = reinterpret_cast<wavefunction*>(calloc(num_test,
+                                                     sizeof(wavefunction)));
             generate_aligned_spins(num_test,
                                    trap_parameters,
                                    pos,
@@ -237,9 +237,9 @@ SCENARIO("[HOST] Wavfunction Update", "[h-psiev]") {
                                    pos);
 
         // Initialise spins
-        zomplex2 *test_psi;
-        test_psi = reinterpret_cast<zomplex2*>(calloc(num_test,
-                                                      sizeof(zomplex2)));
+        wavefunction *test_psi;
+        test_psi = reinterpret_cast<wavefunction*>(calloc(num_test,
+                                                      sizeof(wavefunction)));
 
         generate_aligned_spins(num_test,
                                trap_parameters,

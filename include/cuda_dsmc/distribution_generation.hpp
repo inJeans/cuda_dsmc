@@ -15,7 +15,10 @@
 void generate_aligned_spins(int num_atoms,
                             trap_geo params,
                             double3 *pos,
-                            zomplex2 *psi);
+                            wavefunction *psi);
+
+wavefunction aligned_wavefunction(trap_geo params,
+                                  double3 pos);
 
 zomplex2 aligned_spin(trap_geo params,
                       double3 pos);

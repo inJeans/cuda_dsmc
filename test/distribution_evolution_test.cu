@@ -37,10 +37,10 @@ SCENARIO("[DEVICE] Acceleration Update", "[d-acc]") {
                                    d_pos);
 
         // Initialise spins
-        zomplex2 *d_psi;
+        wavefunction *d_psi;
 #if defined(SPIN)
         checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&d_psi),
-                                   num_test*sizeof(zomplex2)));
+                                   num_test*sizeof(wavefunction)));
         generate_aligned_spins(num_test,
                                trap_parameters,
                                d_pos,
@@ -147,10 +147,10 @@ SCENARIO("[DEVICE] Velocity Update", "[d-vel]") {
                                    d_pos);
 
         // Initialise spins
-        zomplex2 *d_psi;
+        wavefunction *d_psi;
 #if defined(SPIN)
         checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&d_psi),
-                                   num_test*sizeof(zomplex2)));
+                                   num_test*sizeof(wavefunction)));
         generate_aligned_spins(num_test,
                                trap_parameters,
                                d_pos,

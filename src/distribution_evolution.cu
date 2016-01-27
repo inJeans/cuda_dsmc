@@ -90,9 +90,10 @@ __device__ double3 d_update_atom_velocity(double dt,
 }
 
 /** \fn __host__ void cu_update_accelerations(int num_atoms,
- *                                                 trap_geo params,
- *                                                 double3 *pos,
- *                                                 double3 *acc)
+ *                                            trap_geo params,
+ *                                            double3 *pos,
+ *                                            wavefunction *psi,
+ *                                            double3 *acc)
  *  \brief Calls the `__global__` function to fill an array with accelerations 
  *  based on their position and the trapping potential.
  *  \param num_atoms Total number of atoms in the gas.
@@ -100,6 +101,8 @@ __device__ double3 d_update_atom_velocity(double dt,
  *  necessary constants for describing the trapping potential.
  *  \param *pos A `double3` array of length `num_atoms` containing the position
  *  of each atom.
+ *  \param *psi A `wavefunction` array of length `num_atoms` containing the 
+ *  wavefunction of each atom.
  *  \param *acc A `double3` array of length `num_atoms` containing the
  *  acceleration of each atom.
  *  \exception not yet.
@@ -109,7 +112,7 @@ __device__ double3 d_update_atom_velocity(double dt,
 __host__ void cu_update_accelerations(int num_atoms,
                                       trap_geo params,
                                       double3 *pos,
-                                      zomplex2 *psi,
+                                      wavefunction *psi,
                                       double3 *acc) {
     LOGF(DEBUG, "\nCalculating optimal launch configuration for the acceleration "
                 "update kernel.\n");
@@ -138,6 +141,7 @@ __host__ void cu_update_accelerations(int num_atoms,
 /** \fn __global__ void g_update_atom_acceleration(int num_atoms,
  *                                                 trap_geo params,
  *                                                 double3 *pos,
+ *                                                 wavefunction *psi,
  *                                                 double3 *acc)
  *  \brief `__global__` function for filling a `double3` array of length
  *  `num_atoms` with accelerations based on their position and the trapping 
@@ -147,6 +151,8 @@ __host__ void cu_update_accelerations(int num_atoms,
  *  necessary constants for describing the trapping potential.
  *  \param *pos Pointer to an input `double3` array of length `num_atoms` for
  *  storing the gas positions.
+ *  \param *psi Pointer to an input `wavefunction` array of length `num_atoms` for
+ *  storing the gas wavefunctions.
  *  \param *acc Pointer to an output `double3` array of length `num_atoms` for
  *  storing the gas accelerations.
  *  \exception not yet.
@@ -156,7 +162,7 @@ __host__ void cu_update_accelerations(int num_atoms,
 __global__ void g_update_atom_acceleration(int num_atoms,
                                            trap_geo params,
                                            double3 *pos,
-                                           zomplex2 *psi,
+                                           wavefunction *psi,
                                            double3 *acc) {
     for (int atom = blockIdx.x * blockDim.x + threadIdx.x;
          atom < num_atoms;
@@ -189,19 +195,21 @@ __device__ double3 d_update_atom_acceleration(trap_geo params,
 }
 
 __device__ double3 d_update_atom_acceleration(trap_geo params,
-                                             double3 pos,
-                                             zomplex2 psi) {
+                                              double3 pos,
+                                              wavefunction psi) {
     double3 acc = make_double3(0., 0., 0.);
+    zomplex2 l_psi = make_zomplex2(psi.up.x, psi.up.y,
+                                   psi.dn.x, psi.dn.y);
 
     acc.x = d_expectation_dV_dx(params,
                                 pos,
-                                psi) / d_mass;
+                                l_psi) / d_mass;
     acc.y = d_expectation_dV_dy(params,
                                 pos,
-                                psi) / d_mass;
+                                l_psi) / d_mass;
     acc.z = d_expectation_dV_dz(params,
                                 pos,
-                                psi) / d_mass;
+                                l_psi) / d_mass;
     return acc;
 }
 
@@ -209,7 +217,7 @@ __device__ double3 d_update_atom_acceleration(trap_geo params,
  *                                            double dt, 
  *                                            trap_geo params,
  *                                            double3 *pos,
- *                                            zomplex2 *psi)
+ *                                            wavefunction *psi)
  *  \brief Calls the `__global__` function to TODO.
  *  \param num_atoms Total number of atoms in the gas.
  *  \param dt Timestep over which to evolve system.
@@ -217,7 +225,7 @@ __device__ double3 d_update_atom_acceleration(trap_geo params,
  *  necessary constants for describing the trapping potential.
  *  \param *pos A `double3` array of length `num_atoms` containing the position
  *  of each atom.
- *  \param *psi A `zomplex2` array of length `num_atoms` containing the
+ *  \param *psi A `wavefunction` array of length `num_atoms` containing the
  *  acceleration of each atom.
  *  \exception not yet.
  *  \return void
@@ -227,7 +235,7 @@ __host__ void cu_update_wavefunctions(int num_atoms,
                                       double dt,
                                       trap_geo params,
                                       double3 *pos,
-                                      zomplex2 *psi) {
+                                      wavefunction *psi) {
     LOGF(DEBUG, "\nCalculating optimal launch configuration for the wavefunction "
                 "update kernel.\n");
     int block_size = 0;
@@ -257,7 +265,7 @@ __host__ void cu_update_wavefunctions(int num_atoms,
  *                                                 double dt,
  *                                                 trap_geo params,
  *                                                 double3 *pos,
- *                                                 zomplex2 *psi)
+ *                                                 wavefunction *psi)
  *  \brief `__global__` function for filling a `double3` array of length
  *  `num_atoms` TODO.
  *  \param num_atoms Total number of atoms in the gas.
@@ -266,7 +274,7 @@ __host__ void cu_update_wavefunctions(int num_atoms,
  *  necessary constants for describing the trapping potential.
  *  \param *pos Pointer to an input `double3` array of length `num_atoms` for
  *  storing the gas positions.
- *  \param *psi Pointer to an output `zomplex2` array of length `num_atoms` for
+ *  \param *psi Pointer to an output `wavefunction` array of length `num_atoms` for
  *  storing the gas wavefunctions.
  *  \exception not yet.
  *  \return void
@@ -276,7 +284,7 @@ __global__ void g_update_atom_wavefunction(int num_atoms,
                                            double dt,
                                            trap_geo params,
                                            double3 *pos,
-                                           zomplex2 *psi) {
+                                           wavefunction *psi) {
     for (int atom = blockIdx.x * blockDim.x + threadIdx.x;
          atom < num_atoms;
          atom += blockDim.x * gridDim.x) {
@@ -289,20 +297,20 @@ __global__ void g_update_atom_wavefunction(int num_atoms,
     return;
 }
 
-__device__ zomplex2 d_update_atom_wavefunction(double dt,
-                                               trap_geo params,
-                                               double3 pos,
-                                               zomplex2 psi) {
+__device__ wavefunction d_update_atom_wavefunction(double dt,
+                                                   trap_geo params,
+                                                   double3 pos,
+                                                   wavefunction psi) {
     double3 mag_field = B(pos,
                           params);
     double3 Bn = unit(mag_field);
     double norm_B = norm(mag_field);
 
-    double delta_theta = 0.5*d_gs*d_muB*norm_B*dt / d_hbar; 
+    double delta_theta = 0.5*d_gs*d_muB*norm_B*dt / d_hbar;
     double cos_delta_theta = cos(delta_theta);
     double sin_delta_theta = sin(delta_theta);
 
-    cuDoubleComplex U[2][2] = {make_cuDoubleComplex(0.,0.)};
+    cuDoubleComplex U[2][2] = {make_cuDoubleComplex(0., 0.)};
     U[0][0] = make_cuDoubleComplex(cos_delta_theta,
                                    -Bn.z*sin_delta_theta);
     U[0][1] = make_cuDoubleComplex(Bn.y*sin_delta_theta,
@@ -311,8 +319,8 @@ __device__ zomplex2 d_update_atom_wavefunction(double dt,
                                    -Bn.x*sin_delta_theta);
     U[1][1] = make_cuDoubleComplex(cos_delta_theta,
                                    Bn.z*sin_delta_theta);
-    
-    zomplex2 updated_psi = make_zomplex2(0., 0., 0., 0.);
+
+    wavefunction updated_psi = make_wavefunction(0., 0., 0., 0., psi.isSpinUp);
     updated_psi.up = U[0][0]*psi.up + U[0][1]*psi.dn;
     updated_psi.dn = U[1][0]*psi.up + U[1][1]*psi.dn;
 

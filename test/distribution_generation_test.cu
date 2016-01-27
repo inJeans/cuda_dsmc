@@ -169,9 +169,9 @@ SCENARIO("[DEVICE] Wavefunction generation", "[d-psigen]") {
                                    d_pos);
 
         WHEN("We generate the corresponding locally aligned spins") {
-            zomplex2 *d_test_psi;
+            wavefunction *d_test_psi;
             checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&d_test_psi),
-                                       num_test*sizeof(zomplex2)));
+                                       num_test*sizeof(wavefunction)));
 
             generate_aligned_spins(num_test,
                                    trap_parameters,
@@ -186,12 +186,12 @@ SCENARIO("[DEVICE] Wavefunction generation", "[d-psigen]") {
                                        num_test*sizeof(double3),
                                        cudaMemcpyDeviceToHost));
 
-            zomplex2 *test_psi;
-            test_psi = reinterpret_cast<zomplex2*>(calloc(num_test,
-                                                   sizeof(zomplex2)));
+            wavefunction *test_psi;
+            test_psi = reinterpret_cast<wavefunction*>(calloc(num_test,
+                                                   sizeof(wavefunction)));
             checkCudaErrors(cudaMemcpy(test_psi,
                                        d_test_psi,
-                                       num_test*sizeof(zomplex2),
+                                       num_test*sizeof(wavefunction),
                                        cudaMemcpyDeviceToHost));
 
             cuDoubleComplex P = make_cuDoubleComplex(0., 0.);

@@ -24,7 +24,7 @@ void velocity_verlet_update(int num_atoms,
                             double3 *pos,
                             double3 *vel,
                             double3 *acc,
-                            zomplex2 *psi = NULL);
+                            wavefunction *psi = NULL);
 
 void sympletic_euler_update(int num_atoms,
                             double dt,
@@ -33,7 +33,7 @@ void sympletic_euler_update(int num_atoms,
                             double3 *pos,
                             double3 *vel,
                             double3 *acc,
-                            zomplex2 *psi = NULL);
+                            wavefunction *psi = NULL);
 
 void update_positions(int num_atoms,
                       double dt,
@@ -59,24 +59,24 @@ void update_accelerations(int num_atoms,
                           trap_geo params,
                           double3 *pos,
                           double3 *acc,
-                          zomplex2 *psi = NULL);
+                          wavefunction *psi = NULL);
 
 double3 update_atom_acceleration(trap_geo params,
                                  double3 pos);
 
 double3 update_atom_acceleration(trap_geo params,
                                  double3 pos,
-                                 zomplex2 psi);
+                                 wavefunction psi);
 
 void update_wavefunctions(int num_atoms,
                           double dt,
                           trap_geo params,
                           double3 *pos,
-                          zomplex2 *psi);
+                          wavefunction *psi);
 
-zomplex2 update_atom_wavefunction(double dt,
-                                  trap_geo params,
-                                  double3 pos,
-                                  zomplex2 psi);
+wavefunction update_atom_wavefunction(double dt,
+                                      trap_geo params,
+                                      double3 pos,
+                                      wavefunction psi);
 
 #endif  // DISTRIBUTION_EVOLUTION_HPP_INCLUDED

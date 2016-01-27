@@ -51,7 +51,7 @@ int main(int argc, char const *argv[]) {
     printf("*                          *\n");
     printf("****************************\n");
 
-#ifdef CUDA
+#if defined(CUDA)
     LOGF(INFO, "\nRunnning on your local CUDA device.");
     findCudaDevice(argc,
                    argv);
@@ -69,7 +69,7 @@ int main(int argc, char const *argv[]) {
 
     // Initialise rng
     LOGF(INFO, "\nInitialising the rng state array.");
-#ifdef CUDA
+#if defined(CUDA)
     LOGF(DEBUG, "\nAllocating %i curandState elements on the device.",
          NUM_ATOMS);
     curandState *state;
@@ -89,7 +89,7 @@ int main(int argc, char const *argv[]) {
     // Initialise velocities
     LOGF(INFO, "\nInitialising the velocity array.");
     double3 *vel;
-#ifdef CUDA
+#if defined(CUDA)
     LOGF(DEBUG, "\nAllocating %i double3 elements on the device.",
          NUM_ATOMS);
     checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&vel),
@@ -110,7 +110,7 @@ int main(int argc, char const *argv[]) {
     // Initialise positions
     LOGF(INFO, "\nInitialising the position array.");
     double3 *pos;
-#ifdef CUDA
+#if defined(CUDA)
     LOGF(DEBUG, "\nAllocating %i double3 elements on the device.",
          NUM_ATOMS);
     checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&pos),
@@ -129,20 +129,22 @@ int main(int argc, char const *argv[]) {
                                state,
                                pos);
 
-// Initialise wavefunction
+#if defined(SPIN)
+    // Initialise wavefunction
     LOGF(INFO, "\nInitialising the wavefunction array.");
-    zomplex2 *psi;
-#ifdef CUDA
-    LOGF(DEBUG, "\nAllocating %i zomplex2 elements on the device.",
+    wavefunction *psi;
+#if defined(CUDA)
+    LOGF(DEBUG, "\nAllocating %i wavefunction elements on the device.",
          NUM_ATOMS);
     checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&psi),
-                               NUM_ATOMS*sizeof(zomplex2)));
+                               NUM_ATOMS*sizeof(wavefunction)));
 #else
-    LOGF(DEBUG, "\nAllocating %i zomplex2 elements on the host.",
+    LOGF(DEBUG, "\nAllocating %i wavefunction elements on the host.",
          NUM_ATOMS);
-    psi = reinterpret_cast<zomplex2*>(calloc(NUM_ATOMS,
-                                             sizeof(zomplex2)));
-#endif
+    psi = reinterpret_cast<wavefunction*>(calloc(NUM_ATOMS,
+                                             sizeof(wavefunction)));
+#endif // CUDA
+#endif // Spin
 
     // Generate wavefunction
     generate_aligned_spins(NUM_ATOMS,
@@ -153,7 +155,7 @@ int main(int argc, char const *argv[]) {
     // Initialise accelerations
     LOGF(INFO, "\nInitialising the acceleration array.");
     double3 *acc;
-#ifdef CUDA
+#if defined(CUDA)
     LOGF(DEBUG, "\nAllocating %i double3 elements on the device.",
          NUM_ATOMS);
     checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&acc),
@@ -165,15 +167,23 @@ int main(int argc, char const *argv[]) {
                                             sizeof(double3)));
 #endif
 
+#if defined(SPIN)
     // Generate accelerations
     update_accelerations(NUM_ATOMS,
                          trap_parameters,
                          pos,
                          acc,
                          psi);
+#else
+    // Generate accelerations
+    update_accelerations(NUM_ATOMS,
+                         trap_parameters,
+                         pos,
+                         acc);
+#endif // Spin
 
     LOGF(DEBUG, "\nBefore time evolution.\n");
-#ifdef CUDA
+#if defined(CUDA)
     double3 h_vel[NUM_ATOMS];
     cudaMemcpy(&h_vel,
                vel,
@@ -192,11 +202,13 @@ int main(int argc, char const *argv[]) {
                NUM_ATOMS*sizeof(double3),
                cudaMemcpyDeviceToHost);
 
-    zomplex2 h_psi[NUM_ATOMS];
+#if defined(SPIN)
+    wavefunction h_psi[NUM_ATOMS];
     cudaMemcpy(&h_psi,
                psi,
-               NUM_ATOMS*sizeof(zomplex2),
+               NUM_ATOMS*sizeof(wavefunction),
                cudaMemcpyDeviceToHost);
+#endif // Spin
 
     LOGF(INFO, "\nv1 = { %f,%f,%f }, v2 = { %f,%f,%f }\n", h_vel[0].x, h_vel[0].y, h_vel[0].z,
                                                            h_vel[1].x, h_vel[1].y, h_vel[1].z);
@@ -204,9 +216,17 @@ int main(int argc, char const *argv[]) {
                                                            h_pos[1].x, h_pos[1].y, h_pos[1].z);
     LOGF(INFO, "\na1 = { %f,%f,%f }, a2 = { %f,%f,%f }\n", h_acc[0].x, h_acc[0].y, h_acc[0].z,
                                                            h_acc[1].x, h_acc[1].y, h_acc[1].z);
-    LOGF(INFO, "\npsi1 = { %f%+fi,%f%+fi }, psi2 = { %f%+fi,%f%+fi }\n", 
+#if defined(SPIN)
+#if defined(EHRENFEST)
+    LOGF(INFO, "\npsi1 = { %f%+fi,%f%+fi, }, psi2 = { %f%+fi,%f%+fi }\n", 
                h_psi[0].up.x, h_psi[0].up.y, h_psi[0].dn.x, h_psi[0].dn.y,
                h_psi[1].up.x, h_psi[1].up.y, h_psi[1].dn.x, h_psi[1].dn.y);
+#else
+    LOGF(INFO, "\npsi1 = { %f%+fi,%f%+fi %d }, psi2 = { %f%+fi,%f%+fi %d }\n", 
+               h_psi[0].up.x, h_psi[0].up.y, h_psi[0].dn.x, h_psi[0].dn.y, h_psi[0].isSpinUp,
+               h_psi[1].up.x, h_psi[1].up.y, h_psi[1].dn.x, h_psi[1].dn.y, h_psi[1].isSpinUp);
+#endif // Ehrenfest
+#endif // Spin
 #else 
     LOGF(INFO, "\nv1 = { %f,%f,%f }, v2 = { %f,%f,%f }\n", vel[0].x, vel[0].y, vel[0].z,
                                                            vel[1].x, vel[1].y, vel[1].z);
@@ -214,19 +234,28 @@ int main(int argc, char const *argv[]) {
                                                            pos[1].x, pos[1].y, pos[1].z);
     LOGF(INFO, "\na1 = { %f,%f,%f }, a2 = { %f,%f,%f }\n", acc[0].x, acc[0].y, acc[0].z,
                                                            acc[1].x, acc[1].y, acc[1].z);
-    LOGF(INFO, "\npsi1 = { %f%+fi,%f%+fi }, psi2 = { %f%+fi,%f%+fi }\n", 
+#if defined(SPIN)
+#if defined(EHRENFEST)
+    LOGF(INFO, "\npsi1 = { %f%+fi,%f%+fi, }, psi2 = { %f%+fi,%f%+fi }\n", 
                psi[0].up.x, psi[0].up.y, psi[0].dn.x, psi[0].dn.y,
                psi[1].up.x, psi[1].up.y, psi[1].dn.x, psi[1].dn.y);
+#else
+    LOGF(INFO, "\npsi1 = { %f%+fi,%f%+fi %d }, psi2 = { %f%+fi,%f%+fi %d }\n", 
+               psi[0].up.x, psi[0].up.y, psi[0].dn.x, psi[0].dn.y, psi[0].isSpinUp,
+               psi[1].up.x, psi[1].up.y, psi[1].dn.x, psi[1].dn.y, psi[1].isSpinUp);
+#endif // Ehrenfest
+#endif // Spin
 #endif
 
     cublasHandle_t cublas_handle;
-#ifdef CUDA
+#if defined(CUDA)
     LOGF(DEBUG, "\nCreating the cuBLAS handle.\n");
     checkCudaErrors(cublasCreate(&cublas_handle));
 #endif
     // Evolve many time step
     LOGF(INFO, "\nEvolving distribution for %i time steps.", num_time_steps);
     for (int i = 0; i < num_time_steps; ++i) {
+#if defined(SPIN)
         velocity_verlet_update(NUM_ATOMS,
                                dt,
                                trap_parameters,
@@ -235,14 +264,23 @@ int main(int argc, char const *argv[]) {
                                vel,
                                acc,
                                psi);
+#else
+        velocity_verlet_update(NUM_ATOMS,
+                               dt,
+                               trap_parameters,
+                               cublas_handle,
+                               pos,
+                               vel,
+                               acc);
+#endif // Spin
     }
-#ifdef CUDA
+#if defined(CUDA)
     LOGF(DEBUG, "\nDestroying the cuBLAS handle.\n");
     cublasDestroy(cublas_handle);
 #endif
 
     LOGF(DEBUG, "\nAfter time evolution.\n");
-    #ifdef CUDA
+#if defined(CUDA)
     cudaMemcpy(&h_vel,
                vel,
                NUM_ATOMS*sizeof(double3),
@@ -255,10 +293,12 @@ int main(int argc, char const *argv[]) {
                acc,
                NUM_ATOMS*sizeof(double3),
                cudaMemcpyDeviceToHost);
+#if defined(SPIN)
     cudaMemcpy(&h_psi,
                psi,
-               NUM_ATOMS*sizeof(zomplex2),
+               NUM_ATOMS*sizeof(wavefunction),
                cudaMemcpyDeviceToHost);
+#endif // Spin
 
     LOGF(INFO, "\nv1 = { %f,%f,%f }, v2 = { %f,%f,%f }\n", h_vel[0].x, h_vel[0].y, h_vel[0].z,
                                                            h_vel[1].x, h_vel[1].y, h_vel[1].z);
@@ -266,9 +306,17 @@ int main(int argc, char const *argv[]) {
                                                            h_pos[1].x, h_pos[1].y, h_pos[1].z);
     LOGF(INFO, "\na1 = { %f,%f,%f }, a2 = { %f,%f,%f }\n", h_acc[0].x, h_acc[0].y, h_acc[0].z,
                                                            h_acc[1].x, h_acc[1].y, h_acc[1].z);
-    LOGF(INFO, "\npsi1 = { %f%+fi,%f%+fi }, psi2 = { %f%+fi,%f%+fi }\n", 
+#if defined(SPIN)
+#if defined(EHRENFEST)
+    LOGF(INFO, "\npsi1 = { %f%+fi,%f%+fi, }, psi2 = { %f%+fi,%f%+fi }\n", 
                h_psi[0].up.x, h_psi[0].up.y, h_psi[0].dn.x, h_psi[0].dn.y,
                h_psi[1].up.x, h_psi[1].up.y, h_psi[1].dn.x, h_psi[1].dn.y);
+#else
+    LOGF(INFO, "\npsi1 = { %f%+fi,%f%+fi %d }, psi2 = { %f%+fi,%f%+fi %d }\n", 
+               h_psi[0].up.x, h_psi[0].up.y, h_psi[0].dn.x, h_psi[0].dn.y, h_psi[0].isSpinUp,
+               h_psi[1].up.x, h_psi[1].up.y, h_psi[1].dn.x, h_psi[1].dn.y, h_psi[1].isSpinUp);
+#endif // Ehrenfest
+#endif // Spin
 #else 
     LOGF(INFO, "\nv1 = { %f,%f,%f }, v2 = { %f,%f,%f }\n", vel[0].x, vel[0].y, vel[0].z,
                                                            vel[1].x, vel[1].y, vel[1].z);
@@ -276,26 +324,38 @@ int main(int argc, char const *argv[]) {
                                                            pos[1].x, pos[1].y, pos[1].z);
     LOGF(INFO, "\na1 = { %f,%f,%f }, a2 = { %f,%f,%f }\n", acc[0].x, acc[0].y, acc[0].z,
                                                            acc[1].x, acc[1].y, acc[1].z);
-    LOGF(INFO, "\npsi1 = { %f%+fi,%f%+fi }, psi2 = { %f%+fi,%f%+fi }\n", 
+#if defined(SPIN)
+#if defined(EHRENFEST)
+    LOGF(INFO, "\npsi1 = { %f%+fi,%f%+fi, }, psi2 = { %f%+fi,%f%+fi }\n", 
                psi[0].up.x, psi[0].up.y, psi[0].dn.x, psi[0].dn.y,
                psi[1].up.x, psi[1].up.y, psi[1].dn.x, psi[1].dn.y);
+#else
+    LOGF(INFO, "\npsi1 = { %f%+fi,%f%+fi %d }, psi2 = { %f%+fi,%f%+fi %d }\n", 
+               psi[0].up.x, psi[0].up.y, psi[0].dn.x, psi[0].dn.y, psi[0].isSpinUp,
+               psi[1].up.x, psi[1].up.y, psi[1].dn.x, psi[1].dn.y, psi[1].isSpinUp);
+#endif // Ehrenfest
+#endif // Spin
 #endif
 
-#ifdef CUDA
+#if defined(CUDA)
     LOGF(INFO, "\nCleaning up device memory.");
     cudaFree(state);
     cudaFree(vel);
     cudaFree(pos);
     cudaFree(acc);
+#if defined(SPIN)
     cudaFree(psi);
+#endif // Spin
 #else
     LOGF(INFO, "\nCleaning up local memory.");
     free(state);
     free(vel);
     free(pos);
     free(acc);
+#if defined(SPIN)
     free(psi);
-#endif
+#endif // Spin
+#endif // CUDA
 
     g3::internal::shutDownLogging();
 

@@ -171,7 +171,7 @@ double mean_kinetic_energy(int num_atoms,
 }
 
 cuDoubleComplex project(double3 Bn,
-                        zomplex2 psi) {
+                        wavefunction psi) {
     cuDoubleComplex P = make_cuDoubleComplex(0., 0.);
     P = 0.5 * (((1.-Bn.z)*psi.dn + Bn.x*psi.up)*cuConj(psi.dn) +
                ((1.+Bn.z)*psi.up + Bn.x*psi.dn)*cuConj(psi.up)) -

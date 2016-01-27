@@ -14,13 +14,13 @@ __constant__ double d_max_grid_width = 2.e-3;
 /** \fn __host__ void cu_generate_aligned_spins(int num_atoms,
  *                                              trap_geo params,
  *                                              double3 *pos,
- *                                              zomplex2 *psi)
+ *                                              wavefunction *psi)
  *  \brief Calls the `__global__` function to fill a `zomplex2` array of aligned spins 
  *  on the device with a mean projection of 1.
  *  \param num_atoms Number of atoms in the thermal gas.
  *  \param params (TODO).
  *  \param *pos Pointer to a `double3` device array of length `num_atoms`.
- *  \param *zomplex2 Pointer to a `zomplex2` device array of length `num_atoms`.
+ *  \param *psi Pointer to a `wavefunction` device array of length `num_atoms`.
  *  \exception not yet.
  *  \return void
 */
@@ -28,7 +28,7 @@ __constant__ double d_max_grid_width = 2.e-3;
 __host__ void cu_generate_aligned_spins(int num_atoms,
                                         trap_geo params,
                                         double3 *pos,
-                                        zomplex2 *psi) {
+                                        wavefunction *psi) {
     LOGF(DEBUG, "\nCalculating optimal launch configuration for the wavefunction "
                 "initialisation kernel.\n");
     int block_size = 0;
@@ -55,13 +55,13 @@ __host__ void cu_generate_aligned_spins(int num_atoms,
 /** \fn __global__ void g_generate_aligned_spins(int num_atoms,
  *                                               trap_geo params,
  *                                               double3 *pos,
- *                                               zomplex2 *psi)
+ *                                               wavefunction *psi)
  *  \brief `__global__` function for filling a `double3` array of length
  *  `num_atoms` with a distribution of aligned spins.
  *  \param num_atoms Number of atoms in the thermal gas.
  *  \param params (TODO).
  *  \param *pos Pointer to a `double3` device array of length `num_atoms`.
- *  \param *zomplex2 Pointer to a `zomplex2` device array of length `num_atoms`.
+ *  \param *psi Pointer to a `wavefunction` device array of length `num_atoms`.
  *  \exception not yet.
  *  \return void
 */
@@ -69,15 +69,40 @@ __host__ void cu_generate_aligned_spins(int num_atoms,
 __global__ void g_generate_aligned_spins(int num_atoms,
                                          trap_geo params,
                                          double3 *pos,
-                                         zomplex2 *psi) {
+                                         wavefunction *psi) {
     for (int atom = blockIdx.x * blockDim.x + threadIdx.x;
          atom < num_atoms;
          atom += blockDim.x * gridDim.x) {
-        psi[atom] = d_aligned_spin(params,
-                                   pos[atom]);
+        psi[atom] = d_aligned_wavefunction(params,
+                                           pos[atom]);
     }
 
     return;
+}
+
+/** \fn __host__ __device__ wavefunction d_aligned_wavefunction(trap_geo params,
+  *                                                             double3 pos) 
+ *  \brief `__device__` function for generating a single aligned spin
+ *  given a magnetic field and a position.
+ *  \param params TODO.
+ *  \param pos A `double3` element describing the position of the particle.
+ *  \exception not yet.
+ *  \return A `wavefunction` element representing the wavefunction of the 
+ *  particle.
+*/
+
+__device__ wavefunction d_aligned_wavefunction(trap_geo params,
+                                               double3 pos) {
+    wavefunction aligned_psi = make_wavefunction(0., 0., 0., 0., true);
+
+    zomplex2 psi = d_aligned_spin(params,
+                                  pos);
+
+    aligned_psi.up = psi.up;
+    aligned_psi.dn = psi.dn;
+    aligned_psi.isSpinUp = true;
+
+    return aligned_psi;
 }
 
 /** \fn __host__ __device__ zomplex2 aligned_spin(trap_geo params,
@@ -87,7 +112,7 @@ __global__ void g_generate_aligned_spins(int num_atoms,
  *  \param params TODO.
  *  \param pos A `double3` element describing the position of the particle.
  *  \exception not yet.
- *  \return A `cuDoubleComplex2` element representing the wavefunction of the 
+ *  \return A `zomplex2` element representing the wavefunction of the 
  *  particle.
 */
 

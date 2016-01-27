@@ -60,6 +60,6 @@ double mean_kinetic_energy(int num_atoms,
                            double3 *vel);
 
 cuDoubleComplex project(double3 Bn,
-                        zomplex2 psi);
+                        wavefunction psi);
 
 #endif // TEST_HELPERS_CUH_INCLUDED
