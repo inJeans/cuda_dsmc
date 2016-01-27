@@ -144,13 +144,14 @@ int main(int argc, char const *argv[]) {
     psi = reinterpret_cast<wavefunction*>(calloc(NUM_ATOMS,
                                              sizeof(wavefunction)));
 #endif // CUDA
-#endif // Spin
 
     // Generate wavefunction
     generate_aligned_spins(NUM_ATOMS,
                            trap_parameters,
                            pos,
                            psi);
+#endif // Spin
+
 
     // Initialise accelerations
     LOGF(INFO, "\nInitialising the acceleration array.");
