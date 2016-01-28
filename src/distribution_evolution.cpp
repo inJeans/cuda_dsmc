@@ -27,6 +27,15 @@ void velocity_verlet_update(int num_atoms,
                       vel);
 #if defined(SPIN)
     // Record spin projections
+    double up_pop[num_atoms];
+    double dn_pop[num_atoms];
+    project_wavefunctions(num_atoms,
+                          params,
+                          pos,
+                          psi,
+                          up_pop,
+                          dn_pop);
+
     update_wavefunctions(num_atoms,
                          dt,
                          params,
@@ -39,8 +48,9 @@ void velocity_verlet_update(int num_atoms,
                      vel,
                      pos);
 #if defined(SPIN)
-    // Record updated spin projections
     // Perform flip
+    // Exponential Decay
+    // Normalisation
 #endif // Spin
     update_accelerations(num_atoms,
                          params,
@@ -337,4 +347,80 @@ wavefunction update_atom_wavefunction(double dt,
     updated_psi.dn = U[1][0]*psi.up + U[1][1]*psi.dn;
 
     return updated_psi;
+}
+
+void project_wavefunctions(int num_atoms,
+                           trap_geo params,
+                           double3 *pos,
+                           wavefunction *psi,
+                           double *up_pop,
+                           double *dn_pop) {
+#if defined(CUDA)
+    // cu_project_wavefunctions(num_atoms,
+    //                          params,
+    //                          pos,
+    //                          psi,
+    //                          up_pop,
+    //                          dn_pop);
+#else
+    for (int atom = 0; atom < num_atoms; ++atom) {
+        double3 Bn = unit(B(pos[atom],
+                            params));
+        up_pop[atom] = cuCreal(project_up(Bn,
+                                          psi[atom]));
+        dn_pop[atom] = cuCreal(project_dn(Bn,
+                                          psi[atom]));
+    }
+#endif
+
+    return;
+}
+
+cuDoubleComplex project_up(double3 Bn,
+                           wavefunction psi) {
+    cuDoubleComplex P = make_cuDoubleComplex(0., 0.);
+    P = 0.5 * (((1.-Bn.z)*psi.dn + Bn.x*psi.up)*cuConj(psi.dn) +
+               ((1.+Bn.z)*psi.up + Bn.x*psi.dn)*cuConj(psi.up)) -
+            Bn.y*cuCimag(psi.up*cuConj(psi.dn));
+
+    return P;
+}
+
+cuDoubleComplex project_dn(double3 Bn,
+                           wavefunction psi) {
+    cuDoubleComplex P = make_cuDoubleComplex(0., 0.);
+    P = 0.5 * (((1.+Bn.z)*psi.dn - Bn.x*psi.up)*cuConj(psi.dn) +
+               ((1.-Bn.z)*psi.up - Bn.x*psi.dn)*cuConj(psi.up)) +
+            Bn.y*cuCimag(psi.up*cuConj(psi.dn));
+
+    return P;
+}
+
+void flip_wavefunctions(int num_atoms,
+                        trap_geo params,
+                        double3 *pos,
+                        double3 *vel,
+                        double *up_pop,
+                        double *dn_pop,
+                        wavefunction *psi,
+                        pcg32_random_t *state) {
+    for (int atom = 0; atom < num_atoms; ++atom) {
+        double3 Bn = unit(B(pos[atom],
+                            params));
+        double new_up_pop = cuCreal(project_up(Bn,
+                                               psi[atom]));
+        double new_dn_pop = cuCreal(project_dn(Bn,
+                                               psi[atom]));
+
+        double probability_of_flip = 0.;
+        if (psi[atom].isSpinUp) 
+            probability_of_flip = (new_dn_pop - dn_pop[atom]) / new_up_pop;
+        else
+            probability_of_flip = (new_up_pop - up_pop[atom]) / new_dn_pop;
+
+        if (uniform_prng(&state[atom]) < probability_of_flip)
+            psi[atom].isSpinUp = !psi[atom].isSpinUp;
+    }
+
+    return;
 }

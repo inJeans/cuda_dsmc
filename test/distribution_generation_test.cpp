@@ -170,7 +170,7 @@ SCENARIO("[HOST] Wavefunction generation", "[h-psigen]") {
             cuDoubleComplex P = make_cuDoubleComplex(0., 0.);
             for (int atom = 0; atom < num_test; ++atom) {
                 double3 Bn = unit(B(pos[atom],
-                                trap_parameters));
+                                    trap_parameters));
                 P = P + project(Bn,
                                 test_psi[atom]);
             }

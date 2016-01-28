@@ -14,6 +14,7 @@
 #include <cuda_runtime.h>
 #include "cublas_v2.h"
 
+#include "random_numbers.hpp"
 #include "trapping_potential.hpp"
 #include "vector_math.cuh"
 
@@ -78,5 +79,18 @@ wavefunction update_atom_wavefunction(double dt,
                                       trap_geo params,
                                       double3 pos,
                                       wavefunction psi);
+
+void project_wavefunctions(int num_atoms,
+                           trap_geo params,
+                           double3 *pos,
+                           wavefunction *psi,
+                           double *up_pop,
+                           double *dn_pop);
+
+cuDoubleComplex project_up(double3 Bn,
+                           wavefunction psi);
+
+cuDoubleComplex project_dn(double3 Bn,
+                           wavefunction psi);
 
 #endif  // DISTRIBUTION_EVOLUTION_HPP_INCLUDED

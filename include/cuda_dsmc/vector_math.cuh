@@ -88,6 +88,11 @@ static __inline__ __host__ __device__ cuDoubleComplex operator+(cuDoubleComplex 
     return cuCadd(a, b);
 }
 
+static __inline__ __host__ __device__ cuDoubleComplex operator-(cuDoubleComplex a, 
+                                                                cuDoubleComplex b) {
+    return cuCsub(a, b);
+}
+
 // static __inline__ __host__ __device__ cuDoubleComplex& operator+=(const cuDoubleComplex &a, 
 //                                                                   const cuDoubleComplex &b) {
 //     cuDoubleComplex output = cuCadd(a, b);
