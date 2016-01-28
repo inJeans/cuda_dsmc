@@ -55,4 +55,10 @@ __device__ double3 thermal_pos(double temp,
                                trap_geo params,
                                curandState *state);
 
+__host__ void cu_initialise_atom_id(int num_atoms,
+                                    int *atom_id);
+
+__global__ void g_initialise_atom_id(int num_atoms,
+                                     int *atom_id);
+
 #endif    // DISTRIBUTION_GENERATION_CUH_INCLUDED

@@ -306,3 +306,60 @@ __device__ double3 thermal_pos(double temp,
 
     return pos;
 }
+
+/** \fn __host__ void cu_initialise_atom_id(int num_atoms,
+ *                                          int *atom_id) 
+ *  \brief Calls the `__global__` function to fill an array of thermal 
+ *  velocties with a mean temperature of `temp`.
+ *  \param temp Mean temperature of the thermal gas, as defined by (TODO).
+ *  \exception not yet.
+ *  \return void
+*/
+
+__host__ void cu_initialise_atom_id(int num_atoms,
+                                    int *atom_id) {
+    LOGF(DEBUG, "\nCalculating optimal launch configuration for the atom_id "
+                "initialisation kernel.\n");
+    int block_size = 0;
+    int min_grid_size = 0;
+    int grid_size = 0;
+    cudaOccupancyMaxPotentialBlockSize(&min_grid_size,
+                                       &block_size,
+                                       (const void *) g_initialise_atom_id,
+                                       0,
+                                       num_atoms);
+    grid_size = (num_atoms + block_size - 1) / block_size;
+    LOGF(DEBUG, "\nLaunch config set as <<<%i,%i>>>\n",
+                grid_size, block_size);
+
+    g_initialise_atom_id<<<grid_size,
+                           block_size>>>
+                          (num_atoms,
+                           atom_id);  
+
+    return;
+}
+
+/** \fn __global__ void g_initialise_atom_id(int num_atoms,
+ *                                           int *atom_id)
+ *  \brief Calls the function to fill a `double3` array of thermal positions 
+ *  on the host with a distribution determined by the trapping potential.
+ *  \param num_atoms Number of atoms in the thermal gas.
+ *  \param temp Mean temperature of thermal gas, as defined by (TODO).
+ *  \param params TODO
+ *  \param *state Pointer to a `curandState` host array of length `num_atoms`.
+ *  \param *pos Pointer to a `double3` host array of length `num_atoms`.
+ *  \exception not yet.
+ *  \return void
+*/
+
+__global__ void g_initialise_atom_id(int num_atoms,
+                                     int *atom_id) {
+    for (int atom = blockIdx.x * blockDim.x + threadIdx.x;
+         atom < num_atoms;
+         atom += blockDim.x * gridDim.x) {
+        atom_id[atom] = atom;
+    }
+
+    return;
+}

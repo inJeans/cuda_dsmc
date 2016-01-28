@@ -53,4 +53,7 @@ double3 thermal_pos(double temp,
                     trap_geo params,
                     pcg32_random_t *state);
 
+void initialise_atom_id(int num_atoms,
+                        int *atom_id);
+
 #endif  // DISTRIBUTION_GENERATION_HPP_INCLUDED

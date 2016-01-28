@@ -236,3 +236,26 @@ double3 thermal_pos(double temp,
 
     return pos;
 }
+
+/** \fn void initialise_atom_id(int num_atoms,
+ *                              int *atom_id)
+ *  \brief Calls the function to fill an `int` array of atom_ids 
+ *  on the host or device.
+ *  \param num_atoms Number of atoms in the thermal gas.
+ *  \param *atom_id Pointer to an `int` host or device array of length `num_atoms`.
+ *  \exception not yet.
+ *  \return void
+*/
+
+void initialise_atom_id(int num_atoms,
+                        int *atom_id) {
+#if defined(CUDA)
+    cu_initialise_atom_id(num_atoms,
+                          atom_id);
+#else
+    for (int atom = 0; atom < num_atoms; ++atom) {
+        atom_id[atom] = atom;
+    }
+#endif
+    return;
+}

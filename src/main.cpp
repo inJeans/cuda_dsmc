@@ -86,6 +86,24 @@ int main(int argc, char const *argv[]) {
                           state,
                           false);
 
+    // Initialise atom_id
+    LOGF(INFO, "\nInitialising the atom_id array.");
+    int *atom_id;
+#ifdef CUDA
+    LOGF(DEBUG, "\nAllocating %i int elements on the device.",
+         NUM_ATOMS);
+    checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&atom_id),
+                               NUM_ATOMS*sizeof(int)));
+#else
+    LOGF(DEBUG, "\nAllocating %i int elements on the host.",
+         NUM_ATOMS);
+    atom_id = reinterpret_cast<int*>(calloc(NUM_ATOMS,
+                                            sizeof(int)));
+#endif
+
+    initialise_atom_id(NUM_ATOMS,
+                       atom_id);
+
     // Initialise velocities
     LOGF(INFO, "\nInitialising the velocity array.");
     double3 *vel;
@@ -278,6 +296,7 @@ int main(int argc, char const *argv[]) {
 #ifdef CUDA
     LOGF(INFO, "\nCleaning up device memory.");
     cudaFree(state);
+    cudaFree(atom_id);
     cudaFree(vel);
     cudaFree(pos);
     cudaFree(acc);
@@ -285,6 +304,7 @@ int main(int argc, char const *argv[]) {
 #else
     LOGF(INFO, "\nCleaning up local memory.");
     free(state);
+    free(atom_id);
     free(vel);
     free(pos);
     free(acc);
