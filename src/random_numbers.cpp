@@ -9,6 +9,8 @@
 #include "random_numbers.hpp"
 #include "random_numbers.cuh"
 
+#include "declare_host_constants.hpp"
+
 /** \fn void initialise_rng_states(int n_states,
                                    curandState *state) 
  *  \brief Calls the function to fill an array of `curandState` states on 
@@ -50,7 +52,7 @@ void initialise_rng_states(int n_states,
             pcg32_srandom_r(&state[id], seeds[0], seeds[1]);
         } else {
             // Seed with a fixed constant
-            pcg32_srandom_r(&state[id], id, id+1);
+            pcg32_srandom_r(&state[id], id+1, id+2);
         }
     }
 
@@ -73,11 +75,26 @@ double3 gaussian_point(double mean,
                        double std,
                        pcg32_random_t *state) {
     double3 p = make_double3(0., 0., 0.);
-    p.x = gaussian_ziggurat(state);
-    p.y = gaussian_ziggurat(state);
-    p.z = gaussian_ziggurat(state);
+    // p.x = gaussian_ziggurat(state);
+    // p.y = gaussian_ziggurat(state);
+    // p.z = gaussian_ziggurat(state);
+    double2 r = box_muller(state);
+    p.x = r.x;
+    p.y = r.y;
+    r = box_muller(state);
+    p.z = r.x;
 
-    return p;
+    return mean + std * p;
+}
+
+double2 box_muller(pcg32_random_t *state) {
+    double2 z = make_double2(0., 0.);
+    double u1 = uniform_prng(state);
+    double u2 = uniform_prng(state);
+    z.x = sqrt(-2.*log(u1)) * cos(2.*pi*u2);
+    z.y = sqrt(-2.*log(u1)) * sin(2.*pi*u2);
+
+    return z;
 }
 
 /* gauss.c - gaussian random numbers, using the Ziggurat method

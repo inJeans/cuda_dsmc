@@ -8,6 +8,11 @@
 
 #include "trapping_potential.cuh"
 
+__host__ double kinetic_energy(double3 vel);
+
+__host__ double potential_energy(double3 pos,
+                                 trap_geo params);
+
 __host__ double dV_dx(double3 pos,
                       trap_geo params);
 

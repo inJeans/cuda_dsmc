@@ -13,6 +13,19 @@
 #include "random_numbers.hpp"
 #include "vector_math.cuh"
 
+__host__ void cu_generate_aligned_spins(int num_atoms,
+                                        trap_geo params,
+                                        double3 *pos,
+                                        zomplex2 *psi);
+
+__global__ void g_generate_aligned_spins(int num_atoms,
+                                         trap_geo params,
+                                         double3 *pos,
+                                         zomplex2 *psi);
+
+__device__ zomplex2 d_aligned_spin(trap_geo params,
+                                   double3 pos);
+
 __host__ void cu_generate_thermal_velocities(int num_atoms,
                                              double temp,
                                              curandState *state,

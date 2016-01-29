@@ -27,5 +27,4 @@ struct CustomSink {
   }
 };
 
-// CUSTOM_SINK_HPP_INCLUDED
-#endif
+#endif // CUSTOM_SINK_HPP_INCLUDED

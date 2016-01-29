@@ -21,11 +21,11 @@
 
 #include <iostream>
 
-#ifdef CUDA
+// #ifdef CUDA
 void initialise_rng_states(int n_states,
                            curandState *state,
                            bool non_deterministic_seed = false);
-#endif
+// #endif
 
 void initialise_rng_states(int n_states,
                            pcg32_random_t *state,
@@ -34,6 +34,8 @@ void initialise_rng_states(int n_states,
 double3 gaussian_point(double mean,
                        double std,
                        pcg32_random_t *state);
+
+double2 box_muller(pcg32_random_t *state);
 
 double gaussian_ziggurat(pcg32_random_t *state);
 
