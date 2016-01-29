@@ -1,5 +1,5 @@
 # Start with the CUDA image from nvidia
-FROM injeans/cuda-devel:latest
+FROM nvidia/cuda:latest
 MAINTAINER Chris Watkins <christopher.watkins@me.com>
 
 # Install wget and build-essential
