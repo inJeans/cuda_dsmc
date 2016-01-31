@@ -38,6 +38,9 @@ IF(TESTU01_INCLUDE_PATH)
     include_directories("${TESTU01_INCLUDE_PATH}")
 ENDIF()
 
+IF(APPLE)
+    find_library(MAC_CBLAS Accelerate)
+ENDIF()
 
 # We will optionally build with CUDA.
 option(CUDA "Compile with GPU acceleration" OFF)
@@ -79,6 +82,7 @@ IF(CUDA)
     SET(SOURCES src/main.cpp 
                 src/distribution_generation.cpp src/distribution_generation.cu 
                 src/distribution_evolution.cpp src/distribution_evolution.cu 
+                src/collisions.cpp
                 src/trapping_potential.cpp src/trapping_potential.cu 
                 src/random_numbers.cpp src/random_numbers.cu 
                 src/vector_math.cu src/entropy.c)
@@ -90,6 +94,7 @@ ELSEIF(MKL)
     SET(SOURCES src/main.cpp 
                 src/distribution_generation.cpp 
                 src/distribution_evolution.cpp 
+                src/collisions.cpp
                 src/trapping_potential.cu src/trapping_potential.cpp 
                 src/random_numbers.cpp 
                 src/vector_math.cu src/entropy.c)
@@ -100,11 +105,12 @@ ELSE()
     SET(SOURCES src/main.cpp
                 src/distribution_generation.cpp 
                 src/distribution_evolution.cpp 
+                src/collisions.cpp
                 src/trapping_potential.cu src/trapping_potential.cpp 
                 src/random_numbers.cpp 
                 src/vector_math.cu src/entropy.c)
     cuda_add_executable(cuda_dsmc ${SOURCES})
-    target_link_libraries(cuda_dsmc pcg_random g3logger)
+    target_link_libraries(cuda_dsmc ${MAC_CBLAS} pcg_random g3logger)
 ENDIF()
 
 # We probably don't want this to run on every build.

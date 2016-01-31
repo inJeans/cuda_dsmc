@@ -23,6 +23,7 @@
 #include "define_host_constants.hpp"
 #include "distribution_generation.hpp"
 #include "distribution_evolution.hpp"
+#include "collisions.hpp"
 
 #define NUM_ATOMS 2
 
@@ -36,8 +37,8 @@ int main(int argc, char const *argv[]) {
     // Initialise logger
     auto worker = g3::LogWorker::createLogWorker();
     auto default_handle = worker->addDefaultLogger(argv[0], path_to_log_file);
-    // auto output_handle = worker->addSink(std2::make_unique<CustomSink>(),
-    //                                      &CustomSink::ReceiveLogMessage);
+    auto output_handle = worker->addSink(std2::make_unique<CustomSink>(),
+                                         &CustomSink::ReceiveLogMessage);
     g3::initializeLogging(worker.get());
     std::future<std::string> log_file_name = default_handle->
                                              call(&g3::FileSink::fileName);
@@ -103,6 +104,24 @@ int main(int argc, char const *argv[]) {
 
     initialise_atom_id(NUM_ATOMS,
                        atom_id);
+
+    // Initialise cell_id
+    LOGF(INFO, "\nInitialising the cell_id array.");
+    int *cell_id;
+#ifdef CUDA
+    LOGF(DEBUG, "\nAllocating %i int elements on the device.",
+         NUM_ATOMS);
+    checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&cell_id),
+                               NUM_ATOMS*sizeof(int)));
+    checkCudaErrors(cudaMemset(cell_id,
+                               0,
+                               NUM_ATOMS);   
+#else
+    LOGF(DEBUG, "\nAllocating %i int elements on the host.",
+         NUM_ATOMS);
+    cell_id = reinterpret_cast<int*>(calloc(NUM_ATOMS,
+                                            sizeof(int)));
+#endif
 
     // Initialise velocities
     LOGF(INFO, "\nInitialising the velocity array.");
@@ -236,6 +255,10 @@ int main(int argc, char const *argv[]) {
                psi[1].up.x, psi[1].up.y, psi[1].dn.x, psi[1].dn.y);
 #endif
 
+    // Set up global grid parameters
+    initialise_grid_params(NUM_ATOMS,
+                           pos);
+
     cublasHandle_t cublas_handle;
 #ifdef CUDA
     LOGF(DEBUG, "\nCreating the cuBLAS handle.\n");
@@ -251,6 +274,9 @@ int main(int argc, char const *argv[]) {
                                pos,
                                vel,
                                acc);
+        collide_atoms(NUM_ATOMS,
+                      pos,
+                      cell_id);
     }
 #ifdef CUDA
     LOGF(DEBUG, "\nDestroying the cuBLAS handle.\n");
@@ -297,6 +323,7 @@ int main(int argc, char const *argv[]) {
     LOGF(INFO, "\nCleaning up device memory.");
     cudaFree(state);
     cudaFree(atom_id);
+    cudaFree(cell_id);
     cudaFree(vel);
     cudaFree(pos);
     cudaFree(acc);
@@ -305,6 +332,7 @@ int main(int argc, char const *argv[]) {
     LOGF(INFO, "\nCleaning up local memory.");
     free(state);
     free(atom_id);
+    free(cell_id);
     free(vel);
     free(pos);
     free(acc);

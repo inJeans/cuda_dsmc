@@ -16,7 +16,7 @@ __host__ void cu_update_positions(int num_atoms,
                                   cublasHandle_t cublas_handle,
                                   double3 *vel,
                                   double3 *pos) {
-    LOGF(DEBUG, "\nLaunching cuBLAS Daxpy.\n");
+    LOGF(DEBUG, "\nLaunching cuBLAS Daxpy.\n"); 
 
     checkCudaErrors(cublasDaxpy(cublas_handle,
                                 3*num_atoms,
