@@ -2,14 +2,15 @@
 FROM nvidia/cuda:latest
 MAINTAINER Chris Watkins <christopher.watkins@me.com>
 
-# Install wget and build-essential
+# Install necessary ubuntu applications
 RUN apt-get update && apt-get install -y \
     build-essential \
     curl \
     wget \
     cmake \
     unzip \
-    git
+    git \
+    libatlas-base-dev
 
 # Download and install g3log
 RUN wget https://github.com/KjellKod/g3log/archive/v1.1.tar.gz && \
