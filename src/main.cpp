@@ -66,7 +66,7 @@ int main(int argc, char const *argv[]) {
 
     // Initialise computational parameters
     double dt = 1.e-6;
-    int num_time_steps = 10000;
+    int num_time_steps = 1;
 
     // Initialise rng
     LOGF(INFO, "\nInitialising the rng state array.");
@@ -247,6 +247,8 @@ int main(int argc, char const *argv[]) {
     LOGF(INFO, "\nv1 = { %f,%f,%f }, v2 = { %f,%f,%f }\n", vel[0].x, vel[0].y, vel[0].z,
                                                            vel[1].x, vel[1].y, vel[1].z);
     LOGF(INFO, "\np1 = { %f,%f,%f }, p2 = { %f,%f,%f }\n", pos[0].x, pos[0].y, pos[0].z,
+                                                           pos[1].x, pos[1].y, pos[1].z);
+    printf("\np1 = { %f,%f,%f }, p2 = { %f,%f,%f }\n", pos[0].x, pos[0].y, pos[0].z,
                                                            pos[1].x, pos[1].y, pos[1].z);
     LOGF(INFO, "\na1 = { %f,%f,%f }, a2 = { %f,%f,%f }\n", acc[0].x, acc[0].y, acc[0].z,
                                                            acc[1].x, acc[1].y, acc[1].z);

@@ -22,6 +22,7 @@ struct CustomSink {
      auto level = logEntry.get()._level;
      auto color = GetColor(level);
 
+     printf("Custom sink\n");
      std::cout << "\033[" << color << "m"
                << logEntry.get().toString() << "\033[m" << std::endl;
   }

@@ -11,18 +11,31 @@
 #endif
 
 #include "declare_host_constants.hpp"
-
+#include <stdio.h>
 void initialise_grid_params(int num_atoms,
                             double3 *pos) {
-    int max_x_id = cblas_idamax(num_atoms,
-                                reinterpret_cast<double *>(pos)+0,
-                                3);
-    int max_y_id = cblas_idamax(num_atoms,
-                                reinterpret_cast<double *>(pos)+1,
-                                3);
-    int max_z_id = cblas_idamax(num_atoms,
-                                reinterpret_cast<double *>(pos)+2,
-                                3);
+    int3 max_id = make_int3(0, 0, 0);
+    max_id.x = cblas_idamax(num_atoms,
+                            reinterpret_cast<double *>(pos)+0,
+                            3);
+    max_id.y = cblas_idamax(num_atoms,
+                            reinterpret_cast<double *>(pos)+1,
+                            3);
+    max_id.z = cblas_idamax(num_atoms,
+                            reinterpret_cast<double *>(pos)+2,
+                            3);
+
+    grid_min.x = -1.0*std::abs(pos[max_id.x].x);
+    grid_min.y = -1.0*std::abs(pos[max_id.y].y);
+    grid_min.z = -1.0*std::abs(pos[max_id.z].z);
+
+    // Set the grid_max = -grid_min, so that the width of the grid would be
+    // 2*abs(grid_min) or -2.0 * grid_min.
+    cell_length = -2.0 * grid_min / num_cells;
+
+    printf("max_id = {%i, %i, %i}\n", max_id.x, max_id.y, max_id.z);
+    printf("grid_min = {%f, %f, %f}\n", grid_min.x, grid_min.y, grid_min.z);
+    printf("cell_length = {%f, %f, %f}\n", cell_length.x, cell_length.y, cell_length.z);
     return;
 }
 
@@ -78,6 +91,7 @@ void index_atoms(int num_atoms,
 #else
     for (int atom = 0; atom < num_atoms; ++atom) {
         cell_id[atom] = update_atom_cell_id(pos[atom]);
+        printf("cell_id[%i] = %i\n", atom, cell_id[atom]);
     }
 #endif
 

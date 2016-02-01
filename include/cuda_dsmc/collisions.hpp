@@ -7,12 +7,18 @@
 #define COLLISIONS_HPP_INCLUDED 1
 
 #include <cuda_runtime.h>
-// extern "C"
-// {
-// 	#include <cblas.h>
-// }
+#if defined(__APPLE__) && defined(__MACH__)
 #include <Accelerate/Accelerate.h>
+#else
+extern "C"
+{
+    #include <cblas.h>
+}
+#endif
+#include <cmath>
 #include <math.h>
+
+#include "vector_math.cuh"
 
 void initialise_grid_params(int num_atoms,
                             double3 *pos);

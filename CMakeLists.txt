@@ -39,7 +39,9 @@ IF(TESTU01_INCLUDE_PATH)
 ENDIF()
 
 IF(APPLE)
-    find_library(MAC_CBLAS Accelerate)
+    find_library(CBLAS Accelerate)
+ELSE()
+    find_library(CBLAS cblas)
 ENDIF()
 
 # We will optionally build with CUDA.
@@ -110,7 +112,7 @@ ELSE()
                 src/random_numbers.cpp 
                 src/vector_math.cu src/entropy.c)
     cuda_add_executable(cuda_dsmc ${SOURCES})
-    target_link_libraries(cuda_dsmc ${MAC_CBLAS} pcg_random g3logger)
+    target_link_libraries(cuda_dsmc ${CBLAS} pcg_random g3logger)
 ENDIF()
 
 # We probably don't want this to run on every build.
