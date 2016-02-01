@@ -29,5 +29,17 @@ distribution_generation.cu
 .. doxygenfile:: distribution_generation.cu
     :project: CUDA_DSMC
 
-.. doxygenfunction:: doxygen_test
-    :project: CUDA_DSMC 
+distribution_evolution.cpp
+===========================
+.. doxygenfile:: distribution_evolution.cpp
+    :project: CUDA_DSMC
+
+distribution_evolution.cu
+==========================
+.. doxygenfile:: distribution_evolution.cu
+    :project: CUDA_DSMC
+
+collisions.cpp
+==============
+.. doxygenfile:: collisions.cpp
+    :project: CUDA_DSMC
