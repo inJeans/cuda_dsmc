@@ -84,12 +84,12 @@ IF(CUDA)
     SET(SOURCES src/main.cpp 
                 src/distribution_generation.cpp src/distribution_generation.cu 
                 src/distribution_evolution.cpp src/distribution_evolution.cu 
-                src/collisions.cpp
+                src/collisions.cpp src/collisions.cu
                 src/trapping_potential.cpp src/trapping_potential.cu 
                 src/random_numbers.cpp src/random_numbers.cu 
                 src/vector_math.cu src/entropy.c)
     cuda_add_executable(cuda_dsmc ${SOURCES})
-    target_link_libraries(cuda_dsmc pcg_random cudart cublas g3logger)
+    target_link_libraries(cuda_dsmc ${CBLAS} pcg_random cudart cublas g3logger)
     target_compile_definitions(cuda_dsmc PRIVATE -DCUDA)
 ELSEIF(MKL)
     # add_definitions(-DMKL)
@@ -101,7 +101,7 @@ ELSEIF(MKL)
                 src/random_numbers.cpp 
                 src/vector_math.cu src/entropy.c)
     cuda_add_executable(cuda_dsmc ${SOURCES})
-    target_link_libraries(cuda_dsmc gomp mkl_intel_lp64 mkl_core mkl_gnu_thread dl pthread m pcg_random g3logger)
+    target_link_libraries(cuda_dsmc ${CBLAS} gomp mkl_intel_lp64 mkl_core mkl_gnu_thread dl pthread m pcg_random g3logger)
     target_compile_definitions(cuda_dsmc PRIVATE -DMKL)
 ELSE()
     SET(SOURCES src/main.cpp

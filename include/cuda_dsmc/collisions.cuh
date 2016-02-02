@@ -1,0 +1,28 @@
+/**
+ *  More detailed description
+ *  Copyright 2015 Christopher Watkins
+ */
+
+#ifndef COLLISIONS_CUH_INCLUDED
+#define COLLISIONS_CUH_INCLUDED 1
+
+#include <cuda_runtime.h>
+#include <g3log/g3log.hpp>
+
+#include "vector_math.cuh"
+
+__host__ void cu_index_atoms(int num_atoms,
+                             double3 *pos,
+                             int *cell_id);
+
+__global__ void g_index_atoms(int num_atoms,
+                              double3 *pos,
+                              int *cell_id);
+
+__device__ int d_update_atom_cell_id(double3 pos);
+
+__device__ int3 d_atom_cell_index(double3 pos);
+
+__device__ int d_atom_cell_id(int3 cell_index);
+
+#endif // COLLISIONS_CUH_INCLUDED

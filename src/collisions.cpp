@@ -6,12 +6,15 @@
  */
 
 #include "collisions.hpp"
-#ifdef CUDA
+#if defined(CUDA)
 #include "collisions.cuh"
 #endif
 
 #include "declare_host_constants.hpp"
-#include <stdio.h>
+#if defined(CUDA)
+#include "declare_device_constants.cuh"
+#endif
+
 void initialise_grid_params(int num_atoms,
                             double3 *pos) {
     int3 max_id = make_int3(0, 0, 0);
@@ -33,9 +36,10 @@ void initialise_grid_params(int num_atoms,
     // 2*abs(grid_min) or -2.0 * grid_min.
     cell_length = -2.0 * grid_min / num_cells;
 
-    printf("max_id = {%i, %i, %i}\n", max_id.x, max_id.y, max_id.z);
-    printf("grid_min = {%f, %f, %f}\n", grid_min.x, grid_min.y, grid_min.z);
-    printf("cell_length = {%f, %f, %f}\n", cell_length.x, cell_length.y, cell_length.z);
+#if defined(CUDA)
+    d_grid_min = grid_min;
+    d_cell_length = cell_length;
+#endif
     return;
 }
 
@@ -91,7 +95,6 @@ void index_atoms(int num_atoms,
 #else
     for (int atom = 0; atom < num_atoms; ++atom) {
         cell_id[atom] = update_atom_cell_id(pos[atom]);
-        printf("cell_id[%i] = %i\n", atom, cell_id[atom]);
     }
 #endif
 
@@ -132,9 +135,7 @@ int3 atom_cell_index(double3 pos) {
     //       integers cannot store the same maximum number as a float can.
     //       So if we anticipate having more than 2^31 cells, then we need
     //       to do something smarter here.
-    cell_index.x = static_cast<int>(floor((pos.x - grid_min.x) / cell_length.x));
-    cell_index.y = static_cast<int>(floor((pos.y - grid_min.y) / cell_length.y));
-    cell_index.z = static_cast<int>(floor((pos.z - grid_min.z) / cell_length.z));
+    cell_index = type_cast_int3(floor((pos - grid_min) / cell_length));
 
     return cell_index;
 }

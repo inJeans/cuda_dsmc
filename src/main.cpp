@@ -115,7 +115,7 @@ int main(int argc, char const *argv[]) {
                                NUM_ATOMS*sizeof(int)));
     checkCudaErrors(cudaMemset(cell_id,
                                0,
-                               NUM_ATOMS);   
+                               NUM_ATOMS));
 #else
     LOGF(DEBUG, "\nAllocating %i int elements on the host.",
          NUM_ATOMS);

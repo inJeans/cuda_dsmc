@@ -38,6 +38,11 @@ static __inline__ __host__ __device__ double3 operator/(double3 a,
 }
 
 static __inline__ __host__ __device__ double3 operator/(double3 a, 
+                                                        double3 b) {
+    return make_double3(a.x/b.x, a.y/b.y, a.z/b.z);
+}
+
+static __inline__ __host__ __device__ double3 operator/(double3 a, 
                                                         int3 b) {
     return make_double3(a.x/b.x, a.y/b.y, a.z/b.z);
 }
@@ -55,6 +60,11 @@ static __inline__ __host__ __device__ double3 operator+(double a,
 static __inline__ __host__ __device__ double3 operator+(double3 a, 
                                                         double b) {
     return make_double3(a.x+b, a.y+b, a.z+b);
+}
+
+static __inline__ __host__ __device__ double3 operator-(double3 a, 
+                                                        double3 b) {
+    return make_double3(a.x-b.x, a.y-b.y, a.z-b.z);
 }
 
 static __inline__ __host__ __device__ cuDoubleComplex operator*(cuDoubleComplex a, 
@@ -104,5 +114,9 @@ __host__ __device__ double dot(double3 a, double3 b);
 __host__ __device__ double3 unit(double3 vec);
 
 __host__ __device__ double norm(double3 vec);
+
+__host__ __device__ double3 floor(double3 vec);
+
+__host__ __device__ int3 type_cast_int3(double3 vec);
 
 #endif  // VECTOR_MATH_CUH_INCLUDED
