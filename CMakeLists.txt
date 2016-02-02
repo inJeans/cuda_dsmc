@@ -215,11 +215,18 @@ SET(TEST_SOURCES test/distribution_evolution_test.cpp
                  src/vector_math.cu src/entropy.c)
 cuda_add_executable(host_distribution_evolution_test ${TEST_SOURCES})
 target_link_libraries(host_distribution_evolution_test pcg_random cudart cublas g3logger)
+# HOST - Collision tests
+SET(TEST_SOURCES test/collisions_test.cpp
+                 src/collisions.cpp
+                 src/vector_math.cu)
+cuda_add_executable(host_collisions_test ${TEST_SOURCES})
+target_link_libraries(host_collisions_test ${CBLAS})
 
 add_test(cuda_dmsc_runs cuda_dsmc)
 add_test(host_random_number_generation host_random_number_generation_test -s -o h_rng_test.out)
 add_test(host_distribution_generation host_distribution_generation_test -s -o h_dist_gen_test.out)
 add_test(host_distribution_evolution host_distribution_evolution_test -s -o h_dist_ev_test.out)
+add_test(host_collisions host_collisions_test -s -o h_collisions_test.out)
 IF(CUDA)
     add_test(device_random_number_generation device_random_number_generation_test -s -o d_rng_test.out)
     add_test(device_distribution_generation device_distribution_generation_test -s -o d_dist_gen_test.out)
