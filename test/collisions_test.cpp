@@ -8,7 +8,7 @@
 #include "collisions_test.hpp"
 
 SCENARIO("[HOST] Initialise grid parameters", "[h-initgrid]") {
-    GIVEN("An array of 10 known positions.") {
+    GIVEN("An array of 10 known positions, in a grid with num_cells = {2,3,4}.") {
         double3 pos[10];
         pos[0] = make_double3(0., 0., 0.);
         pos[1] = make_double3(-1., -1., -1.);
@@ -21,6 +21,8 @@ SCENARIO("[HOST] Initialise grid parameters", "[h-initgrid]") {
         pos[8] = make_double3(1., -2., -10.);
         pos[9] = make_double3(0., 2., 0.);
 
+        num_cells = make_int3(3, 4, 5);
+
         WHEN("The initialise_grid_params function is called") {
             initialise_grid_params(10,
                                    pos);
@@ -29,6 +31,11 @@ SCENARIO("[HOST] Initialise grid parameters", "[h-initgrid]") {
                 REQUIRE(grid_min.x == -10.);
                 REQUIRE(grid_min.y == -15.);
                 REQUIRE(grid_min.z == -10.);
+            }
+            THEN("Then the global cell_length = {10., 10., 5.} ") {
+                REQUIRE(cell_length.x == 10.);
+                REQUIRE(cell_length.y == 10.);
+                REQUIRE(cell_length.z == 5.);
             }
         }
     }
