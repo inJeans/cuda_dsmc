@@ -38,11 +38,27 @@ IF(TESTU01_INCLUDE_PATH)
     include_directories("${TESTU01_INCLUDE_PATH}")
 ENDIF()
 
-IF(APPLE)
-    find_library(CBLAS Accelerate)
+# We will optionally build with MKL.
+option(MKL "Compile with MKL acceleration" OFF)
+
+IF(MKL)
+    SET(CMAKE_C_FLAGS " -m64 -I${MKLROOT}/include ${CMAKE_C_FLAGS}")
+    SET(CMAKE_CXX_FLAGS " -m64 -I${MKLROOT}/include ${CMAKE_CXX_FLAGS}")
+    SET(BLAS gomp)
+    LIST(APPEND BLAS mkl_intel_lp64)
+    LIST(APPEND BLAS mkl_core)
+    LIST(APPEND BLAS mkl_gnu_thread)
+    LIST(APPEND BLAS dl)
+    LIST(APPEND BLAS pthread)
+    LIST(APPEND BLAS m)
+    add_definitions(-DMKL)
 ELSE()
-    find_library(CBLAS cblas)
-ENDIF()
+IF(APPLE)
+    find_library(BLAS Accelerate)
+ELSE()
+    find_library(BLAS cblas)
+ENDIF() # OS
+ENDIF() # MKL
 
 # We will optionally build with CUDA.
 option(CUDA "Compile with GPU acceleration" OFF)
@@ -52,14 +68,6 @@ IF(NOT WIN32)
     SET(CUDA_NVCC_FLAGS "-std=c++11")
     SET(CUDA_SEPARABLE_COMPILATION ON)
     SET(CUDA_PROPAGATE_HOST_FLAGS OFF)
-ENDIF()
-
-# We will optionally build with MKL.
-option(MKL "Compile with MKL acceleration" OFF)
-
-IF(MKL)
-    SET(CMAKE_C_FLAGS " -m64 -I${MKLROOT}/include ${CMAKE_C_FLAGS}")
-    SET(CMAKE_CXX_FLAGS " -m64 -I${MKLROOT}/include ${CMAKE_CXX_FLAGS}")
 ENDIF()
 
 SET(CMAKE_C_FLAGS "-std=c99 ${CMAKE_C_FLAGS}")
@@ -80,7 +88,6 @@ IF(UNIX)
 ENDIF()
 
 IF(CUDA)
-    # add_definitions(-DCUDA)
     SET(SOURCES src/main.cpp 
                 src/distribution_generation.cpp src/distribution_generation.cu 
                 src/distribution_evolution.cpp src/distribution_evolution.cu 
@@ -89,20 +96,8 @@ IF(CUDA)
                 src/random_numbers.cpp src/random_numbers.cu 
                 src/vector_math.cu src/entropy.c)
     cuda_add_executable(cuda_dsmc ${SOURCES})
-    target_link_libraries(cuda_dsmc ${CBLAS} pcg_random cudart cublas g3logger)
+    target_link_libraries(cuda_dsmc ${BLAS} pcg_random cudart cublas g3logger)
     target_compile_definitions(cuda_dsmc PRIVATE -DCUDA)
-ELSEIF(MKL)
-    # add_definitions(-DMKL)
-    SET(SOURCES src/main.cpp 
-                src/distribution_generation.cpp 
-                src/distribution_evolution.cpp 
-                src/collisions.cpp
-                src/trapping_potential.cu src/trapping_potential.cpp 
-                src/random_numbers.cpp 
-                src/vector_math.cu src/entropy.c)
-    cuda_add_executable(cuda_dsmc ${SOURCES})
-    target_link_libraries(cuda_dsmc ${CBLAS} gomp mkl_intel_lp64 mkl_core mkl_gnu_thread dl pthread m pcg_random g3logger)
-    target_compile_definitions(cuda_dsmc PRIVATE -DMKL)
 ELSE()
     SET(SOURCES src/main.cpp
                 src/distribution_generation.cpp 
@@ -112,7 +107,7 @@ ELSE()
                 src/random_numbers.cpp 
                 src/vector_math.cu src/entropy.c)
     cuda_add_executable(cuda_dsmc ${SOURCES})
-    target_link_libraries(cuda_dsmc ${CBLAS} pcg_random g3logger)
+    target_link_libraries(cuda_dsmc ${BLAS} pcg_random g3logger)
 ENDIF()
 
 # We probably don't want this to run on every build.
@@ -214,13 +209,13 @@ SET(TEST_SOURCES test/distribution_evolution_test.cpp
                  test/test_helpers.cpp
                  src/vector_math.cu src/entropy.c)
 cuda_add_executable(host_distribution_evolution_test ${TEST_SOURCES})
-target_link_libraries(host_distribution_evolution_test pcg_random cudart cublas g3logger)
+target_link_libraries(host_distribution_evolution_test pcg_random cudart cublas g3logger ${BLAS})
 # HOST - Collision tests
 SET(TEST_SOURCES test/collisions_test.cpp
                  src/collisions.cpp
                  src/vector_math.cu)
 cuda_add_executable(host_collisions_test ${TEST_SOURCES})
-target_link_libraries(host_collisions_test ${CBLAS})
+target_link_libraries(host_collisions_test ${BLAS})
 
 add_test(cuda_dmsc_runs cuda_dsmc)
 add_test(host_random_number_generation host_random_number_generation_test -s -o h_rng_test.out)

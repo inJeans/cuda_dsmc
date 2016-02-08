@@ -8,7 +8,16 @@
 
 #if defined(MKL)
 #include <mkl.h>
-#endif
+#else
+#if defined(__APPLE__) && defined(__MACH__)
+#include <Accelerate/Accelerate.h>
+#else
+extern "C"
+{
+    #include <cblas.h>
+}
+#endif  // OS
+#endif  // MKL
 #include <g3log/g3log.hpp>
 
 #include <cuda_runtime.h>

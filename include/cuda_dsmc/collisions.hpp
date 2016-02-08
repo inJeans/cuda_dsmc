@@ -7,6 +7,9 @@
 #define COLLISIONS_HPP_INCLUDED 1
 
 #include <cuda_runtime.h>
+#if defined(MKL)
+#include <mkl.h>
+#else
 #if defined(__APPLE__) && defined(__MACH__)
 #include <Accelerate/Accelerate.h>
 #else
@@ -14,7 +17,8 @@ extern "C"
 {
     #include <cblas.h>
 }
-#endif
+#endif  // OS
+#endif  // MKL
 #include <cmath>
 #include <math.h>
 

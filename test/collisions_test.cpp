@@ -21,7 +21,7 @@ SCENARIO("[HOST] Initialise grid parameters", "[h-initgrid]") {
         pos[8] = make_double3(1., -2., -10.);
         pos[9] = make_double3(0., 2., 0.);
 
-        num_cells = make_int3(3, 4, 5);
+        num_cells = make_int3(2, 3, 4);
 
         WHEN("The initialise_grid_params function is called") {
             initialise_grid_params(10,
