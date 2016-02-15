@@ -10,7 +10,7 @@
 #include "cublas_v2.h"
 
 #include "helper_cuda.h"
-#include "distribution_evolution.hpp"
+// #include "distribution_evolution.hpp"
 #include "trapping_potential.cuh"
 
 __host__ void cu_update_positions(int num_atoms,

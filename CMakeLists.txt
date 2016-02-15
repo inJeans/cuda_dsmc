@@ -65,7 +65,7 @@ option(CUDA "Compile with GPU acceleration" OFF)
 
 IF(NOT WIN32)
     find_package(CUDA QUIET REQUIRED)
-    SET(CUDA_NVCC_FLAGS "-std=c++11")
+    SET(CUDA_NVCC_FLAGS "-std=c++11 -D__ACCELERATE__")
     SET(CUDA_SEPARABLE_COMPILATION ON)
     SET(CUDA_PROPAGATE_HOST_FLAGS OFF)
 ENDIF()
@@ -202,7 +202,7 @@ cuda_add_executable(host_distribution_generation_test ${TEST_SOURCES})
 target_link_libraries(host_distribution_generation_test pcg_random cudart g3logger)
 # HOST - Distribution evolution tests
 SET(TEST_SOURCES test/distribution_evolution_test.cpp 
-                 src/distribution_evolution.cpp src/distribution_evolution.cu 
+                 src/distribution_evolution.cpp
                  src/distribution_generation.cpp src/distribution_generation.cu 
                  src/trapping_potential.cpp src/trapping_potential.cu 
                  src/random_numbers.cpp src/random_numbers.cu 

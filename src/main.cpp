@@ -256,16 +256,18 @@ int main(int argc, char const *argv[]) {
                psi[0].up.x, psi[0].up.y, psi[0].dn.x, psi[0].dn.y,
                psi[1].up.x, psi[1].up.y, psi[1].dn.x, psi[1].dn.y);
 #endif
-
-    // Set up global grid parameters
-    initialise_grid_params(NUM_ATOMS,
-                           pos);
-
+    
     cublasHandle_t cublas_handle;
 #ifdef CUDA
     LOGF(DEBUG, "\nCreating the cuBLAS handle.\n");
     checkCudaErrors(cublasCreate(&cublas_handle));
 #endif
+
+    // Set up global grid parameters
+    initialise_grid_params(NUM_ATOMS,
+                           cublas_handle,
+                           pos);
+
     // Evolve many time step
     LOGF(INFO, "\nEvolving distribution for %i time steps.", num_time_steps);
     for (int i = 0; i < num_time_steps; ++i) {

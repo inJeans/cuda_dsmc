@@ -6,6 +6,9 @@
 #ifndef DISTRIBUTION_EVOLUTION_HPP_INCLUDED
 #define DISTRIBUTION_EVOLUTION_HPP_INCLUDED 1
 
+#include <cuda_runtime.h>
+#include "cublas_v2.h"
+
 #if defined(MKL)
 #include <mkl.h>
 #else
@@ -19,9 +22,6 @@ extern "C"
 #endif  // OS
 #endif  // MKL
 #include <g3log/g3log.hpp>
-
-#include <cuda_runtime.h>
-#include "cublas_v2.h"
 
 #include "trapping_potential.hpp"
 #include "vector_math.cuh"

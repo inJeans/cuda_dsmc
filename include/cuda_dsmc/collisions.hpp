@@ -7,6 +7,9 @@
 #define COLLISIONS_HPP_INCLUDED 1
 
 #include <cuda_runtime.h>
+#include "cublas_v2.h"
+#include "helper_cuda.h"
+ 
 #if defined(MKL)
 #include <mkl.h>
 #else
@@ -18,13 +21,14 @@ extern "C"
     #include <cblas.h>
 }
 #endif  // OS
-#endif  // MKL
+#endif  // Parallel
 #include <cmath>
 #include <math.h>
 
 #include "vector_math.cuh"
 
 void initialise_grid_params(int num_atoms,
+                            cublasHandle_t cublas_handle,
                             double3 *pos);
 
 void collide_atoms(int num_atoms,

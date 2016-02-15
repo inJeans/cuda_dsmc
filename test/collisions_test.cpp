@@ -24,7 +24,9 @@ SCENARIO("[HOST] Initialise grid parameters", "[h-initgrid]") {
         num_cells = make_int3(2, 3, 4);
 
         WHEN("The initialise_grid_params function is called") {
+            cublasHandle_t cublas_handle;
             initialise_grid_params(10,
+                                   cublas_handle,
                                    pos);
 
             THEN("Then the global grid_min = {-10., -15., -10.} ") {
