@@ -7,7 +7,66 @@
 
 #include "collisions.cuh"
 
+#include "declare_host_constants.hpp"
 #include "declare_device_constants.cuh"
+
+__host__ void cu_initialise_grid_params(int num_atoms,
+                                        cublasHandle_t cublas_handle,
+                                        double3 *pos) {
+    int3 max_id = make_int3(0, 0, 0);
+
+    LOGF(DEBUG, "\nLaunching cuBLAS idamax to find max x position.\n");
+    checkCudaErrors(cublasIdamax(cublas_handle,
+                                 num_atoms,
+                                 reinterpret_cast<double *>(pos)+0,
+                                 3,
+                                 &max_id.x));
+    LOGF(DEBUG, "\nLaunching cuBLAS idamax to find max y position.\n");
+    checkCudaErrors(cublasIdamax(cublas_handle,
+                                 num_atoms,
+                                 reinterpret_cast<double *>(pos)+1,
+                                 3,
+                                 &max_id.y));
+    LOGF(DEBUG, "\nLaunching cuBLAS idamax to find max z position.\n");
+    checkCudaErrors(cublasIdamax(cublas_handle,
+                                 num_atoms,
+                                 reinterpret_cast<double *>(pos)+2,
+                                 3,
+                                 &max_id.z));
+    // cuBLAS returns indices with FORTRAN 1-based indexing.
+    max_id = max_id - 1;
+    LOGF(DEBUG, "\nThe ids of the max positions are max_id = {%i, %i, %i}\n",
+         max_id.x, max_id.y, max_id.z);
+    double3 *h_pos;
+    h_pos = reinterpret_cast<double3*>(calloc(num_atoms,
+                                              sizeof(double3)));
+    checkCudaErrors(cudaMemcpy(h_pos,
+                               pos,
+                               num_atoms*sizeof(double3),
+                               cudaMemcpyDeviceToHost));
+    grid_min.x = -1.0*std::abs(h_pos[max_id.x].x);
+    grid_min.y = -1.0*std::abs(h_pos[max_id.y].y);
+    grid_min.z = -1.0*std::abs(h_pos[max_id.z].z);
+    free(h_pos);
+    LOGF(DEBUG, "\nThe minimum grid points are grid_min = {%f, %f, %f}\n",
+         grid_min.x, grid_min.y, grid_min.z);
+
+    copy_collision_params_to_device<<<1, 1>>>(grid_min,
+                                              cell_length);
+    LOGF(DEBUG, "\nThe minimum grid points on the device are d_grid_min = {%f, %f, %f}\n",
+         d_grid_min.x, d_grid_min.y, d_grid_min.z);
+    LOGF(DEBUG, "\nThe cell widths on the device are d_cell_length = {%f, %f, %f}\n",
+         d_cell_length.x, d_cell_length.y, d_cell_length.z);
+  return;
+}
+
+__global__ void copy_collision_params_to_device(double3 grid_min,
+                                                double3 cell_length) {
+    d_grid_min = grid_min;
+    d_cell_length = cell_length;
+
+    return;
+}
 
 /** \fn __host__ void cu_index_atoms(int num_atoms,
  *                                   double3 *pos,

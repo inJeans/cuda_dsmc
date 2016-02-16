@@ -65,9 +65,12 @@ option(CUDA "Compile with GPU acceleration" OFF)
 
 IF(NOT WIN32)
     find_package(CUDA QUIET REQUIRED)
-    SET(CUDA_NVCC_FLAGS "-std=c++11 -D__ACCELERATE__")
+    SET(CUDA_NVCC_FLAGS "-std=c++11")
     SET(CUDA_SEPARABLE_COMPILATION ON)
     SET(CUDA_PROPAGATE_HOST_FLAGS OFF)
+    IF(APPLE)
+        SET(CUDA_NVCC_FLAGS "-D__ACCELERATE__ ${CUDA_NVCC_FLAGS}")
+    ENDIF()
 ENDIF()
 
 SET(CMAKE_C_FLAGS "-std=c99 ${CMAKE_C_FLAGS}")
@@ -181,6 +184,13 @@ IF(CUDA)
     cuda_add_executable(device_distribution_evolution_test ${TEST_SOURCES})
     target_link_libraries(device_distribution_evolution_test pcg_random cudart cublas g3logger)
     target_compile_definitions(device_distribution_evolution_test PRIVATE -DCUDA)
+    # DEVICE - Collision tests
+    SET(TEST_SOURCES test/collisions_test.cu
+                     src/collisions.cpp src/collisions.cu
+                     src/vector_math.cu)
+    cuda_add_executable(device_collisions_test ${TEST_SOURCES})
+    target_link_libraries(device_collisions_test cudart cublas g3logger ${BLAS})
+    target_compile_definitions(device_collisions_test PRIVATE -DCUDA)
 ENDIF()
 
 # HOST - Random number generation tests
@@ -215,7 +225,7 @@ SET(TEST_SOURCES test/collisions_test.cpp
                  src/collisions.cpp
                  src/vector_math.cu)
 cuda_add_executable(host_collisions_test ${TEST_SOURCES})
-target_link_libraries(host_collisions_test ${BLAS})
+target_link_libraries(host_collisions_test g3logger ${BLAS})
 
 add_test(cuda_dmsc_runs cuda_dsmc)
 add_test(host_random_number_generation host_random_number_generation_test -s -o h_rng_test.out)
@@ -226,6 +236,7 @@ IF(CUDA)
     add_test(device_random_number_generation device_random_number_generation_test -s -o d_rng_test.out)
     add_test(device_distribution_generation device_distribution_generation_test -s -o d_dist_gen_test.out)
     add_test(device_distribution_evolution device_distribution_evolution_test -s -o d_dist_ev_test.out)
+    add_test(device_collisions device_collisions_test -s -o d_collisions_test.out)
 ENDIF()
 
 # does it have the correct output

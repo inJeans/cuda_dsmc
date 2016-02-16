@@ -284,7 +284,7 @@ int main(int argc, char const *argv[]) {
     }
 #ifdef CUDA
     LOGF(DEBUG, "\nDestroying the cuBLAS handle.\n");
-    cublasDestroy(cublas_handle);
+    checkCudaErrors(cublasDestroy(cublas_handle));
 #endif
 
     LOGF(DEBUG, "\nAfter time evolution.\n");

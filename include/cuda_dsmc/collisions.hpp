@@ -25,6 +25,8 @@ extern "C"
 #include <cmath>
 #include <math.h>
 
+#include <g3log/g3log.hpp>
+
 #include "vector_math.cuh"
 
 void initialise_grid_params(int num_atoms,

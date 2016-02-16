@@ -18,64 +18,40 @@
 void initialise_grid_params(int num_atoms,
                             cublasHandle_t cublas_handle,
                             double3 *pos) {
+    LOGF(INFO, "\nInitialising grid parameters.\n");
     int3 max_id = make_int3(0, 0, 0);
-    int out;
 #if defined(CUDA)
-    printf("Error before - idamax\n");
-    checkCudaErrors(cublasIdamax(cublas_handle,
-                                 num_atoms,
-                                 reinterpret_cast<double *>(pos)+0,
-                                 3,
-                                 &max_id.x));
-    checkCudaErrors(cublasIdamax(cublas_handle,
-                                 num_atoms,
-                                 reinterpret_cast<double *>(pos)+1,
-                                 3,
-                                 &max_id.y));
-    checkCudaErrors(cublasIdamax(cublas_handle,
-                                 num_atoms,
-                                 reinterpret_cast<double *>(pos)+2,
-                                 3,
-                                 &max_id.z));
-    printf("Error after - idamax\n");
-    printf("max_id = {%i, %i, %i}\n", max_id.x-1, max_id.y-1, max_id.z-1);
-    double3 *h_pos;
-    h_pos = reinterpret_cast<double3*>(calloc(num_atoms,
-                                              sizeof(double3)));
-    checkCudaErrors(cudaMemcpy(h_pos,
-                               pos,
-                               num_atoms*sizeof(double3),
-                               cudaMemcpyDeviceToHost));
-    printf("Error before - abs\n");
-    grid_min.x = -1.0*std::abs(h_pos[max_id.x-1].x);
-    grid_min.y = -1.0*std::abs(h_pos[max_id.y-1].y);
-    grid_min.z = -1.0*std::abs(h_pos[max_id.z-1].z);
-    printf("Error after - abs\n");
-    free(h_pos);
+    cu_initialise_grid_params(num_atoms,
+                              cublas_handle,
+                              pos);
 #else
+    LOGF(DEBUG, "\nLaunching BLAS idamax to find max x position.\n");
     max_id.x = cblas_idamax(num_atoms,
                             reinterpret_cast<double *>(pos)+0,
                             3);
+    LOGF(DEBUG, "\nLaunching BLAS idamax to find max y position.\n");
     max_id.y = cblas_idamax(num_atoms,
                             reinterpret_cast<double *>(pos)+1,
                             3);
+    LOGF(DEBUG, "\nLaunching BLAS idamax to find max z position.\n");
     max_id.z = cblas_idamax(num_atoms,
                             reinterpret_cast<double *>(pos)+2,
                             3);
-
+    LOGF(DEBUG, "\nThe ids of the max positions are max_id = {%i, %i, %i\n",
+         max_id.x, max_id.y, max_id.z);
     grid_min.x = -1.0*std::abs(pos[max_id.x].x);
     grid_min.y = -1.0*std::abs(pos[max_id.y].y);
     grid_min.z = -1.0*std::abs(pos[max_id.z].z);
+    LOGF(DEBUG, "\nThe minimum grid points are grid_min = {%f, %f, %f}\n",
+         grid_min.x, grid_min.y, grid_min.z);
 #endif
 
     // Set the grid_max = -grid_min, so that the width of the grid would be
     // 2*abs(grid_min) or -2.0 * grid_min.
     cell_length = -2.0 * grid_min / num_cells;
-
-#if defined(CUDA)
-    d_grid_min = grid_min;
-    d_cell_length = cell_length;
-#endif
+    LOGF(DEBUG, "\nThe cell widths are cell_length = {%f, %f, %f}\n",
+         cell_length.x, cell_length.y, cell_length.z);
+    
     return;
 }
 
