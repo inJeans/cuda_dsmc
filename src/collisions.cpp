@@ -42,7 +42,7 @@ void initialise_grid_params(int num_atoms,
     double3 *h_pos;
     h_pos = reinterpret_cast<double3*>(calloc(num_atoms,
                                               sizeof(double3)));
-    checkCudaErrors(cudaMemcpy(&h_pos,
+    checkCudaErrors(cudaMemcpy(h_pos,
                                pos,
                                num_atoms*sizeof(double3),
                                cudaMemcpyDeviceToHost));
