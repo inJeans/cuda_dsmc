@@ -18,7 +18,8 @@ __host__ void cu_initialise_grid_params(int num_atoms,
                                         double3 *pos);
 
 __global__ void copy_collision_params_to_device(double3 grid_min,
-                                                double3 cell_length);
+                                                double3 cell_length,
+                                                int3 num_cells);
 
 __host__ void cu_index_atoms(int num_atoms,
                              double3 *pos,

@@ -51,7 +51,7 @@ void initialise_grid_params(int num_atoms,
     cell_length = -2.0 * grid_min / num_cells;
     LOGF(DEBUG, "\nThe cell widths are cell_length = {%f, %f, %f}\n",
          cell_length.x, cell_length.y, cell_length.z);
-    
+
     return;
 }
 

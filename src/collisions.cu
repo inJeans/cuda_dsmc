@@ -52,18 +52,21 @@ __host__ void cu_initialise_grid_params(int num_atoms,
          grid_min.x, grid_min.y, grid_min.z);
 
     copy_collision_params_to_device<<<1, 1>>>(grid_min,
-                                              cell_length);
+                                              cell_length,
+                                              num_cells);
     LOGF(DEBUG, "\nThe minimum grid points on the device are d_grid_min = {%f, %f, %f}\n",
-         d_grid_min.x, d_grid_min.y, d_grid_min.z);
+         grid_min.x, grid_min.y, grid_min.z);
     LOGF(DEBUG, "\nThe cell widths on the device are d_cell_length = {%f, %f, %f}\n",
-         d_cell_length.x, d_cell_length.y, d_cell_length.z);
+         cell_length.x, cell_length.y, cell_length.z);
   return;
 }
 
 __global__ void copy_collision_params_to_device(double3 grid_min,
-                                                double3 cell_length) {
+                                                double3 cell_length,
+                                                int3 num_cells) {
     d_grid_min = grid_min;
     d_cell_length = cell_length;
+    d_num_cells = num_cells;
 
     return;
 }
