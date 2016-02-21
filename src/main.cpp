@@ -280,7 +280,8 @@ int main(int argc, char const *argv[]) {
                                acc);
         collide_atoms(NUM_ATOMS,
                       pos,
-                      cell_id);
+                      cell_id,
+                      atom_id);
     }
 #ifdef CUDA
     LOGF(DEBUG, "\nDestroying the cuBLAS handle.\n");

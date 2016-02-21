@@ -91,8 +91,8 @@ double2 box_muller(pcg32_random_t *state) {
     double2 z = make_double2(0., 0.);
     double u1 = uniform_prng(state);
     double u2 = uniform_prng(state);
-    z.x = sqrt(-2.*log(u1)) * cos(2.*pi*u2);
-    z.y = sqrt(-2.*log(u1)) * sin(2.*pi*u2);
+    z.x = sqrt(-2.*log(u1)) * cos(2.*h_pi*u2);
+    z.y = sqrt(-2.*log(u1)) * sin(2.*h_pi*u2);
 
     return z;
 }

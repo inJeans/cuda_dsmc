@@ -13,7 +13,7 @@ extern double gs;    // Gyromagnetic ratio
 extern double MF;    // Magnetic quantum number
 extern double muB;   // Bohr magneton
 extern double mass;  // 87Rb mass
-extern double pi;    // Pi
+extern double h_pi;    // Pi
 extern double a;     // Constant cross-section formula
 extern double kB;    // Boltzmann's Constant
 extern double hbar;  // hbar

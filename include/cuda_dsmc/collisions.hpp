@@ -35,7 +35,8 @@ void initialise_grid_params(int num_atoms,
 
 void collide_atoms(int num_atoms,
                    double3 *pos,
-                   int *cell_id);
+                   int *cell_id,
+                   int *atom_id);
 
 void index_atoms(int num_atoms,
                  double3 *pos,

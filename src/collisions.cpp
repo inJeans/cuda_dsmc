@@ -56,8 +56,9 @@ void initialise_grid_params(int num_atoms,
 }
 
 /** \fn void collide_atoms(int num_atoms,
- *                       double3 *pos,
- *                       int *cell_id) 
+ *                         double3 *pos,
+ *                         int *cell_id,
+ *                         int *atom_id) 
  *  \brief Calls the function to simulate collisions between the atoms of the
  *  thermal gas. The collisions rates should match those predicted by the
  *  kinetic theory of gases. Collisions are approximated to be `s`-wave.
@@ -66,19 +67,36 @@ void initialise_grid_params(int num_atoms,
  *  `num_atoms` containing the positions.
  *  \param *cell_id Pointer to an output `int` host or device array of length
  *  `num_atoms` containing the cell_ids.
+ *  \param *cell_id Pointer to an input `int` host or device array of length
+ *  `num_atoms` containing the atom_ids.
  *  \exception not yet.
  *  \return void
 */
 
+#include <thrust/sort.h>
+#include <thrust/execution_policy.h>
+
 void collide_atoms(int num_atoms,
                    double3 *pos,
-                   int *cell_id) {
+                   int *cell_id,
+                   int *atom_id) {
     // Index atoms
     index_atoms(num_atoms,
                 pos,
                 cell_id);
     // Sort atoms
-    // Bin atoms
+#if defined(CUDA)
+    thrust::sort_by_key(thrust::device,
+                        cell_id,
+                        cell_id + num_atoms,
+                        atom_id);
+#else
+    thrust::sort_by_key(thrust::host,
+                        cell_id,
+                        cell_id + num_atoms,
+                        atom_id);
+#endif
+    // Count attoms
     // Collide atoms
     return;
 }

@@ -44,8 +44,8 @@ SCENARIO("[HOST] Thermal velocity distribution", "[h-veldist]") {
                 double vel_std  = std_dev(test_vel,
                                           num_test);
 
-                double expected_speed_mean = sqrt(8.*kB*init_temp/mass/pi);
-                double expected_speed_std = sqrt((3.-8./pi)*kB*init_temp/mass);
+                double expected_speed_mean = sqrt(8.*kB*init_temp/mass/h_pi);
+                double expected_speed_std = sqrt((3.-8./h_pi)*kB*init_temp/mass);
 
                 REQUIRE(speed_mean >= expected_speed_mean - speed_mean / sqrt(num_test));
                 REQUIRE(speed_mean <= expected_speed_mean + speed_mean / sqrt(num_test));
