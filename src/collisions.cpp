@@ -192,3 +192,33 @@ int atom_cell_id(int3 cell_index) {
 
     return cell_id;
 }
+
+/** \fn void sort_atoms(int num_atoms,
+ *                      int *cell_id,
+ *                      int *atom_id) 
+ *  \brief Calls the function to update an `int` host or device array with
+ *  cell_ids based on the atoms position and the maximum cell width.
+ *  \param num_atoms Number of atoms in the thermal gas.
+ *  \param *pos Pointer to a `double3` host or device array of length
+ *  `num_atoms` containing the positions.
+ *  \param *cell_id Pointer to an output `int` host or device array of length
+ *  `num_atoms` containing the cell_ids.
+ *  \exception not yet.
+ *  \return void
+*/
+
+void sort_atoms(int num_atoms,
+                int *cell_id,
+                int *atom_id) {
+#ifdef CUDA
+    cu_index_atoms(num_atoms,
+                   pos,
+                   cell_id);
+#else
+    for (int atom = 0; atom < num_atoms; ++atom) {
+        cell_id[atom] = update_atom_cell_id(pos[atom]);
+    }
+#endif
+
+    return;
+}
