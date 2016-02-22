@@ -6,6 +6,8 @@
  */
 
 #include "collisions.cuh"
+#include <cub/cub.cuh> // Need to keep this include out of the main header
+                       // as regular c compilers might not like it
 
 #include "declare_host_constants.hpp"
 #include "declare_device_constants.cuh"
@@ -195,4 +197,43 @@ __device__ int d_atom_cell_id(int3 cell_index) {
     }
 
     return cell_id;
+}
+
+__host__ void cu_sort_atoms(int num_atoms,
+                            int *cell_id,
+                            int *atom_id) {
+    int  *d_cell_id_out;
+    int  *d_atom_id_out;
+
+    checkCudaErrors(cudaMalloc(&d_cell_id_out,
+                               num_atoms*sizeof(int)));
+    checkCudaErrors(cudaMalloc(&d_atom_id_out,
+                               num_atoms*sizeof(int)));
+
+    // Determine temporary device storage requirements
+    void     *d_temp_storage = NULL;
+    size_t   temp_storage_bytes = 0;
+    checkCudaErrors(cub::DeviceRadixSort::SortPairs(d_temp_storage,
+                                                    temp_storage_bytes,
+                                                    cell_id,
+                                                    d_cell_id_out,
+                                                    atom_id,
+                                                    d_atom_id_out,
+                                                    num_atoms));
+    // Allocate temporary storage
+    checkCudaErrors(cudaMalloc(&d_temp_storage,
+                               temp_storage_bytes));
+    // Run sorting operation
+    checkCudaErrors(cub::DeviceRadixSort::SortPairs(d_temp_storage,
+                                                    temp_storage_bytes,
+                                                    cell_id,
+                                                    d_cell_id_out,
+                                                    atom_id,
+                                                    d_atom_id_out,
+                                                    num_atoms));
+
+    cudaFree(d_cell_id_out);
+    cudaFree(d_atom_id_out);
+    cudaFree(d_temp_storage);
+    return;
 }

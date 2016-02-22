@@ -86,10 +86,9 @@ void collide_atoms(int num_atoms,
                 cell_id);
     // Sort atoms
 #if defined(CUDA)
-    thrust::sort_by_key(thrust::device,
-                        cell_id,
-                        cell_id + num_atoms,
-                        atom_id);
+    cu_sort_atoms(num_atoms,
+                  cell_id,
+                  atom_id);
 #else
     thrust::sort_by_key(thrust::host,
                         cell_id,

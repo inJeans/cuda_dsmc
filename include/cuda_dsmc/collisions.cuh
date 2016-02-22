@@ -35,4 +35,8 @@ __device__ int3 d_atom_cell_index(double3 pos);
 
 __device__ int d_atom_cell_id(int3 cell_index);
 
+__host__ void cu_sort_atoms(int num_atoms,
+                            int *cell_id,
+                            int *atom_id);
+
 #endif // COLLISIONS_CUH_INCLUDED
