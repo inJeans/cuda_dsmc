@@ -48,4 +48,8 @@ int3 atom_cell_index(double3 pos);
 
 int atom_cell_id(int3 cell_index);
 
+void sort_atoms(int num_atoms,
+                int *cell_id,
+                int *atom_id);
+
 #endif // COLLISIONS_HPP_INCLUDED

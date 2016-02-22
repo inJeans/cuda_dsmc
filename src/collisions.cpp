@@ -85,16 +85,7 @@ void collide_atoms(int num_atoms,
                 pos,
                 cell_id);
     // Sort atoms
-#if defined(CUDA)
-    cu_sort_atoms(num_atoms,
-                  cell_id,
-                  atom_id);
-#else
-    thrust::sort_by_key(thrust::host,
-                        cell_id,
-                        cell_id + num_atoms,
-                        atom_id);
-#endif
+
     // Count attoms
     // Collide atoms
     return;
@@ -210,14 +201,15 @@ int atom_cell_id(int3 cell_index) {
 void sort_atoms(int num_atoms,
                 int *cell_id,
                 int *atom_id) {
-#ifdef CUDA
-    cu_index_atoms(num_atoms,
-                   pos,
-                   cell_id);
+#if defined(CUDA)
+    cu_sort_atoms(num_atoms,
+                  cell_id,
+                  atom_id);
 #else
-    for (int atom = 0; atom < num_atoms; ++atom) {
-        cell_id[atom] = update_atom_cell_id(pos[atom]);
-    }
+    thrust::sort_by_key(thrust::host,
+                        cell_id,
+                        cell_id + num_atoms,
+                        atom_id);
 #endif
 
     return;
