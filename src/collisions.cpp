@@ -187,13 +187,13 @@ int atom_cell_id(int3 cell_index) {
 /** \fn void sort_atoms(int num_atoms,
  *                      int *cell_id,
  *                      int *atom_id) 
- *  \brief Calls the function to update an `int` host or device array with
- *  cell_ids based on the atoms position and the maximum cell width.
+ *  \brief Calls the function to sort an `int` host or device array with
+ *  atom_ids based on the cell_ids of the atoms.
  *  \param num_atoms Number of atoms in the thermal gas.
- *  \param *pos Pointer to a `double3` host or device array of length
- *  `num_atoms` containing the positions.
- *  \param *cell_id Pointer to an output `int` host or device array of length
- *  `num_atoms` containing the cell_ids.
+ *  \param *cell_id Pointer to an input/output `int` host or device array of
+ *  length `num_atoms` containing the cell_ids.
+ *  \param *atom_id Pointer to an input/output `int` host or device array of
+ *  length `num_atoms` containing the atom_ids.
  *  \exception not yet.
  *  \return void
 */

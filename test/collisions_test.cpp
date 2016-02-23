@@ -84,3 +84,29 @@ SCENARIO("[HOST] Index atoms", "[h-index]") {
         }
     }
 }
+
+SCENARIO("[HOST] Sort atoms", "[h-sort]") {
+    GIVEN("An array of 10 known indices, with an associated atom_id array") {
+        int atom_id[10] = {0,  1, 2,  3,  4,  5, 6,  7,  8, 9};
+        int cell_id[10] = {15, 8, 15, 14, 24, 5, 24, 24, 3, 15};
+
+        WHEN("The sort_atoms function is called") {
+            sort_atoms(10,
+                       cell_id,
+                       atom_id);
+
+            THEN("Then the global atom_id = {8, 5, 1, 3, 0, 2, 9, 4, 6, 7} ") {
+                REQUIRE(atom_id[0] == 8);
+                REQUIRE(atom_id[1] == 5);
+                REQUIRE(atom_id[2] == 1);
+                REQUIRE(atom_id[3] == 3);
+                REQUIRE(atom_id[4] == 0);
+                REQUIRE(atom_id[5] == 2);
+                REQUIRE(atom_id[6] == 9);
+                REQUIRE(atom_id[7] == 4);
+                REQUIRE(atom_id[8] == 6);
+                REQUIRE(atom_id[9] == 7);
+            }
+        }
+    }
+}
