@@ -123,6 +123,24 @@ int main(int argc, char const *argv[]) {
                                             sizeof(int)));
 #endif
 
+    // Initialise cell_start_end
+    LOGF(INFO, "\nInitialising the cell_start_end array.");
+    int2 *cell_start_end;
+#ifdef CUDA
+    LOGF(DEBUG, "\nAllocating %i int2 elements on the device.",
+         num_cells.x*num_cells.y*num_cells.z);
+    checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&cell_start_end),
+                               num_cells.x*num_cells.y*num_cells.z*sizeof(int2)));
+    checkCudaErrors(cudaMemset(cell_start_end,
+                               0,
+                               num_cells.x*num_cells.y*num_cells.z));
+#else
+    LOGF(DEBUG, "\nAllocating %i int elements on the host.",
+         num_cells.x*num_cells.y*num_cells.z);
+    cell_start_end = reinterpret_cast<int2*>(calloc(num_cells.x*num_cells.y*num_cells.z,
+                                                    sizeof(int2)));
+#endif
+
     // Initialise velocities
     LOGF(INFO, "\nInitialising the velocity array.");
     double3 *vel;

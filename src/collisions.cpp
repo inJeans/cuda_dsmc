@@ -79,7 +79,8 @@ void initialise_grid_params(int num_atoms,
 void collide_atoms(int num_atoms,
                    double3 *pos,
                    int *cell_id,
-                   int *atom_id) {
+                   int *atom_id,
+                   int2 *cell_start_end) {
     // Index atoms
     index_atoms(num_atoms,
                 pos,
@@ -89,9 +90,16 @@ void collide_atoms(int num_atoms,
                cell_id,
                atom_id);
     // Count attoms
+    find_cell_start_end(num_atoms,
+                        cell_id,
+                        cell_start_end);
     // Collide atoms
     return;
 }
+
+/****************************************************************************
+ * INDEXING                                                                 *
+ ****************************************************************************/
 
 /** \fn void index_atoms(int num_atoms,
  *                       double3 *pos,
@@ -186,6 +194,10 @@ int atom_cell_id(int3 cell_index) {
     return cell_id;
 }
 
+/****************************************************************************
+ * SORTING                                                                  *
+ ****************************************************************************/
+
 /** \fn void sort_atoms(int num_atoms,
  *                      int *cell_id,
  *                      int *atom_id) 
@@ -212,6 +224,38 @@ void sort_atoms(int num_atoms,
                         cell_id,
                         cell_id + num_atoms,
                         atom_id);
+#endif
+
+    return;
+}
+
+/****************************************************************************
+ * COUNTING                                                                 *
+ ****************************************************************************/
+
+void find_cell_start_end(int num_atoms,
+                         int *cell_id,
+                         int2 *cell_start_end) {
+#if defined(CUDA)
+    cu_find_cell_start_end(num_atoms,
+                           cell_id,
+                           cell_start_end);
+#else
+    for (int atom = 0; atom < num_atoms; ++atom) {
+        // Find the beginning of the cell
+        if (atom == 0) {
+            cell_start_end[cell_id[atom]].x = 0;
+        } else if (cell_id[atom] != cell_id[atom-1]) {
+            cell_start_end[cell_id[atom]].x = atom;
+        }
+
+        // Find the end of the cell
+        if (atom == num_atoms - 1) {
+            cell_start_end[cell_id[atom]].y = num_atoms-1;
+        } else if (cell_id[atom] != cell_id[atom+1]) {
+            cell_start_end[cell_id[atom]].y = atom;
+        }
+    }
 #endif
 
     return;

@@ -73,6 +73,10 @@ __global__ void copy_collision_params_to_device(double3 grid_min,
     return;
 }
 
+/****************************************************************************
+ * INDEXING                                                                 *
+ ****************************************************************************/
+
 /** \fn __host__ void cu_index_atoms(int num_atoms,
  *                                   double3 *pos,
  *                                   int *cell_id) 
@@ -90,7 +94,7 @@ __global__ void copy_collision_params_to_device(double3 grid_min,
 __host__ void cu_index_atoms(int num_atoms,
                              double3 *pos,
                              int *cell_id) {
-LOGF(DEBUG, "\nCalculating optimal launch configuration for the atom "
+    LOGF(DEBUG, "\nCalculating optimal launch configuration for the atom "
                 "indexing kernel.\n");
     int block_size = 0;
     int min_grid_size = 0;
@@ -199,6 +203,10 @@ __device__ int d_atom_cell_id(int3 cell_index) {
     return cell_id;
 }
 
+/****************************************************************************
+ * SORTING                                                                  *
+ ****************************************************************************/
+
 /** \fn __host__ void cu_sort_atoms(int num_atoms,
  *                                  int *cell_id,
  *                                  int *atom_id) 
@@ -258,5 +266,58 @@ __host__ void cu_sort_atoms(int num_atoms,
     cudaFree(d_cell_id_out);
     cudaFree(d_atom_id_out);
     cudaFree(d_temp_storage);
+    return;
+}
+
+/****************************************************************************
+ * COUNTING                                                                 *
+ ****************************************************************************/
+
+__host__ void cu_find_cell_start_end(int num_atoms,
+                                     int *cell_id,
+                                     int2 *cell_start_end) {
+    LOGF(DEBUG, "\nCalculating optimal launch configuration for the cell "
+                "start/end kernel.\n");
+    int block_size = 0;
+    int min_grid_size = 0;
+    int grid_size = 0;
+    cudaOccupancyMaxPotentialBlockSize(&min_grid_size,
+                                       &block_size,
+                                       (const void *) g_find_cell_start_end,
+                                       0,
+                                       num_atoms);
+    grid_size = (num_atoms + block_size - 1) / block_size;
+    LOGF(DEBUG, "\nLaunch config set as <<<%i,%i>>>\n",
+                grid_size, block_size);
+    g_find_cell_start_end<<<grid_size,
+                            block_size>>>
+                           (num_atoms,
+                            cell_id,
+                            cell_start_end);
+
+    return;
+}
+
+__global__ void g_find_cell_start_end(int num_atoms,
+                                      int *cell_id,
+                                      int2 *cell_start_end) {
+    for (int atom = blockIdx.x * blockDim.x + threadIdx.x;
+         atom < num_atoms;
+         atom += blockDim.x * gridDim.x) {
+        // Find the beginning of the cell
+        if (atom == 0) {
+            cell_start_end[cell_id[atom]].x = 0;
+        } else if (cell_id[atom] != cell_id[atom-1]) {
+            cell_start_end[cell_id[atom]].x = atom;
+        }
+
+        // Find the end of the cell
+        if (atom == num_atoms - 1) {
+            cell_start_end[cell_id[atom]].y = num_atoms-1;
+        } else if (cell_id[atom] != cell_id[atom+1]) {
+            cell_start_end[cell_id[atom]].y = atom;
+        }
+    }
+
     return;
 }
