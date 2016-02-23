@@ -245,6 +245,15 @@ __host__ void cu_sort_atoms(int num_atoms,
                                                     atom_id,
                                                     d_atom_id_out,
                                                     num_atoms));
+    // Copy sorted arrays back to original memory
+    checkCudaErrors(cudaMemcpy(atom_id,
+                               d_atom_id_out,
+                               num_atoms*sizeof(int),
+                               cudaMemcpyDeviceToHost));
+    checkCudaErrors(cudaMemcpy(cell_id,
+                               d_cell_id_out,
+                               num_atoms*sizeof(int),
+                               cudaMemcpyDeviceToHost));
 
     cudaFree(d_cell_id_out);
     cudaFree(d_atom_id_out);
