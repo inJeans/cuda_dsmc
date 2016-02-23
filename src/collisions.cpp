@@ -85,7 +85,9 @@ void collide_atoms(int num_atoms,
                 pos,
                 cell_id);
     // Sort atoms
-
+    sort_atoms(num_atoms,
+               cell_id,
+               atom_id);
     // Count attoms
     // Collide atoms
     return;
