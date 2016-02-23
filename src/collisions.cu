@@ -304,20 +304,36 @@ __global__ void g_find_cell_start_end(int num_atoms,
     for (int atom = blockIdx.x * blockDim.x + threadIdx.x;
          atom < num_atoms;
          atom += blockDim.x * gridDim.x) {
+        int l_cell_id = cell_id[atom];
         // Find the beginning of the cell
         if (atom == 0) {
-            cell_start_end[cell_id[atom]].x = 0;
-        } else if (cell_id[atom] != cell_id[atom-1]) {
-            cell_start_end[cell_id[atom]].x = atom;
+            cell_start_end[l_cell_id].x = 0;
+        } else if (l_cell_id != cell_id[atom-1]) {
+            cell_start_end[l_cell_id].x = atom;
         }
 
         // Find the end of the cell
         if (atom == num_atoms - 1) {
-            cell_start_end[cell_id[atom]].y = num_atoms-1;
-        } else if (cell_id[atom] != cell_id[atom+1]) {
-            cell_start_end[cell_id[atom]].y = atom;
+            cell_start_end[l_cell_id].y = num_atoms-1;
+        } else if (l_cell_id != cell_id[atom+1]) {
+            cell_start_end[l_cell_id].y = atom;
         }
     }
 
+    return;
+}
+
+__global__ void g_find_cell_num_atoms(int num_cells,
+                                      int2 *cell_start_end,
+                                      int *cell_num_atoms) {
+    for (int cell = blockIdx.x * blockDim.x + threadIdx.x;
+         cell < num_cells+1;
+         cell += blockDim.x * gridDim.x) {
+        if (cell_start_end[cell].x == -1)
+            cell_num_atoms[cell] = 0;
+        else
+            cell_num_atoms[cell] = cell_start_end[cell].y - cell_start_end[cell].x + 1;
+    }
+    
     return;
 }

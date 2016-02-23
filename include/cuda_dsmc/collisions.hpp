@@ -36,7 +36,8 @@ void initialise_grid_params(int num_atoms,
 void collide_atoms(int num_atoms,
                    double3 *pos,
                    int *cell_id,
-                   int *atom_id);
+                   int *atom_id,
+                   int2 *cell_start_end);
 
 void index_atoms(int num_atoms,
                  double3 *pos,
@@ -51,5 +52,9 @@ int atom_cell_id(int3 cell_index);
 void sort_atoms(int num_atoms,
                 int *cell_id,
                 int *atom_id);
+
+void find_cell_start_end(int num_atoms,
+                         int *cell_id,
+                         int2 *cell_start_end);
 
 #endif // COLLISIONS_HPP_INCLUDED

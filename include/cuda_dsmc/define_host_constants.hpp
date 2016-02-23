@@ -20,6 +20,7 @@ double hbar = 1.05457148e-34;   // hbar
 
 // COMPUTATIONAL CONSTANTS
 int3 num_cells = make_int3(128, 128, 128);
+int total_num_cells = num_cells.x*num_cells.y*num_cells.z;
 double3 grid_min = make_double3(0., 0., 0.);
 double3 cell_length = make_double3(0., 0., 0.);
 

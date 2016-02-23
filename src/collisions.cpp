@@ -242,18 +242,19 @@ void find_cell_start_end(int num_atoms,
                            cell_start_end);
 #else
     for (int atom = 0; atom < num_atoms; ++atom) {
+        int l_cell_id = cell_id[atom];
         // Find the beginning of the cell
         if (atom == 0) {
-            cell_start_end[cell_id[atom]].x = 0;
-        } else if (cell_id[atom] != cell_id[atom-1]) {
-            cell_start_end[cell_id[atom]].x = atom;
+            cell_start_end[l_cell_id].x = 0;
+        } else if (l_cell_id != cell_id[atom-1]) {
+            cell_start_end[l_cell_id].x = atom;
         }
 
         // Find the end of the cell
         if (atom == num_atoms - 1) {
-            cell_start_end[cell_id[atom]].y = num_atoms-1;
-        } else if (cell_id[atom] != cell_id[atom+1]) {
-            cell_start_end[cell_id[atom]].y = atom;
+            cell_start_end[l_cell_id].y = num_atoms-1;
+        } else if (l_cell_id != cell_id[atom+1]) {
+            cell_start_end[l_cell_id].y = atom;
         }
     }
 #endif

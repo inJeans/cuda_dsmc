@@ -68,6 +68,10 @@ int main(int argc, char const *argv[]) {
     double dt = 1.e-6;
     int num_time_steps = 1;
 
+    // Initialise grid parameters
+    num_cells = make_int3(2, 2, 2);
+    total_num_cells = num_cells.x*num_cells.y*num_cells.z;
+
     // Initialise rng
     LOGF(INFO, "\nInitialising the rng state array.");
 #ifdef CUDA
@@ -115,7 +119,7 @@ int main(int argc, char const *argv[]) {
                                NUM_ATOMS*sizeof(int)));
     checkCudaErrors(cudaMemset(cell_id,
                                0,
-                               NUM_ATOMS));
+                               NUM_ATOMS*sizeof(int)));
 #else
     LOGF(DEBUG, "\nAllocating %i int elements on the host.",
          NUM_ATOMS);
@@ -128,17 +132,20 @@ int main(int argc, char const *argv[]) {
     int2 *cell_start_end;
 #ifdef CUDA
     LOGF(DEBUG, "\nAllocating %i int2 elements on the device.",
-         num_cells.x*num_cells.y*num_cells.z);
+         total_num_cells);
     checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&cell_start_end),
-                               num_cells.x*num_cells.y*num_cells.z*sizeof(int2)));
+                               total_num_cells*sizeof(int2)));
     checkCudaErrors(cudaMemset(cell_start_end,
-                               0,
-                               num_cells.x*num_cells.y*num_cells.z));
+                               -1,
+                               total_num_cells*sizeof(int2)));
 #else
     LOGF(DEBUG, "\nAllocating %i int elements on the host.",
-         num_cells.x*num_cells.y*num_cells.z);
-    cell_start_end = reinterpret_cast<int2*>(calloc(num_cells.x*num_cells.y*num_cells.z,
+         total_num_cells);
+    cell_start_end = reinterpret_cast<int2*>(calloc(total_num_cells,
                                                     sizeof(int2)));
+    memset(cell_start_end,
+           -1,
+           total_num_cells*sizeof(int2));
 #endif
 
     // Initialise velocities
@@ -266,8 +273,6 @@ int main(int argc, char const *argv[]) {
                                                            vel[1].x, vel[1].y, vel[1].z);
     LOGF(INFO, "\np1 = { %f,%f,%f }, p2 = { %f,%f,%f }\n", pos[0].x, pos[0].y, pos[0].z,
                                                            pos[1].x, pos[1].y, pos[1].z);
-    printf("\np1 = { %f,%f,%f }, p2 = { %f,%f,%f }\n", pos[0].x, pos[0].y, pos[0].z,
-                                                           pos[1].x, pos[1].y, pos[1].z);
     LOGF(INFO, "\na1 = { %f,%f,%f }, a2 = { %f,%f,%f }\n", acc[0].x, acc[0].y, acc[0].z,
                                                            acc[1].x, acc[1].y, acc[1].z);
     LOGF(INFO, "\npsi1 = { %f%+fi,%f%+fi }, psi2 = { %f%+fi,%f%+fi }\n", 
@@ -299,7 +304,8 @@ int main(int argc, char const *argv[]) {
         collide_atoms(NUM_ATOMS,
                       pos,
                       cell_id,
-                      atom_id);
+                      atom_id,
+                      cell_start_end);
     }
 #ifdef CUDA
     LOGF(DEBUG, "\nDestroying the cuBLAS handle.\n");
