@@ -82,7 +82,8 @@ void collide_atoms(int num_atoms,
                    int *cell_id,
                    int *atom_id,
                    int2 *cell_start_end,
-                   int *cell_num_atoms) {
+                   int *cell_num_atoms,
+                   int *cell_cumulative_num_atoms) {
     // Index atoms
     index_atoms(num_atoms,
                 pos,
@@ -92,12 +93,12 @@ void collide_atoms(int num_atoms,
                cell_id,
                atom_id);
     // Count attoms
-    find_cell_start_end(num_atoms,
-                        cell_id,
-                        cell_start_end);
-    find_cell_num_atoms(num_cells,
-                        cell_start_end,
-                        cell_num_atoms);
+    count_atoms(num_atoms,
+                num_cells,
+                cell_id,
+                cell_start_end,
+                cell_num_atoms,
+                cell_cumulative_num_atoms);
     // Collide atoms
     return;
 }
@@ -237,6 +238,32 @@ void sort_atoms(int num_atoms,
 /****************************************************************************
  * COUNTING                                                                 *
  ****************************************************************************/
+
+void count_atoms(int num_atoms,
+                 int num_cells,
+                 int *cell_id,
+                 int2 *cell_start_end,
+                 int *cell_num_atoms,
+                 int *cell_cumulative_num_atoms) {
+    find_cell_start_end(num_atoms,
+                        cell_id,
+                        cell_start_end);
+    find_cell_num_atoms(num_cells,
+                        cell_start_end,
+                        cell_num_atoms);
+#if defined(CUDA)
+    cu_scan(num_cells,
+            cell_num_atoms,
+            cell_cumulative_num_atoms);
+#else
+    thrust::exclusive_scan(thrust::host,
+                           cell_num_atoms,
+                           cell_num_atoms + num_cells + 1,
+                           cell_cumulative_num_atoms);
+
+#endif
+    return;
+}
 
 void find_cell_start_end(int num_atoms,
                          int *cell_id,

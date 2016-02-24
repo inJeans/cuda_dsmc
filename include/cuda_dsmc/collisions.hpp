@@ -11,6 +11,7 @@
 #include "helper_cuda.h"
 
 #include <thrust/sort.h>
+#include <thrust/scan.h>
 #include <thrust/execution_policy.h>
  
 #if defined(MKL)
@@ -42,7 +43,8 @@ void collide_atoms(int num_atoms,
                    int *cell_id,
                    int *atom_id,
                    int2 *cell_start_end,
-                   int *cell_num_atoms);
+                   int *cell_num_atoms,
+                   int *cell_cumulative_num_atoms);
 
 void index_atoms(int num_atoms,
                  double3 *pos,
@@ -57,6 +59,13 @@ int atom_cell_id(int3 cell_index);
 void sort_atoms(int num_atoms,
                 int *cell_id,
                 int *atom_id);
+
+void count_atoms(int num_atoms,
+                 int num_cells,
+                 int *cell_id,
+                 int2 *cell_start_end,
+                 int *cell_num_atoms,
+                 int *cell_cumulative_num_atoms);
 
 void find_cell_start_end(int num_atoms,
                          int *cell_id,

@@ -132,20 +132,20 @@ int main(int argc, char const *argv[]) {
     int2 *cell_start_end;
 #ifdef CUDA
     LOGF(DEBUG, "\nAllocating %i int2 elements on the device.",
-         total_num_cells);
+         total_num_cells+1);
     checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&cell_start_end),
-                               total_num_cells*sizeof(int2)));
+                               (total_num_cells+1)*sizeof(int2)));
     checkCudaErrors(cudaMemset(cell_start_end,
                                -1,
-                               total_num_cells*sizeof(int2)));
+                               (total_num_cells+1)*sizeof(int2)));
 #else
     LOGF(DEBUG, "\nAllocating %i int2 elements on the host.",
-         total_num_cells);
-    cell_start_end = reinterpret_cast<int2*>(calloc(total_num_cells,
+         total_num_cells+1);
+    cell_start_end = reinterpret_cast<int2*>(calloc(total_num_cells+1,
                                                     sizeof(int2)));
     memset(cell_start_end,
            -1,
-           total_num_cells*sizeof(int2));
+           (total_num_cells+1)*sizeof(int2));
 #endif
 
     // Initialise cell_num_atoms
@@ -153,17 +153,35 @@ int main(int argc, char const *argv[]) {
     int *cell_num_atoms;
 #ifdef CUDA
     LOGF(DEBUG, "\nAllocating %i int elements on the device.",
-         total_num_cells);
+         total_num_cells+1);
     checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&cell_num_atoms),
-                               total_num_cells*sizeof(int)));
+                               (total_num_cells+1)*sizeof(int)));
     checkCudaErrors(cudaMemset(cell_num_atoms,
                                0,
-                               total_num_cells*sizeof(int)));
+                               (total_num_cells+1)*sizeof(int)));
 #else
     LOGF(DEBUG, "\nAllocating %i int elements on the host.",
-         total_num_cells);
-    cell_num_atoms = reinterpret_cast<int*>(calloc(total_num_cells,
+         total_num_cells+1);
+    cell_num_atoms = reinterpret_cast<int*>(calloc(total_num_cells+1,
                                                    sizeof(int)));
+#endif
+
+    // Initialise cell_cumulative_num_atoms
+    LOGF(INFO, "\nInitialising the cell_cumulative_num_atoms array.");
+    int *cell_cumulative_num_atoms;
+#ifdef CUDA
+    LOGF(DEBUG, "\nAllocating %i int elements on the device.",
+         total_num_cells+1);
+    checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&cell_cumulative_num_atoms),
+                               (total_num_cells+1)*sizeof(int)));
+    checkCudaErrors(cudaMemset(cell_num_atoms,
+                               0,
+                               (total_num_cells+1)*sizeof(int)));
+#else
+    LOGF(DEBUG, "\nAllocating %i int elements on the host.",
+         total_num_cells+1);
+    cell_cumulative_num_atoms = reinterpret_cast<int*>(calloc(total_num_cells+1,
+                                                       sizeof(int)));
 #endif
 
     // Initialise velocities
@@ -325,7 +343,8 @@ int main(int argc, char const *argv[]) {
                       cell_id,
                       atom_id,
                       cell_start_end,
-                      cell_num_atoms);
+                      cell_num_atoms,
+                      cell_cumulative_num_atoms);
     }
 #ifdef CUDA
     LOGF(DEBUG, "\nDestroying the cuBLAS handle.\n");
@@ -375,6 +394,7 @@ int main(int argc, char const *argv[]) {
     cudaFree(cell_id);
     cudaFree(cell_start_end);
     cudaFree(cell_num_atoms);
+    cudaFree(cell_cumulative_num_atoms);
     cudaFree(vel);
     cudaFree(pos);
     cudaFree(acc);
@@ -386,6 +406,7 @@ int main(int argc, char const *argv[]) {
     free(cell_id);
     free(cell_start_end);
     free(cell_num_atoms);
+    free(cell_cumulative_num_atoms);
     free(vel);
     free(pos);
     free(acc);

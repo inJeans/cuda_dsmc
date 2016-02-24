@@ -335,8 +335,8 @@ __host__ void cu_find_cell_num_atoms(int num_cells,
                                        &block_size,
                                        (const void *) g_find_cell_num_atoms,
                                        0,
-                                       num_cells);
-    grid_size = (num_cells + block_size - 1) / block_size;
+                                       num_cells+1);
+    grid_size = (num_cells+1 + block_size - 1) / block_size;
     LOGF(DEBUG, "\nLaunch config set as <<<%i,%i>>>\n",
                 grid_size, block_size);
     g_find_cell_num_atoms<<<grid_size,
@@ -361,5 +361,30 @@ __global__ void g_find_cell_num_atoms(int num_cells,
                                    cell_start_end[cell].x + 1;
     }
 
+    return;
+}
+
+__host__ void cu_scan(int num_cells,
+                      int *cell_num_atoms,
+                      int *cell_cumulative_num_atoms) {
+    // Determine temporary device storage requirements
+    void *d_temp_storage = NULL;
+    size_t temp_storage_bytes = 0;
+    cub::DeviceScan::ExclusiveSum(d_temp_storage,
+                                  temp_storage_bytes,
+                                  cell_num_atoms,
+                                  cell_cumulative_num_atoms,
+                                  num_cells+1);
+    // Allocate temporary storage
+    cudaMalloc(&d_temp_storage,
+               temp_storage_bytes);
+    // Run exclusive prefix sum
+    cub::DeviceScan::ExclusiveSum(d_temp_storage,
+                                  temp_storage_bytes,
+                                  cell_num_atoms,
+                                  cell_cumulative_num_atoms,
+                                  num_cells+1);
+
+    cudaFree(d_temp_storage);
     return;
 }

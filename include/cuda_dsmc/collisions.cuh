@@ -55,4 +55,8 @@ __global__ void g_find_cell_num_atoms(int num_cells,
                                       int2 *cell_start_end,
                                       int *cell_num_atoms);
 
+__host__ void cu_scan(int num_cells,
+                      int *cell_num_atoms,
+                      int *cell_cumulative_num_atoms);
+
 #endif // COLLISIONS_CUH_INCLUDED
