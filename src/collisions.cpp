@@ -77,10 +77,12 @@ void initialise_grid_params(int num_atoms,
 #include <thrust/execution_policy.h>
 
 void collide_atoms(int num_atoms,
+                   int num_cells,
                    double3 *pos,
                    int *cell_id,
                    int *atom_id,
-                   int2 *cell_start_end) {
+                   int2 *cell_start_end,
+                   int *cell_num_atoms) {
     // Index atoms
     index_atoms(num_atoms,
                 pos,
@@ -93,6 +95,9 @@ void collide_atoms(int num_atoms,
     find_cell_start_end(num_atoms,
                         cell_id,
                         cell_start_end);
+    find_cell_num_atoms(num_cells,
+                        cell_start_end,
+                        cell_num_atoms);
     // Collide atoms
     return;
 }
@@ -256,6 +261,26 @@ void find_cell_start_end(int num_atoms,
         } else if (l_cell_id != cell_id[atom+1]) {
             cell_start_end[l_cell_id].y = atom;
         }
+    }
+#endif
+
+    return;
+}
+
+void find_cell_num_atoms(int num_cells,
+                         int2 *cell_start_end,
+                         int *cell_num_atoms) {
+#if defined(CUDA)
+    cu_find_cell_num_atoms(num_cells,
+                           cell_start_end,
+                           cell_num_atoms);
+#else
+    for (int cell = 0; cell < num_cells+1; ++cell) {
+        if (cell_start_end[cell].x == -1)
+            cell_num_atoms[cell] = 0;
+        else
+            cell_num_atoms[cell] = cell_start_end[cell].y -
+                                   cell_start_end[cell].x + 1;
     }
 #endif
 

@@ -323,6 +323,31 @@ __global__ void g_find_cell_start_end(int num_atoms,
     return;
 }
 
+__host__ void cu_find_cell_num_atoms(int num_cells,
+                                     int2 *cell_start_end,
+                                     int *cell_num_atoms) {
+    LOGF(DEBUG, "\nCalculating optimal launch configuration for the cell "
+                "atom counting kernel.\n");
+    int block_size = 0;
+    int min_grid_size = 0;
+    int grid_size = 0;
+    cudaOccupancyMaxPotentialBlockSize(&min_grid_size,
+                                       &block_size,
+                                       (const void *) g_find_cell_num_atoms,
+                                       0,
+                                       num_cells);
+    grid_size = (num_cells + block_size - 1) / block_size;
+    LOGF(DEBUG, "\nLaunch config set as <<<%i,%i>>>\n",
+                grid_size, block_size);
+    g_find_cell_num_atoms<<<grid_size,
+                            block_size>>>
+                           (num_cells,
+                            cell_start_end,
+                            cell_num_atoms);
+
+    return;
+}
+
 __global__ void g_find_cell_num_atoms(int num_cells,
                                       int2 *cell_start_end,
                                       int *cell_num_atoms) {
@@ -332,8 +357,9 @@ __global__ void g_find_cell_num_atoms(int num_cells,
         if (cell_start_end[cell].x == -1)
             cell_num_atoms[cell] = 0;
         else
-            cell_num_atoms[cell] = cell_start_end[cell].y - cell_start_end[cell].x + 1;
+            cell_num_atoms[cell] = cell_start_end[cell].y -
+                                   cell_start_end[cell].x + 1;
     }
-    
+
     return;
 }

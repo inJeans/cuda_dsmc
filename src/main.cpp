@@ -139,13 +139,31 @@ int main(int argc, char const *argv[]) {
                                -1,
                                total_num_cells*sizeof(int2)));
 #else
-    LOGF(DEBUG, "\nAllocating %i int elements on the host.",
+    LOGF(DEBUG, "\nAllocating %i int2 elements on the host.",
          total_num_cells);
     cell_start_end = reinterpret_cast<int2*>(calloc(total_num_cells,
                                                     sizeof(int2)));
     memset(cell_start_end,
            -1,
            total_num_cells*sizeof(int2));
+#endif
+
+    // Initialise cell_num_atoms
+    LOGF(INFO, "\nInitialising the cell_num_atoms array.");
+    int *cell_num_atoms;
+#ifdef CUDA
+    LOGF(DEBUG, "\nAllocating %i int elements on the device.",
+         total_num_cells);
+    checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&cell_num_atoms),
+                               total_num_cells*sizeof(int)));
+    checkCudaErrors(cudaMemset(cell_num_atoms,
+                               0,
+                               total_num_cells*sizeof(int)));
+#else
+    LOGF(DEBUG, "\nAllocating %i int elements on the host.",
+         total_num_cells);
+    cell_num_atoms = reinterpret_cast<int*>(calloc(total_num_cells,
+                                                   sizeof(int)));
 #endif
 
     // Initialise velocities
@@ -302,10 +320,12 @@ int main(int argc, char const *argv[]) {
                                vel,
                                acc);
         collide_atoms(NUM_ATOMS,
+                      total_num_cells,
                       pos,
                       cell_id,
                       atom_id,
-                      cell_start_end);
+                      cell_start_end,
+                      cell_num_atoms);
     }
 #ifdef CUDA
     LOGF(DEBUG, "\nDestroying the cuBLAS handle.\n");
@@ -353,6 +373,8 @@ int main(int argc, char const *argv[]) {
     cudaFree(state);
     cudaFree(atom_id);
     cudaFree(cell_id);
+    cudaFree(cell_start_end);
+    cudaFree(cell_num_atoms);
     cudaFree(vel);
     cudaFree(pos);
     cudaFree(acc);
@@ -362,6 +384,8 @@ int main(int argc, char const *argv[]) {
     free(state);
     free(atom_id);
     free(cell_id);
+    free(cell_start_end);
+    free(cell_num_atoms);
     free(vel);
     free(pos);
     free(acc);
