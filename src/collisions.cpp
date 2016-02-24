@@ -73,9 +73,6 @@ void initialise_grid_params(int num_atoms,
  *  \return void
 */
 
-#include <thrust/sort.h>
-#include <thrust/execution_policy.h>
-
 void collide_atoms(int num_atoms,
                    double3 *pos,
                    int *cell_id,
@@ -88,7 +85,7 @@ void collide_atoms(int num_atoms,
     sort_atoms(num_atoms,
                cell_id,
                atom_id);
-    // Count attoms
+    // Count atoms
     // Collide atoms
     return;
 }
