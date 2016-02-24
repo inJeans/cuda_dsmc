@@ -20,6 +20,7 @@ extern double hbar;  // hbar
 
 // COMPUTATIONAL CONSTANTS
 extern int3 num_cells;
+extern int total_num_cells;
 extern double3 grid_min;
 extern double3 cell_length;
 

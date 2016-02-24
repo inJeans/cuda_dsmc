@@ -39,4 +39,16 @@ __host__ void cu_sort_atoms(int num_atoms,
                             int *cell_id,
                             int *atom_id);
 
+__host__ void cu_find_cell_start_end(int num_atoms,
+                                     int *cell_id,
+                                     int2 *cell_start_end);
+
+__global__ void g_find_cell_start_end(int num_atoms,
+                                      int *cell_id,
+                                      int2 *cell_start_end);
+
+__global__ void g_find_cell_num_atoms(int num_cells,
+                                      int2 *cell_start_end,
+                                      int *cell_num_atoms);
+
 #endif // COLLISIONS_CUH_INCLUDED
