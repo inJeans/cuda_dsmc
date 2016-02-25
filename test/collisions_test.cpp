@@ -110,3 +110,38 @@ SCENARIO("[HOST] Sort atoms", "[h-sort]") {
         }
     }
 }
+
+SCENARIO("[HOST] Count atoms", "[h-count]") {
+    GIVEN("An array of 10 sorted cell_ids with num_cells = 8.") {
+        int num_atoms = 10;
+        int num_cells = 8;
+
+        int cell_id[10] = {0, 2, 4, 5, 6, 6, 6, 8, 8, 8};
+
+        WHEN("The sort_atoms function is called") {
+            int2 cell_start_end[9] = {make_int2(-1, -1)};
+            int cell_num_atoms[9] = {0};
+            int cell_cumulative_num_atoms[9] = {0};
+
+            count_atoms(num_atoms,
+                        num_cells,
+                        cell_id,
+                        cell_start_end,
+                        cell_num_atoms,
+                        cell_cumulative_num_atoms);
+
+            THEN(R"(Then the global cell_start_end = {{0, 0}, {-1, -1}, {1, 1},
+                   {-1, -1}, {2, 2}, {3, 3}, {4, 6}, {7, 9}})") {
+                REQUIRE(cell_start_end[0] == make_int2(0, 0));
+                REQUIRE(cell_start_end[1] == make_int2(-1, -1));
+                REQUIRE(cell_start_end[2] == make_int2(1, 1));
+                REQUIRE(cell_start_end[3] == make_int2(-1, -1));
+                REQUIRE(cell_start_end[4] == make_int2(2, 2));
+                REQUIRE(cell_start_end[5] == make_int2(3, 3));
+                REQUIRE(cell_start_end[6] == make_int2(4, 6));
+                REQUIRE(cell_start_end[7] == make_int2(-1, -1));
+                REQUIRE(cell_start_end[8] == make_int2(7, 9));
+            }
+        }
+    }
+}
