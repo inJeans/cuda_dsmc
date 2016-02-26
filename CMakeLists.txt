@@ -8,34 +8,19 @@ SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake)
 cmake_minimum_required (VERSION 2.8)
 project (cuda_dsmc)
 
-# User defined g3log library destintation
-IF(G3LOG_LIBRARY_PATH)
-    link_directories("${G3LOG_LIBRARY_PATH}")
-ENDIF()
-
-# User defined g3log header destintation
+# User defined g3log header destination
 IF(G3LOG_INCLUDE_PATH)
     include_directories("${G3LOG_INCLUDE_PATH}")
 ENDIF()
 
-# User defined pcg library destintation
+# User defined pcg library destination
 IF(PCG_LIBRARY_PATH)
     link_directories("${PCG_LIBRARY_PATH}")
 ENDIF()
 
-# User defined g3log header destintation
-IF(PCG_INCLUDE_PATH)
-    include_directories("${PCG_INCLUDE_PATH}")
-ENDIF()
-
-# User defined pcg library destintation
+# User defined small crush library destination
 IF(TESTU01_LIBRARY_PATH)
     link_directories("${TESTU01_LIBRARY_PATH}")
-ENDIF()
-
-# User defined g3log header destintation
-IF(TESTU01_INCLUDE_PATH)
-    include_directories("${TESTU01_INCLUDE_PATH}")
 ENDIF()
 
 # We will optionally build with MKL.
@@ -54,7 +39,7 @@ IF(MKL)
     add_definitions(-DMKL)
 ELSE()
 IF(APPLE)
-    find_library(BLAS Accelerate)
+    find_library(BLAS vecLib)
 ELSE()
     find_library(BLAS cblas)
 ENDIF() # OS
@@ -73,8 +58,8 @@ IF(NOT WIN32)
     ENDIF()
 ENDIF()
 
-SET(CMAKE_C_FLAGS "-std=c99 ${CMAKE_C_FLAGS}")
-SET(CMAKE_CXX_FLAGS "-std=gnu++11 ${CMAKE_CXX_FLAGS}")
+SET(CMAKE_C_FLAGS "-D__ACCELERATE__ -std=c99 ${CMAKE_C_FLAGS}")
+SET(CMAKE_CXX_FLAGS "-D__ACCELERATE__ -std=gnu++11 ${CMAKE_CXX_FLAGS}")
 
 include_directories("${PROJECT_SOURCE_DIR}/include" "${PROJECT_SOURCE_DIR}/include/cuda_dsmc")
 IF(CUDA)
