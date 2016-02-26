@@ -200,6 +200,106 @@ SCENARIO("[DEVICE] Sort atoms", "[d-sort]") {
     }
 }
 
+SCENARIO("[DEVICE] Count atoms", "[d-count]") {
+    GIVEN("An array of 10 sorted cell_ids with num_cells = 8.") {
+        int num_atoms = 10;
+        int num_cells = 8;
+
+        int cell_id[10] = {0, 2, 4, 5, 6, 6, 6, 8, 8, 8};
+        int *d_cell_id;
+        checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&d_cell_id),
+                                   num_atoms*sizeof(int)));
+        checkCudaErrors(cudaMemcpy(d_cell_id,
+                                   cell_id,
+                                   num_atoms*sizeof(int),
+                                   cudaMemcpyHostToDevice));
+
+        WHEN("The sort_atoms function is called") {
+            int *d_cell_num_atoms;
+            int *d_cell_cumulative_num_atoms;
+
+            int2 *d_cell_start_end;
+            
+            checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&d_cell_num_atoms),
+                                       num_atoms*sizeof(int)));
+            checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&d_cell_cumulative_num_atoms),
+                                       num_atoms*sizeof(int)));
+            checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&d_cell_start_end),
+                                       num_atoms*sizeof(int2)));
+
+            checkCudaErrors(cudaMemset(d_cell_start_end,
+                                       -1,
+                                       num_atoms*sizeof(int2)));
+
+            count_atoms(num_atoms,
+                        num_cells,
+                        d_cell_id,
+                        d_cell_start_end,
+                        d_cell_num_atoms,
+                        d_cell_cumulative_num_atoms);
+
+            int t_cell_num_atoms[9];
+            int t_cell_cumulative_num_atoms[9];
+            int2 t_cell_start_end[9];
+
+            checkCudaErrors(cudaMemcpy(t_cell_num_atoms,
+                                       d_cell_num_atoms,
+                                       num_atoms*sizeof(int),
+                                       cudaMemcpyDeviceToHost));
+            checkCudaErrors(cudaMemcpy(t_cell_cumulative_num_atoms,
+                                       d_cell_cumulative_num_atoms,
+                                       num_atoms*sizeof(int),
+                                       cudaMemcpyDeviceToHost));
+            checkCudaErrors(cudaMemcpy(t_cell_start_end,
+                                       d_cell_start_end,
+                                       num_atoms*sizeof(int2),
+                                       cudaMemcpyDeviceToHost));
+
+            cudaFree(d_cell_num_atoms);
+            cudaFree(d_cell_cumulative_num_atoms);
+            cudaFree(d_cell_start_end);
+
+            THEN("Then the global cell_start_end = {{0, 0}, {-1, -1}, {1, 1}, {-1, -1}, {2, 2}, {3, 3}, {4, 6}, {7, 9}}") {
+                REQUIRE(t_cell_start_end[0] == make_int2(0, 0));
+                REQUIRE(t_cell_start_end[1] == make_int2(-1, -1));
+                REQUIRE(t_cell_start_end[2] == make_int2(1, 1));
+                REQUIRE(t_cell_start_end[3] == make_int2(-1, -1));
+                REQUIRE(t_cell_start_end[4] == make_int2(2, 2));
+                REQUIRE(t_cell_start_end[5] == make_int2(3, 3));
+                REQUIRE(t_cell_start_end[6] == make_int2(4, 6));
+                REQUIRE(t_cell_start_end[7] == make_int2(-1, -1));
+                REQUIRE(t_cell_start_end[8] == make_int2(7, 9));
+            }
+
+            THEN("Then the global cell_num_atoms = {1, 0, 1, 0, 1, 1, 3, 0, 3}") {
+                REQUIRE(t_cell_num_atoms[0] == 1);
+                REQUIRE(t_cell_num_atoms[1] == 0);
+                REQUIRE(t_cell_num_atoms[2] == 1);
+                REQUIRE(t_cell_num_atoms[3] == 0);
+                REQUIRE(t_cell_num_atoms[4] == 1);
+                REQUIRE(t_cell_num_atoms[5] == 1);
+                REQUIRE(t_cell_num_atoms[6] == 3);
+                REQUIRE(t_cell_num_atoms[7] == 0);
+                REQUIRE(t_cell_num_atoms[8] == 3);
+            }
+
+            THEN("Then the global cell_cumulative_num_atoms = {0, 1, 1, 2, 2, 3, 4, 7, 7}") {
+                REQUIRE(t_cell_cumulative_num_atoms[0] == 0);
+                REQUIRE(t_cell_cumulative_num_atoms[1] == 1);
+                REQUIRE(t_cell_cumulative_num_atoms[2] == 1);
+                REQUIRE(t_cell_cumulative_num_atoms[3] == 2);
+                REQUIRE(t_cell_cumulative_num_atoms[4] == 2);
+                REQUIRE(t_cell_cumulative_num_atoms[5] == 3);
+                REQUIRE(t_cell_cumulative_num_atoms[6] == 4);
+                REQUIRE(t_cell_cumulative_num_atoms[7] == 7);
+                REQUIRE(t_cell_cumulative_num_atoms[8] == 7);
+            }
+        }
+
+        cudaFree(d_cell_id);
+    }
+}
+
 __global__ void copy_d_grid_min(double3 *grid_min) {
     grid_min[0] = d_grid_min;
     return;
