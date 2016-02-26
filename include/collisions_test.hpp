@@ -13,6 +13,7 @@
 #include "catch.hpp"
 
 #include "collisions.hpp" 
+#include "vector_math.cuh"
 
 #include "define_host_constants.hpp"
 

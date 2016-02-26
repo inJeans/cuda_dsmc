@@ -114,6 +114,13 @@ static __inline__ __host__ __device__ cuDoubleComplex operator-(cuDoubleComplex 
     return make_cuDoubleComplex(a.x-b, a.y);
 }
 
+static __inline__ __host__ __device__ bool operator==(int2 a, 
+                                                      int2 b) {
+    bool comparison = false;
+    if (a.x == b.x && a.y == b.y) comparison = true;
+    return comparison;
+}
+
 __host__ __device__ double dot(double3 a, double3 b);
 
 __host__ __device__ double3 unit(double3 vec);

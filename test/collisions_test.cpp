@@ -119,28 +119,59 @@ SCENARIO("[HOST] Count atoms", "[h-count]") {
         int cell_id[10] = {0, 2, 4, 5, 6, 6, 6, 8, 8, 8};
 
         WHEN("The sort_atoms function is called") {
-            int2 cell_start_end[9] = {make_int2(-1, -1)};
-            int cell_num_atoms[9] = {0};
-            int cell_cumulative_num_atoms[9] = {0};
+            int t_cell_num_atoms[9] = {0};
+            int t_cell_cumulative_num_atoms[9] = {0};
+
+            int2 *t_cell_start_end;
+            t_cell_start_end = reinterpret_cast<int2*>(calloc(num_cells+1,
+                                                       sizeof(int2)));
+            memset(t_cell_start_end,
+                   -1,
+                   (num_cells+1)*sizeof(int2));
 
             count_atoms(num_atoms,
                         num_cells,
                         cell_id,
-                        cell_start_end,
-                        cell_num_atoms,
-                        cell_cumulative_num_atoms);
+                        t_cell_start_end,
+                        t_cell_num_atoms,
+                        t_cell_cumulative_num_atoms);
 
-            THEN(R"(Then the global cell_start_end = {{0, 0}, {-1, -1}, {1, 1},
-                   {-1, -1}, {2, 2}, {3, 3}, {4, 6}, {7, 9}})") {
-                REQUIRE(cell_start_end[0] == make_int2(0, 0));
-                REQUIRE(cell_start_end[1] == make_int2(-1, -1));
-                REQUIRE(cell_start_end[2] == make_int2(1, 1));
-                REQUIRE(cell_start_end[3] == make_int2(-1, -1));
-                REQUIRE(cell_start_end[4] == make_int2(2, 2));
-                REQUIRE(cell_start_end[5] == make_int2(3, 3));
-                REQUIRE(cell_start_end[6] == make_int2(4, 6));
-                REQUIRE(cell_start_end[7] == make_int2(-1, -1));
-                REQUIRE(cell_start_end[8] == make_int2(7, 9));
+            THEN("Then the global cell_start_end = {{0, 0}, {-1, -1}, {1, 1}, {-1, -1}, {2, 2}, {3, 3}, {4, 6}, {7, 9}}") {
+                REQUIRE(t_cell_start_end[0] == make_int2(0, 0));
+                REQUIRE(t_cell_start_end[1] == make_int2(-1, -1));
+                REQUIRE(t_cell_start_end[2] == make_int2(1, 1));
+                REQUIRE(t_cell_start_end[3] == make_int2(-1, -1));
+                REQUIRE(t_cell_start_end[4] == make_int2(2, 2));
+                REQUIRE(t_cell_start_end[5] == make_int2(3, 3));
+                REQUIRE(t_cell_start_end[6] == make_int2(4, 6));
+                REQUIRE(t_cell_start_end[7] == make_int2(-1, -1));
+                REQUIRE(t_cell_start_end[8] == make_int2(7, 9));
+            }
+
+            free(t_cell_start_end);
+
+            THEN("Then the global cell_num_atoms = {1, 0, 1, 0, 1, 1, 3, 0, 3}") {
+                REQUIRE(t_cell_num_atoms[0] == 1);
+                REQUIRE(t_cell_num_atoms[1] == 0);
+                REQUIRE(t_cell_num_atoms[2] == 1);
+                REQUIRE(t_cell_num_atoms[3] == 0);
+                REQUIRE(t_cell_num_atoms[4] == 1);
+                REQUIRE(t_cell_num_atoms[5] == 1);
+                REQUIRE(t_cell_num_atoms[6] == 3);
+                REQUIRE(t_cell_num_atoms[7] == 0);
+                REQUIRE(t_cell_num_atoms[8] == 3);
+            }
+
+            THEN("Then the global cell_cumulative_num_atoms = {0, 1, 1, 2, 2, 3, 4, 7, 7}") {
+                REQUIRE(t_cell_cumulative_num_atoms[0] == 0);
+                REQUIRE(t_cell_cumulative_num_atoms[1] == 1);
+                REQUIRE(t_cell_cumulative_num_atoms[2] == 1);
+                REQUIRE(t_cell_cumulative_num_atoms[3] == 2);
+                REQUIRE(t_cell_cumulative_num_atoms[4] == 2);
+                REQUIRE(t_cell_cumulative_num_atoms[5] == 3);
+                REQUIRE(t_cell_cumulative_num_atoms[6] == 4);
+                REQUIRE(t_cell_cumulative_num_atoms[7] == 7);
+                REQUIRE(t_cell_cumulative_num_atoms[8] == 7);
             }
         }
     }
