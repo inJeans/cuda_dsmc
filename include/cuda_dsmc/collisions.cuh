@@ -59,4 +59,30 @@ __host__ void cu_scan(int num_cells,
                       int *cell_num_atoms,
                       int *cell_cumulative_num_atoms);
 
+__global__ void cu_collide(int num_cells,
+                           int *cell_id,
+                           int *cell_cumulative_num_atoms,
+                           double dt,
+                           curandState *state,
+                           int *collision_count,
+                           double  *sig_vr_max,
+                           double3 *vel);
+
+__global__ void g_collide(int num_cells,
+                          int *cell_id,
+                          int *cell_cumulative_num_atoms,
+                          double dt,
+                          curandState *state,
+                          int *collision_count,
+                          double  *sig_vr_max,
+                          double3 *vel);
+
+__device__ int2 d_choose_colliding_atoms(int cell_num_atoms,
+                                         curandState *state);
+
+__device__ double d_calculate_relative_velocity(double3 *vel,
+                                                int2 colliding_atoms);
+
+__device__ double3 d_random_point_on_unit_sphere(curandState *state);
+
 #endif // COLLISIONS_CUH_INCLUDED

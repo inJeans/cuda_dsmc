@@ -68,7 +68,10 @@ __global__ void copy_collision_params_to_device(double3 grid_min,
                                                 int3 num_cells) {
     d_grid_min = grid_min;
     d_cell_length = cell_length;
+    d_cell_volume = d_cell_length.x * d_cell_length.y * d_cell_length.z;
     d_num_cells = num_cells;
+
+    d_cross_section = 8. * d_pi * d_a * d_a;
 
     return;
 }
@@ -387,4 +390,145 @@ __host__ void cu_scan(int num_cells,
 
     cudaFree(d_temp_storage);
     return;
+}
+
+/****************************************************************************
+ * COLLIDING                                                                *
+ ****************************************************************************/
+
+__global__ void cu_collide(int num_cells,
+                           int *cell_id,
+                           int *cell_cumulative_num_atoms,
+                           double dt,
+                           curandState *state,
+                           int *collision_count,
+                           double  *sig_vr_max,
+                           double3 *vel) {
+    LOGF(DEBUG, "\nCalculating optimal launch configuration for the atom "
+                "collision kernel.\n");
+    int block_size = 0;
+    int min_grid_size = 0;
+    int grid_size = 0;
+    cudaOccupancyMaxPotentialBlockSize(&min_grid_size,
+                                       &block_size,
+                                       (const void *) g_collide,
+                                       0,
+                                       num_cells);
+    grid_size = (num_cells + block_size - 1) / block_size;
+    LOGF(DEBUG, "\nLaunch config set as <<<%i,%i>>>\n", grid_size, block_size);
+    g_collide(num_cells,
+              cell_id,
+              cell_cumulative_num_atoms,
+              dt,
+              state,
+              collision_count,
+              sig_vr_max,
+              vel);
+
+    return;
+}
+
+__global__ void g_collide(int num_cells,
+                          int *cell_id,
+                          int *cell_cumulative_num_atoms,
+                          double dt,
+                          curandState *state,
+                          int *collision_count,
+                          double  *sig_vr_max,
+                          double3 *vel) {
+    for (int cell = blockIdx.x * blockDim.x + threadIdx.x;
+         cell < num_cells;
+         cell += blockDim.x * gridDim.x) {
+        int cell_num_atoms = cell_cumulative_num_atoms[cell+1] -
+                             cell_cumulative_num_atoms[cell];
+
+        double l_sig_vr_max = sig_vr_max[cell];
+        curandState l_state = state[cell];
+
+        if (cell_num_atoms > 2) {
+            int num_collision_paris = 0.5 * cell_num_atoms * cell_num_atoms *
+                                      d_FN * l_sig_vr_max * dt /
+                                      d_cell_volume;
+
+            double3 vel_cm, new_vel, point_on_sphere;
+
+            double mag_rel_vel;
+            double prob_collision;
+
+            for (int l_collision = 0;
+                 l_collision < Ncol;
+                 l_collision++ ) {
+                int2 colliding_atoms = make_int2(0, 0);
+
+                if (cell_num_atoms == 2) {
+                    colliding_atoms.x = cell_cumulative_num_atoms[cell] + 0;
+                    colliding_atoms.y = cell_cumulative_num_atoms[cell] + 1;
+                } else {
+                    colliding_atoms = cell_cumulative_num_atoms[cell] +
+                                      d_choose_colliding_atoms(cell_num_atoms,
+                                                               &l_state);
+                }
+
+                mag_rel_vel = d_calculate_relative_velocity(vel,
+                                                            colliding_atoms);
+
+                // Check if this is the more probable than current
+                // most probable.
+                if (mag_rel_vel*d_cross_section > l_sig_vr_max)
+                    l_sig_vr_max = mag_rel_vel * d_cross_section;
+
+                prob_collision = mag_rel_vel*d_cross_section / l_sig_vr_max;
+
+                // Collide with the collision probability.
+                if (prob_collision > curand_uniform_double(&l_state)) {
+                    // Find centre of mass velocities.
+                    vel_cm = 0.5*(vel[colliding_atoms.x] +
+                                  vel[colliding_atoms.y]);
+
+                    // Generate a random velocity on the unit sphere.
+                    point_on_sphere = d_random_point_on_unit_sphere(&l_rngState);
+                    new_vel = mag_rel_vel * point_on_sphere;
+
+                    vel[colliding_atoms.x] = vel_cm - 0.5 * new_vel;
+                    vel[colliding_atoms.y] = vel_cm + 0.5 * new_vel;
+
+                    //            atomicAdd( &collisionCount[cell], d_alpha );
+                    collision_count[cell] += d_FN;
+                }
+            }
+        }
+        rng_state[cell] = l_rngState;
+        sig_vr_max[cell] = l_sig_vr_max;
+    }
+    return;
+}
+
+__device__ int2 d_choose_colliding_atoms(int cell_num_atoms,
+                                         curandState *state) {
+    int2 colliding_atoms = make_int2(0, 0);
+
+    // Randomly choose particles in this cell to collide.
+    while (colliding_atoms.x == colliding_atoms.y)
+        colliding_atoms = double2Toint2_rd(curand_uniform2_double(&state[0]) *
+                                           (cell_num_atoms-1));
+
+    return colliding_atoms;
+}
+
+__device__ double d_calculate_relative_velocity(double3 *vel,
+                                                int2 colliding_atoms) {
+    double3 vel_rel = vel[colliding_atoms.x] - vel[colliding_atoms.y];
+    double mag_vel_rel = norm(vel_rel);
+
+    return mag_vel_rel;
+}
+
+__device__ double3 d_random_point_on_unit_sphere(curandState *state) {
+    double3 normal_point = d_gaussian_point(0,
+                                            1,
+                                            state);
+
+    double3 point_on_sphere = normal_point / norm(normal_point);
+
+    return point_on_sphere;
 }

@@ -100,6 +100,14 @@ void collide_atoms(int num_atoms,
                 cell_num_atoms,
                 cell_cumulative_num_atoms);
     // Collide atoms
+    // collide(num_cells,
+    //         cell_id,
+    //         cell_cumulative_num_atoms,
+    //                     double dt,
+    //                     curandState *state,
+    //                     int *collision_count,
+    //                     double  *sig_vr_max,
+    //                     double3 *vel);
     return;
 }
 
@@ -311,5 +319,31 @@ void find_cell_num_atoms(int num_cells,
     }
 #endif
 
+    return;
+}
+
+/****************************************************************************
+ * COLLIDING                                                                *
+ ****************************************************************************/
+
+__global__ void collide(int num_cells,
+                        int *cell_id,
+                        int *cell_cumulative_num_atoms,
+                        double dt,
+                        curandState *state,
+                        int *collision_count,
+                        double  *sig_vr_max,
+                        double3 *vel) {
+#if defined(CUDA)
+    cu_collide(num_cells,
+               cell_id,
+               cell_cumulative_num_atoms,
+               dt,
+               state,
+               collision_count,
+               sig_vr_max,
+               vel);
+#else
+#endif
     return;
 }
