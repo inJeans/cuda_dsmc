@@ -18,9 +18,9 @@
 #include <mkl.h>
 #else
 #if defined(__APPLE__) && defined(__MACH__)
-#include <Accelerate/Accelerate.h>
+// #include <Accelerate/Accelerate.h>
 // #include <Accelerate/../Frameworks/vecLib.framework/Headers/vecLib.h>
-// #include <vecLib/cblas.h>
+#include <vecLib/cblas.h>
 #else
 extern "C"
 {
@@ -34,6 +34,7 @@ extern "C"
 #include <g3log/g3log.hpp>
 
 #include "vector_math.cuh"
+#include "random_numbers.hpp"
 #include "collisions.cuh"
 
 void initialise_grid_params(int num_atoms,
@@ -42,12 +43,31 @@ void initialise_grid_params(int num_atoms,
 
 void collide_atoms(int num_atoms,
                    int num_cells,
+                   double dt,
                    double3 *pos,
+                   double3 *vel,
+                   curandState *state,
+                   double *sig_vr_max,
                    int *cell_id,
                    int *atom_id,
                    int2 *cell_start_end,
                    int *cell_num_atoms,
-                   int *cell_cumulative_num_atoms);
+                   int *cell_cumulative_num_atoms,
+                   int *collision_count);
+
+void collide_atoms(int num_atoms,
+                   int num_cells,
+                   double dt,
+                   double3 *pos,
+                   double3 *vel,
+                   pcg32_random_t *state,
+                   double *sig_vr_max,
+                   int *cell_id,
+                   int *atom_id,
+                   int2 *cell_start_end,
+                   int *cell_num_atoms,
+                   int *cell_cumulative_num_atoms,
+                   int *collision_count);
 
 void index_atoms(int num_atoms,
                  double3 *pos,
@@ -77,5 +97,23 @@ void find_cell_start_end(int num_atoms,
 void find_cell_num_atoms(int num_cells,
                          int2 *cell_start_end,
                          int *cell_num_atoms);
+
+void collide(int num_cells,
+             int *cell_id,
+             int *cell_cumulative_num_atoms,
+             double dt,
+             curandState *state,
+             int *collision_count,
+             double  *sig_vr_max,
+             double3 *vel);
+
+void collide(int num_cells,
+             int *cell_id,
+             int *cell_cumulative_num_atoms,
+             double dt,
+             pcg32_random_t *state,
+             int *collision_count,
+             double  *sig_vr_max,
+             double3 *vel);
 
 #endif // COLLISIONS_HPP_INCLUDED

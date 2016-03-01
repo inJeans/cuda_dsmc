@@ -75,7 +75,7 @@ zomplex2 aligned_spin(trap_geo params,
  *  \return void
 */
 
-#ifdef CUDA
+#if defined(CUDA)
 void generate_thermal_velocities(int num_atoms,
                                  double temp,
                                  curandState *state,

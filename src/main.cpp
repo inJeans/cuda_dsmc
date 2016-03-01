@@ -174,7 +174,7 @@ int main(int argc, char const *argv[]) {
          total_num_cells+1);
     checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&cell_cumulative_num_atoms),
                                (total_num_cells+1)*sizeof(int)));
-    checkCudaErrors(cudaMemset(cell_num_atoms,
+    checkCudaErrors(cudaMemset(cell_cumulative_num_atoms,
                                0,
                                (total_num_cells+1)*sizeof(int)));
 #else
@@ -182,6 +182,42 @@ int main(int argc, char const *argv[]) {
          total_num_cells+1);
     cell_cumulative_num_atoms = reinterpret_cast<int*>(calloc(total_num_cells+1,
                                                        sizeof(int)));
+#endif
+
+    // Initialise collision_count
+    LOGF(INFO, "\nInitialising the collision_count array.");
+    int *collision_count;
+#ifdef CUDA
+    LOGF(DEBUG, "\nAllocating %i int elements on the device.",
+         total_num_cells);
+    checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&collision_count),
+                               (total_num_cells)*sizeof(int)));
+    checkCudaErrors(cudaMemset(collision_count,
+                               0,
+                               (total_num_cells)*sizeof(int)));
+#else
+    LOGF(DEBUG, "\nAllocating %i int elements on the host.",
+         total_num_cells);
+    collision_count = reinterpret_cast<int*>(calloc(total_num_cells,
+                                                       sizeof(int)));
+#endif
+
+    // Initialise sig_vr_max
+    LOGF(INFO, "\nInitialising the sig_vr_max array.");
+    double *sig_vr_max;
+#ifdef CUDA
+    LOGF(DEBUG, "\nAllocating %i int elements on the device.",
+         total_num_cells);
+    checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&sig_vr_max),
+                               (total_num_cells)*sizeof(double)));
+    checkCudaErrors(cudaMemset(sig_vr_max,
+                               0.,
+                               (total_num_cells)*sizeof(double)));
+#else
+    LOGF(DEBUG, "\nAllocating %i int elements on the host.",
+         total_num_cells);
+    sig_vr_max = reinterpret_cast<double*>(calloc(total_num_cells,
+                                               sizeof(double)));
 #endif
 
     // Initialise velocities
@@ -339,12 +375,17 @@ int main(int argc, char const *argv[]) {
                                acc);
         collide_atoms(NUM_ATOMS,
                       total_num_cells,
+                      dt,
                       pos,
+                      vel,
+                      state,
+                      sig_vr_max,
                       cell_id,
                       atom_id,
                       cell_start_end,
                       cell_num_atoms,
-                      cell_cumulative_num_atoms);
+                      cell_cumulative_num_atoms,
+                      collision_count);
     }
 #ifdef CUDA
     LOGF(DEBUG, "\nDestroying the cuBLAS handle.\n");
@@ -395,6 +436,8 @@ int main(int argc, char const *argv[]) {
     cudaFree(cell_start_end);
     cudaFree(cell_num_atoms);
     cudaFree(cell_cumulative_num_atoms);
+    cudaFree(collision_count);
+    cudaFree(sig_vr_max);
     cudaFree(vel);
     cudaFree(pos);
     cudaFree(acc);
@@ -407,6 +450,8 @@ int main(int argc, char const *argv[]) {
     free(cell_start_end);
     free(cell_num_atoms);
     free(cell_cumulative_num_atoms);
+    free(collision_count);
+    free(sig_vr_max);
     free(vel);
     free(pos);
     free(acc);

@@ -76,14 +76,20 @@ void initialise_grid_params(int num_atoms,
 #include <thrust/sort.h>
 #include <thrust/execution_policy.h>
 
+#if defined(CUDA)
 void collide_atoms(int num_atoms,
                    int num_cells,
+                   double dt,
                    double3 *pos,
+                   double3 *vel,
+                   curandState *state,
+                   double *sig_vr_max,
                    int *cell_id,
                    int *atom_id,
                    int2 *cell_start_end,
                    int *cell_num_atoms,
-                   int *cell_cumulative_num_atoms) {
+                   int *cell_cumulative_num_atoms,
+                   int *collision_count) {
     // Index atoms
     index_atoms(num_atoms,
                 pos,
@@ -100,14 +106,55 @@ void collide_atoms(int num_atoms,
                 cell_num_atoms,
                 cell_cumulative_num_atoms);
     // Collide atoms
-    // collide(num_cells,
-    //         cell_id,
-    //         cell_cumulative_num_atoms,
-    //                     double dt,
-    //                     curandState *state,
-    //                     int *collision_count,
-    //                     double  *sig_vr_max,
-    //                     double3 *vel);
+    collide(num_cells,
+            cell_id,
+            cell_cumulative_num_atoms,
+            dt,
+            state,
+            collision_count,
+            sig_vr_max,
+            vel);
+    return;
+}
+#endif
+
+void collide_atoms(int num_atoms,
+                   int num_cells,
+                   double dt,
+                   double3 *pos,
+                   double3 *vel,
+                   pcg32_random_t *state,
+                   double *sig_vr_max,
+                   int *cell_id,
+                   int *atom_id,
+                   int2 *cell_start_end,
+                   int *cell_num_atoms,
+                   int *cell_cumulative_num_atoms,
+                   int *collision_count) {
+    // Index atoms
+    index_atoms(num_atoms,
+                pos,
+                cell_id);
+    // Sort atoms
+    sort_atoms(num_atoms,
+               cell_id,
+               atom_id);
+    // Count attoms
+    count_atoms(num_atoms,
+                num_cells,
+                cell_id,
+                cell_start_end,
+                cell_num_atoms,
+                cell_cumulative_num_atoms);
+    // Collide atoms
+    collide(num_cells,
+            cell_id,
+            cell_cumulative_num_atoms,
+            dt,
+            state,
+            collision_count,
+            sig_vr_max,
+            vel);
     return;
 }
 
@@ -326,15 +373,15 @@ void find_cell_num_atoms(int num_cells,
  * COLLIDING                                                                *
  ****************************************************************************/
 
-__global__ void collide(int num_cells,
-                        int *cell_id,
-                        int *cell_cumulative_num_atoms,
-                        double dt,
-                        curandState *state,
-                        int *collision_count,
-                        double  *sig_vr_max,
-                        double3 *vel) {
 #if defined(CUDA)
+void collide(int num_cells,
+             int *cell_id,
+             int *cell_cumulative_num_atoms,
+             double dt,
+             curandState *state,
+             int *collision_count,
+             double  *sig_vr_max,
+             double3 *vel) {
     cu_collide(num_cells,
                cell_id,
                cell_cumulative_num_atoms,
@@ -343,7 +390,18 @@ __global__ void collide(int num_cells,
                collision_count,
                sig_vr_max,
                vel);
-#else
+    return;
+}
 #endif
+
+void collide(int num_cells,
+             int *cell_id,
+             int *cell_cumulative_num_atoms,
+             double dt,
+             pcg32_random_t *state,
+             int *collision_count,
+             double  *sig_vr_max,
+             double3 *vel) {
+
     return;
 }
