@@ -72,6 +72,11 @@ static __inline__ __host__ __device__ int3 operator-(int3 a,
     return make_int3(a.x-b, a.y-b, a.z-b);
 }
 
+static __inline__ __host__ __device__ int2 operator+(int a, 
+                                                     int2 b) {
+    return make_int2(a+b.x, a+b.y);
+}
+
 static __inline__ __host__ __device__ cuDoubleComplex operator*(cuDoubleComplex a, 
                                                                 cuDoubleComplex b) {
     return cuCmul(a, b);

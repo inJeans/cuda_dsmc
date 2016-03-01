@@ -7,11 +7,13 @@
 #define COLLISIONS_CUH_INCLUDED 1
 
 #include <cuda_runtime.h>
+#include <curand_kernel.h>
 #include "cublas_v2.h"
 #include <g3log/g3log.hpp>
 
 #include "helper_cuda.h"
 #include "vector_math.cuh"
+#include "random_numbers.cuh"
 
 __host__ void cu_initialise_grid_params(int num_atoms,
                                         cublasHandle_t cublas_handle,
@@ -59,14 +61,14 @@ __host__ void cu_scan(int num_cells,
                       int *cell_num_atoms,
                       int *cell_cumulative_num_atoms);
 
-__global__ void cu_collide(int num_cells,
-                           int *cell_id,
-                           int *cell_cumulative_num_atoms,
-                           double dt,
-                           curandState *state,
-                           int *collision_count,
-                           double  *sig_vr_max,
-                           double3 *vel);
+__host__ void cu_collide(int num_cells,
+                         int *cell_id,
+                         int *cell_cumulative_num_atoms,
+                         double dt,
+                         curandState *state,
+                         int *collision_count,
+                         double  *sig_vr_max,
+                         double3 *vel);
 
 __global__ void g_collide(int num_cells,
                           int *cell_id,
@@ -78,7 +80,11 @@ __global__ void g_collide(int num_cells,
                           double3 *vel);
 
 __device__ int2 d_choose_colliding_atoms(int cell_num_atoms,
+                                         int cell_cumulative_num_atoms,
                                          curandState *state);
+
+__device__ int2 d_local_collision_pair(int cell_num_atoms,
+                                       curandState *state);
 
 __device__ double d_calculate_relative_velocity(double3 *vel,
                                                 int2 colliding_atoms);

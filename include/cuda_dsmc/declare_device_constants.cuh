@@ -15,13 +15,13 @@ extern __constant__ double d_pi;    // Pi
 extern __constant__ double d_a;     // Constant cross-section formula
 extern __constant__ double d_kB;    // Boltzmann's Constant
 extern __constant__ double d_hbar;  // hbar
-__constant__ double d_cross_section;
+extern __device__ double d_cross_section;
 
 // COMPUTATIONAL CONSTANTS
-__device__ double d_FN;
-__device__ int3 d_num_cells;
-__device__ double3 d_grid_min;
-__device__ double3 d_cell_length;
-__device__ double3 d_cell_volume;
+extern __device__ double d_FN;
+extern __device__ int3 d_num_cells;
+extern __device__ double3 d_grid_min;
+extern __device__ double3 d_cell_length;
+extern __device__ double d_cell_volume;
 
 #endif  // DECLARE_DEVICE_CONSTANTS_CUH_INCLUDED

@@ -39,7 +39,9 @@ IF(MKL)
     add_definitions(-DMKL)
 ELSE()
 IF(APPLE)
-    find_library(BLAS vecLib)
+    # find_library(BLAS vecLib)
+    find_library(BLAS Accelerate)
+    MESSAGE(${BLAS})
 ELSE()
     find_library(BLAS cblas)
 ENDIF() # OS
@@ -58,8 +60,8 @@ IF(NOT WIN32)
     ENDIF()
 ENDIF()
 
-SET(CMAKE_C_FLAGS "-D__ACCELERATE__ -std=c99 ${CMAKE_C_FLAGS}")
-SET(CMAKE_CXX_FLAGS "-D__ACCELERATE__ -std=gnu++11 ${CMAKE_CXX_FLAGS}")
+SET(CMAKE_C_FLAGS "-std=c99 ${CMAKE_C_FLAGS}")
+SET(CMAKE_CXX_FLAGS "-std=gnu++11 ${CMAKE_CXX_FLAGS}")
 
 include_directories("${PROJECT_SOURCE_DIR}/include" "${PROJECT_SOURCE_DIR}/include/cuda_dsmc")
 IF(CUDA)
@@ -172,7 +174,7 @@ IF(CUDA)
     # DEVICE - Collision tests
     SET(TEST_SOURCES test/collisions_test.cu
                      src/collisions.cpp src/collisions.cu
-                     src/vector_math.cu)
+                     src/random_numbers.cu src/vector_math.cu)
     cuda_add_executable(device_collisions_test ${TEST_SOURCES})
     target_link_libraries(device_collisions_test cudart cublas g3logger ${BLAS})
     target_compile_definitions(device_collisions_test PRIVATE -DCUDA)

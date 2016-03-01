@@ -259,6 +259,12 @@ SCENARIO("[DEVICE] Count atoms", "[d-count]") {
             cudaFree(d_cell_cumulative_num_atoms);
             cudaFree(d_cell_start_end);
 
+            for (int i = 0; i < 9; ++i)
+            {
+                printf("t_cell_num_atoms[%i] = %i, t_cell_cumulative_num_atoms[%i] = %i\n",
+                       i, t_cell_num_atoms[i], i, t_cell_cumulative_num_atoms[i]);
+            }
+
             THEN("Then the global cell_start_end = {{0, 0}, {-1, -1}, {1, 1}, {-1, -1}, {2, 2}, {3, 3}, {4, 6}, {7, 9}}") {
                 REQUIRE(t_cell_start_end[0] == make_int2(0, 0));
                 REQUIRE(t_cell_start_end[1] == make_int2(-1, -1));

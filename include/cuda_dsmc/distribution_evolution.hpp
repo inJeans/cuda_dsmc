@@ -13,8 +13,8 @@
 #include <mkl.h>
 #else
 #if defined(__APPLE__) && defined(__MACH__)
-// #include <Accelerate/Accelerate.h>
-#include <vecLib/cblas.h>
+#include <Accelerate/Accelerate.h>
+// #include <vecLib/cblas.h>
 #else
 extern "C"
 {

@@ -396,14 +396,14 @@ __host__ void cu_scan(int num_cells,
  * COLLIDING                                                                *
  ****************************************************************************/
 
-__global__ void cu_collide(int num_cells,
-                           int *cell_id,
-                           int *cell_cumulative_num_atoms,
-                           double dt,
-                           curandState *state,
-                           int *collision_count,
-                           double  *sig_vr_max,
-                           double3 *vel) {
+__host__ void cu_collide(int num_cells,
+                         int *cell_id,
+                         int *cell_cumulative_num_atoms,
+                         double dt,
+                         curandState *state,
+                         int *collision_count,
+                         double  *sig_vr_max,
+                         double3 *vel) {
     LOGF(DEBUG, "\nCalculating optimal launch configuration for the atom "
                 "collision kernel.\n");
     int block_size = 0;
@@ -416,7 +416,9 @@ __global__ void cu_collide(int num_cells,
                                        num_cells);
     grid_size = (num_cells + block_size - 1) / block_size;
     LOGF(DEBUG, "\nLaunch config set as <<<%i,%i>>>\n", grid_size, block_size);
-    g_collide(num_cells,
+    g_collide<<<grid_size,
+                block_size>>>
+             (num_cells,
               cell_id,
               cell_cumulative_num_atoms,
               dt,
@@ -456,18 +458,13 @@ __global__ void g_collide(int num_cells,
             double prob_collision;
 
             for (int l_collision = 0;
-                 l_collision < Ncol;
+                 l_collision < num_collision_paris;
                  l_collision++ ) {
                 int2 colliding_atoms = make_int2(0, 0);
 
-                if (cell_num_atoms == 2) {
-                    colliding_atoms.x = cell_cumulative_num_atoms[cell] + 0;
-                    colliding_atoms.y = cell_cumulative_num_atoms[cell] + 1;
-                } else {
-                    colliding_atoms = cell_cumulative_num_atoms[cell] +
-                                      d_choose_colliding_atoms(cell_num_atoms,
-                                                               &l_state);
-                }
+                colliding_atoms = d_choose_colliding_atoms(cell_num_atoms,
+                                                           cell_cumulative_num_atoms[cell],
+                                                           &l_state);
 
                 mag_rel_vel = d_calculate_relative_velocity(vel,
                                                             colliding_atoms);
@@ -486,7 +483,7 @@ __global__ void g_collide(int num_cells,
                                   vel[colliding_atoms.y]);
 
                     // Generate a random velocity on the unit sphere.
-                    point_on_sphere = d_random_point_on_unit_sphere(&l_rngState);
+                    point_on_sphere = d_random_point_on_unit_sphere(&l_state);
                     new_vel = mag_rel_vel * point_on_sphere;
 
                     vel[colliding_atoms.x] = vel_cm - 0.5 * new_vel;
@@ -497,22 +494,42 @@ __global__ void g_collide(int num_cells,
                 }
             }
         }
-        rng_state[cell] = l_rngState;
+        state[cell] = l_state;
         sig_vr_max[cell] = l_sig_vr_max;
     }
     return;
 }
 
 __device__ int2 d_choose_colliding_atoms(int cell_num_atoms,
+                                         int cell_cumulative_num_atoms,
                                          curandState *state) {
     int2 colliding_atoms = make_int2(0, 0);
 
-    // Randomly choose particles in this cell to collide.
-    while (colliding_atoms.x == colliding_atoms.y)
-        colliding_atoms = double2Toint2_rd(curand_uniform2_double(&state[0]) *
-                                           (cell_num_atoms-1));
+    if (cell_num_atoms == 2) {
+        colliding_atoms.x = cell_cumulative_num_atoms + 0;
+        colliding_atoms.y = cell_cumulative_num_atoms + 1;
+    } else {
+        colliding_atoms = cell_cumulative_num_atoms +
+                          d_local_collision_pair(cell_num_atoms,
+                                                 state);
+    }
 
     return colliding_atoms;
+}
+
+__device__ int2 d_local_collision_pair(int cell_num_atoms,
+                                       curandState *state) {
+    int2 local_pair = make_int2(0, 0);
+
+    // Randomly choose particles in this cell to collide.
+    while (local_pair.x == local_pair.y) {
+        local_pair.x = int(floor(curand_uniform(&state[0]) *
+                                      (cell_num_atoms-1)));
+        local_pair.y = int(floor(curand_uniform(&state[0]) *
+                                      (cell_num_atoms-1)));
+    }
+
+    return local_pair;
 }
 
 __device__ double d_calculate_relative_velocity(double3 *vel,
