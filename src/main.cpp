@@ -44,7 +44,7 @@ int main(int argc, char const *argv[]) {
                                              call(&g3::FileSink::fileName);
     std::cout << "\n All logging output will be written to: "
               << log_file_name.get() << std::endl;
-    g3::only_change_at_initialization::setLogLevel(DEBUG, false);
+    // g3::only_change_at_initialization::setLogLevel(DEBUG, false);
 
     printf("****************************\n");
     printf("*                          *\n");

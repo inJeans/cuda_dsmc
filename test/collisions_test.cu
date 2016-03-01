@@ -306,6 +306,109 @@ SCENARIO("[DEVICE] Count atoms", "[d-count]") {
     }
 }
 
+SCENARIO("[DEVICE] Collide atoms", "[d-collide]") {
+    GIVEN("An array of 10 atoms in a single cell.") {
+        int num_atoms = 10;
+        int num_cells = 1;
+        double dt = 100*1.e-6;
+
+        double3 vel[num_atoms];
+        vel[0] = make_double3(0., 0., 0.);
+        vel[1] = make_double3(0., 0., 0.);
+        vel[2] = make_double3(0., 0., 0.);
+        vel[3] = make_double3(0., 0., 0.);
+        vel[4] = make_double3(0., 0., 0.);
+        vel[5] = make_double3(0., 0., 0.);
+        vel[6] = make_double3(0., 0., 0.);
+        vel[7] = make_double3(0., 0., 0.);
+        vel[8] = make_double3(0., 0., 0.);
+        vel[9] = make_double3(0., 0., 0.);
+        double3 *d_vel;
+        checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&d_vel),
+                                   num_atoms*sizeof(double)));
+        checkCudaErrors(cudaMemcpy(d_vel,
+                                   vel,
+                                   num_atoms*sizeof(double),
+                                   cudaMemcpyHostToDevice));
+
+        int cell_id[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+        int *d_cell_id;
+        checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&d_cell_id),
+                                   num_atoms*sizeof(int)));
+        checkCudaErrors(cudaMemcpy(d_cell_id,
+                                   cell_id,
+                                   num_atoms*sizeof(int),
+                                   cudaMemcpyHostToDevice));
+        int cell_cumulative_num_atoms[2] = {0, 10};
+        int *d_cell_cumulative_num_atoms;
+        checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&d_cell_cumulative_num_atoms),
+                                   (num_cells+1)*sizeof(int)));
+        checkCudaErrors(cudaMemcpy(d_cell_cumulative_num_atoms,
+                                   cell_cumulative_num_atoms,
+                                   (num_atoms+1)*sizeof(int),
+                                   cudaMemcpyHostToDevice));
+
+        curandState *state;
+        checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&state),
+                                   num_cells*sizeof(curandState)));
+        initialise_rng_states(num_cells,
+                              state);
+
+        int *d_collision_count;
+        checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&d_collision_count),
+                                   (num_cells+1)*sizeof(int)));
+        checkCudaErrors(cudaMemset(d_collision_count,
+                                   0,
+                                   (num_cells+1)*sizeof(int)));
+
+        double *d_sig_vr_max;
+        checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&d_sig_vr_max),
+                                   (num_cells+1)*sizeof(double)));
+        checkCudaErrors(cudaMemset(d_sig_vr_max,
+                                   0.,
+                                   (num_cells+1)*sizeof(double)));
+
+        WHEN("The cu_collide function is called once") {
+
+            cu_collide(num_cells,
+                       d_cell_id,
+                       d_cell_cumulative_num_atoms,
+                       dt,
+                       state,
+                       d_collision_count,
+                       d_sig_vr_max,
+                       d_vel);
+
+            int t_collision_count[num_cells];
+            double t_sig_vr_max[num_cells];
+
+            checkCudaErrors(cudaMemcpy(t_collision_count,
+                                       d_collision_count,
+                                       num_cells*sizeof(int),
+                                       cudaMemcpyDeviceToHost));
+            checkCudaErrors(cudaMemcpy(t_sig_vr_max,
+                                       d_sig_vr_max,
+                                       num_cells*sizeof(double),
+                                       cudaMemcpyDeviceToHost));
+
+            THEN("Since the sig_vr_max array is initialised to zero we would expect zero collisions.") {
+                REQUIRE(t_collision_count[0] == 0);
+            }
+
+            THEN("The sig_vr_max array should have been updated") {
+                // REQUIRE(t_sig_vr_max[0] == 0.);
+            }
+        }
+
+        cudaFree(d_vel);
+        cudaFree(d_cell_id);
+        cudaFree(d_cell_cumulative_num_atoms);
+        cudaFree(state);
+        cudaFree(d_collision_count);
+        cudaFree(d_sig_vr_max);
+    }
+}
+
 __global__ void copy_d_grid_min(double3 *grid_min) {
     grid_min[0] = d_grid_min;
     return;

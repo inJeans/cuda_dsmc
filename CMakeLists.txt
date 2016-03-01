@@ -174,7 +174,8 @@ IF(CUDA)
     # DEVICE - Collision tests
     SET(TEST_SOURCES test/collisions_test.cu
                      src/collisions.cpp src/collisions.cu
-                     src/random_numbers.cu src/vector_math.cu)
+                     src/random_numbers.cpp src/random_numbers.cu
+                     src/vector_math.cu src/entropy.c)
     cuda_add_executable(device_collisions_test ${TEST_SOURCES})
     target_link_libraries(device_collisions_test cudart cublas g3logger ${BLAS})
     target_compile_definitions(device_collisions_test PRIVATE -DCUDA)
