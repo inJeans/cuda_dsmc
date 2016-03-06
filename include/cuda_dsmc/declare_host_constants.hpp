@@ -18,10 +18,14 @@ extern double a;     // Constant cross-section formula
 extern double kB;    // Boltzmann's Constant
 extern double hbar;  // hbar
 
+extern double cross_section;
+
 // COMPUTATIONAL CONSTANTS
-extern int3 num_cells;
+extern int FN;
+extern int3 k_num_cells;
 extern int total_num_cells;
 extern double3 grid_min;
 extern double3 cell_length;
+extern double cell_volume;
 
 #endif  // DECLARE_HOST_CONSTANTS_HPP_INCLUDED

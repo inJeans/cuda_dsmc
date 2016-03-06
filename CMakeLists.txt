@@ -39,8 +39,8 @@ IF(MKL)
     add_definitions(-DMKL)
 ELSE()
 IF(APPLE)
-    find_library(BLAS vecLib)
-    # find_library(BLAS Accelerate)
+    # find_library(BLAS vecLib)
+    find_library(BLAS Accelerate)
     MESSAGE(${BLAS})
 ELSE()
     find_library(BLAS cblas)
@@ -211,7 +211,8 @@ target_link_libraries(host_distribution_evolution_test pcg_random cudart cublas 
 # HOST - Collision tests
 SET(TEST_SOURCES test/collisions_test.cpp
                  src/collisions.cpp
-                 src/vector_math.cu)
+                 src/random_numbers.cpp src/random_numbers.cu
+                 src/vector_math.cu src/entropy.c)
 cuda_add_executable(host_collisions_test ${TEST_SOURCES})
 target_link_libraries(host_collisions_test g3logger ${BLAS})
 

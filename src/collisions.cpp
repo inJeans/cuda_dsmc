@@ -48,9 +48,12 @@ void initialise_grid_params(int num_atoms,
 
     // Set the grid_max = -grid_min, so that the width of the grid would be
     // 2*abs(grid_min) or -2.0 * grid_min.
-    cell_length = -2.0 * grid_min / num_cells;
+    cell_length = -2.0 * grid_min / k_num_cells;
     LOGF(DEBUG, "\nThe cell widths are cell_length = {%f, %f, %f}\n",
          cell_length.x, cell_length.y, cell_length.z);
+
+    cell_volume = cell_length.x * cell_length.y * cell_length.z;
+    LOGF(DEBUG, "\nThe cell_volume = %f\n", cell_volume);
 
     return;
 }
@@ -242,14 +245,14 @@ int3 atom_cell_index(double3 pos) {
 int atom_cell_id(int3 cell_index) {
     int cell_id = 0;
 
-    if (cell_index.x > -1 && cell_index.x < num_cells.x &&
-        cell_index.y > -1 && cell_index.y < num_cells.y &&
-        cell_index.z > -1 && cell_index.z < num_cells.z) {
-        cell_id = cell_index.z*num_cells.x*num_cells.y +
-                  cell_index.y*num_cells.x +
+    if (cell_index.x > -1 && cell_index.x < k_num_cells.x &&
+        cell_index.y > -1 && cell_index.y < k_num_cells.y &&
+        cell_index.z > -1 && cell_index.z < k_num_cells.z) {
+        cell_id = cell_index.z*k_num_cells.x*k_num_cells.y +
+                  cell_index.y*k_num_cells.x +
                   cell_index.x;
     } else {
-        cell_id = num_cells.x*num_cells.y*num_cells.z;
+        cell_id = k_num_cells.x*k_num_cells.y*k_num_cells.z;
     }
 
     return cell_id;
@@ -402,6 +405,115 @@ void collide(int num_cells,
              int *collision_count,
              double  *sig_vr_max,
              double3 *vel) {
+    for (int cell = 0; cell < num_cells; ++cell) {
+        int cell_num_atoms = cell_cumulative_num_atoms[cell+1] -
+                             cell_cumulative_num_atoms[cell];
+
+        double l_sig_vr_max = sig_vr_max[cell];
+        pcg32_random_t l_state = state[cell];
+
+        if (cell_num_atoms > 2) {
+            int num_collision_pairs = floor(0.5 * cell_num_atoms * cell_num_atoms *
+                                            FN * l_sig_vr_max * dt /
+                                            cell_volume);
+
+            double3 vel_cm, new_vel, point_on_sphere;
+
+            double mag_rel_vel;
+            double prob_collision;
+
+            for (int l_collision = 0;
+                 l_collision < num_collision_pairs;
+                 l_collision++ ) {
+                printf("cell = %i\n", cell);
+                printf("collision_count[%i] = %i\n", cell, collision_count[cell]);
+                int2 colliding_atoms = make_int2(0, 0);
+
+                colliding_atoms = choose_colliding_atoms(cell_num_atoms,
+                                                         cell_cumulative_num_atoms[cell],
+                                                         &l_state);
+
+                mag_rel_vel = calculate_relative_velocity(vel,
+                                                          colliding_atoms);
+
+                // Check if this is the more probable than current
+                // most probable.
+                if (mag_rel_vel*cross_section > l_sig_vr_max) {
+                    l_sig_vr_max = mag_rel_vel * cross_section;
+                }
+
+                prob_collision = mag_rel_vel*cross_section / l_sig_vr_max;
+
+                // Collide with the collision probability.
+                if (prob_collision > uniform_prng(&l_state)) {
+                    // Find centre of mass velocities.
+                    vel_cm = 0.5*(vel[colliding_atoms.x] +
+                                  vel[colliding_atoms.y]);
+
+                    // Generate a random velocity on the unit sphere.
+                    point_on_sphere = random_point_on_unit_sphere(&l_state);
+                    new_vel = mag_rel_vel * point_on_sphere;
+
+                    vel[colliding_atoms.x] = vel_cm - 0.5 * new_vel;
+                    vel[colliding_atoms.y] = vel_cm + 0.5 * new_vel;
+
+                    collision_count[cell] += FN;
+                }
+            }
+        }
+        state[cell] = l_state;
+        sig_vr_max[cell] = l_sig_vr_max;
+    }
 
     return;
+}
+
+int2 choose_colliding_atoms(int cell_num_atoms,
+                            int cell_cumulative_num_atoms,
+                            pcg32_random_t *state) {
+    int2 colliding_atoms = make_int2(0, 0);
+
+    if (cell_num_atoms == 2) {
+        colliding_atoms.x = cell_cumulative_num_atoms + 0;
+        colliding_atoms.y = cell_cumulative_num_atoms + 1;
+    } else {
+        colliding_atoms = cell_cumulative_num_atoms +
+                          local_collision_pair(cell_num_atoms,
+                                               state);
+    }
+
+    return colliding_atoms;
+}
+
+int2 local_collision_pair(int cell_num_atoms,
+                          pcg32_random_t *state) {
+    int2 local_pair = make_int2(0, 0);
+
+    // Randomly choose particles in this cell to collide.
+    while (local_pair.x == local_pair.y) {
+        local_pair.x = int(floor(uniform_prng(&state[0]) *
+                                      (cell_num_atoms-1)));
+        local_pair.y = int(floor(uniform_prng(&state[0]) *
+                                      (cell_num_atoms-1)));
+    }
+
+    return local_pair;
+}
+
+double calculate_relative_velocity(double3 *vel,
+                                   int2 colliding_atoms) {
+    double3 vel_rel = vel[colliding_atoms.x] - vel[colliding_atoms.y];
+    double mag_vel_rel = norm(vel_rel);
+
+    return mag_vel_rel;
+}
+
+double3 random_point_on_unit_sphere(pcg32_random_t *state) {
+    double3 normal_point = gaussian_point(0,
+                                          1,
+                                          state);
+
+    double3 point_on_sphere = normal_point / norm(normal_point);
+
+    return point_on_sphere;
 }

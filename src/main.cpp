@@ -69,8 +69,8 @@ int main(int argc, char const *argv[]) {
     int num_time_steps = 1;
 
     // Initialise grid parameters
-    num_cells = make_int3(2, 2, 2);
-    total_num_cells = num_cells.x*num_cells.y*num_cells.z;
+    k_num_cells = make_int3(2, 2, 2);
+    total_num_cells = k_num_cells.x*k_num_cells.y*k_num_cells.z;
 
     // Initialise rng
     LOGF(INFO, "\nInitialising the rng state array.");

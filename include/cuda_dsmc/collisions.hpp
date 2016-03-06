@@ -18,9 +18,9 @@
 #include <mkl.h>
 #else
 #if defined(__APPLE__) && defined(__MACH__)
-// #include <Accelerate/Accelerate.h>
+#include <Accelerate/Accelerate.h>
 // #include <Accelerate/../Frameworks/vecLib.framework/Headers/vecLib.h>
-#include <vecLib/cblas.h>
+// #include <vecLib/cblas.h>
 #else
 extern "C"
 {
@@ -115,5 +115,17 @@ void collide(int num_cells,
              int *collision_count,
              double  *sig_vr_max,
              double3 *vel);
+
+int2 choose_colliding_atoms(int cell_num_atoms,
+                            int cell_cumulative_num_atoms,
+                            pcg32_random_t *state);
+
+int2 local_collision_pair(int cell_num_atoms,
+                          pcg32_random_t *state);
+
+double calculate_relative_velocity(double3 *vel,
+                                   int2 colliding_atoms);
+
+double3 random_point_on_unit_sphere(pcg32_random_t *state);
 
 #endif // COLLISIONS_HPP_INCLUDED

@@ -20,7 +20,7 @@ __device__ double d_cross_section;
 
 // COMPUTATIONAL CONSTANTS
 // can't initialise device globals
-__device__ double d_FN = 10;
+__device__ double d_FN = 100;
 __device__ int3 d_num_cells;
 __device__ double3 d_grid_min;
 __device__ double3 d_cell_length;

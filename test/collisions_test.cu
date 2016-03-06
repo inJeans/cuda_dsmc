@@ -200,111 +200,111 @@ SCENARIO("[DEVICE] Sort atoms", "[d-sort]") {
     }
 }
 
-SCENARIO("[DEVICE] Count atoms", "[d-count]") {
-    GIVEN("An array of 10 sorted cell_ids with num_cells = 8.") {
-        int num_atoms = 10;
-        int num_cells = 8;
+// SCENARIO("[DEVICE] Count atoms", "[d-count]") {
+//     GIVEN("An array of 10 sorted cell_ids with num_cells = 8.") {
+//         int num_atoms = 10;
+//         int num_cells = 8;
 
-        int cell_id[10] = {0, 2, 4, 5, 6, 6, 6, 8, 8, 8};
-        int *d_cell_id;
-        checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&d_cell_id),
-                                   num_atoms*sizeof(int)));
-        checkCudaErrors(cudaMemcpy(d_cell_id,
-                                   cell_id,
-                                   num_atoms*sizeof(int),
-                                   cudaMemcpyHostToDevice));
+//         int cell_id[10] = {0, 2, 4, 5, 6, 6, 6, 8, 8, 8};
+//         int *d_cell_id;
+//         checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&d_cell_id),
+//                                    num_atoms*sizeof(int)));
+//         checkCudaErrors(cudaMemcpy(d_cell_id,
+//                                    cell_id,
+//                                    num_atoms*sizeof(int),
+//                                    cudaMemcpyHostToDevice));
 
-        WHEN("The sort_atoms function is called") {
-            int *d_cell_num_atoms;
-            int *d_cell_cumulative_num_atoms;
+//         WHEN("The sort_atoms function is called") {
+//             int *d_cell_num_atoms;
+//             int *d_cell_cumulative_num_atoms;
 
-            int2 *d_cell_start_end;
+//             int2 *d_cell_start_end;
             
-            checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&d_cell_num_atoms),
-                                       num_atoms*sizeof(int)));
-            checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&d_cell_cumulative_num_atoms),
-                                       num_atoms*sizeof(int)));
-            checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&d_cell_start_end),
-                                       num_atoms*sizeof(int2)));
+//             checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&d_cell_num_atoms),
+//                                        num_atoms*sizeof(int)));
+//             checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&d_cell_cumulative_num_atoms),
+//                                        num_atoms*sizeof(int)));
+//             checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&d_cell_start_end),
+//                                        num_atoms*sizeof(int2)));
 
-            checkCudaErrors(cudaMemset(d_cell_start_end,
-                                       -1,
-                                       num_atoms*sizeof(int2)));
+//             checkCudaErrors(cudaMemset(d_cell_start_end,
+//                                        -1,
+//                                        num_atoms*sizeof(int2)));
 
-            count_atoms(num_atoms,
-                        num_cells,
-                        d_cell_id,
-                        d_cell_start_end,
-                        d_cell_num_atoms,
-                        d_cell_cumulative_num_atoms);
+//             count_atoms(num_atoms,
+//                         num_cells,
+//                         d_cell_id,
+//                         d_cell_start_end,
+//                         d_cell_num_atoms,
+//                         d_cell_cumulative_num_atoms);
 
-            int t_cell_num_atoms[9];
-            int t_cell_cumulative_num_atoms[9];
-            int2 t_cell_start_end[9];
+//             int t_cell_num_atoms[9];
+//             int t_cell_cumulative_num_atoms[9];
+//             int2 t_cell_start_end[9];
 
-            checkCudaErrors(cudaMemcpy(t_cell_num_atoms,
-                                       d_cell_num_atoms,
-                                       num_atoms*sizeof(int),
-                                       cudaMemcpyDeviceToHost));
-            checkCudaErrors(cudaMemcpy(t_cell_cumulative_num_atoms,
-                                       d_cell_cumulative_num_atoms,
-                                       num_atoms*sizeof(int),
-                                       cudaMemcpyDeviceToHost));
-            checkCudaErrors(cudaMemcpy(t_cell_start_end,
-                                       d_cell_start_end,
-                                       num_atoms*sizeof(int2),
-                                       cudaMemcpyDeviceToHost));
+//             checkCudaErrors(cudaMemcpy(t_cell_num_atoms,
+//                                        d_cell_num_atoms,
+//                                        num_atoms*sizeof(int),
+//                                        cudaMemcpyDeviceToHost));
+//             checkCudaErrors(cudaMemcpy(t_cell_cumulative_num_atoms,
+//                                        d_cell_cumulative_num_atoms,
+//                                        num_atoms*sizeof(int),
+//                                        cudaMemcpyDeviceToHost));
+//             checkCudaErrors(cudaMemcpy(t_cell_start_end,
+//                                        d_cell_start_end,
+//                                        num_atoms*sizeof(int2),
+//                                        cudaMemcpyDeviceToHost));
 
-            cudaFree(d_cell_num_atoms);
-            cudaFree(d_cell_cumulative_num_atoms);
-            cudaFree(d_cell_start_end);
+//             cudaFree(d_cell_num_atoms);
+//             cudaFree(d_cell_cumulative_num_atoms);
+//             cudaFree(d_cell_start_end);
 
-            for (int i = 0; i < 9; ++i)
-            {
-                printf("t_cell_num_atoms[%i] = %i, t_cell_cumulative_num_atoms[%i] = %i\n",
-                       i, t_cell_num_atoms[i], i, t_cell_cumulative_num_atoms[i]);
-            }
+//             for (int i = 0; i < 9; ++i)
+//             {
+//                 printf("t_cell_num_atoms[%i] = %i, t_cell_cumulative_num_atoms[%i] = %i\n",
+//                        i, t_cell_num_atoms[i], i, t_cell_cumulative_num_atoms[i]);
+//             }
 
-            THEN("Then the global cell_start_end = {{0, 0}, {-1, -1}, {1, 1}, {-1, -1}, {2, 2}, {3, 3}, {4, 6}, {7, 9}}") {
-                REQUIRE(t_cell_start_end[0] == make_int2(0, 0));
-                REQUIRE(t_cell_start_end[1] == make_int2(-1, -1));
-                REQUIRE(t_cell_start_end[2] == make_int2(1, 1));
-                REQUIRE(t_cell_start_end[3] == make_int2(-1, -1));
-                REQUIRE(t_cell_start_end[4] == make_int2(2, 2));
-                REQUIRE(t_cell_start_end[5] == make_int2(3, 3));
-                REQUIRE(t_cell_start_end[6] == make_int2(4, 6));
-                REQUIRE(t_cell_start_end[7] == make_int2(-1, -1));
-                REQUIRE(t_cell_start_end[8] == make_int2(7, 9));
-            }
+//             THEN("Then the global cell_start_end = {{0, 0}, {-1, -1}, {1, 1}, {-1, -1}, {2, 2}, {3, 3}, {4, 6}, {7, 9}}") {
+//                 REQUIRE(t_cell_start_end[0] == make_int2(0, 0));
+//                 REQUIRE(t_cell_start_end[1] == make_int2(-1, -1));
+//                 REQUIRE(t_cell_start_end[2] == make_int2(1, 1));
+//                 REQUIRE(t_cell_start_end[3] == make_int2(-1, -1));
+//                 REQUIRE(t_cell_start_end[4] == make_int2(2, 2));
+//                 REQUIRE(t_cell_start_end[5] == make_int2(3, 3));
+//                 REQUIRE(t_cell_start_end[6] == make_int2(4, 6));
+//                 REQUIRE(t_cell_start_end[7] == make_int2(-1, -1));
+//                 REQUIRE(t_cell_start_end[8] == make_int2(7, 9));
+//             }
 
-            THEN("Then the global cell_num_atoms = {1, 0, 1, 0, 1, 1, 3, 0, 3}") {
-                REQUIRE(t_cell_num_atoms[0] == 1);
-                REQUIRE(t_cell_num_atoms[1] == 0);
-                REQUIRE(t_cell_num_atoms[2] == 1);
-                REQUIRE(t_cell_num_atoms[3] == 0);
-                REQUIRE(t_cell_num_atoms[4] == 1);
-                REQUIRE(t_cell_num_atoms[5] == 1);
-                REQUIRE(t_cell_num_atoms[6] == 3);
-                REQUIRE(t_cell_num_atoms[7] == 0);
-                REQUIRE(t_cell_num_atoms[8] == 3);
-            }
+//             THEN("Then the global cell_num_atoms = {1, 0, 1, 0, 1, 1, 3, 0, 3}") {
+//                 REQUIRE(t_cell_num_atoms[0] == 1);
+//                 REQUIRE(t_cell_num_atoms[1] == 0);
+//                 REQUIRE(t_cell_num_atoms[2] == 1);
+//                 REQUIRE(t_cell_num_atoms[3] == 0);
+//                 REQUIRE(t_cell_num_atoms[4] == 1);
+//                 REQUIRE(t_cell_num_atoms[5] == 1);
+//                 REQUIRE(t_cell_num_atoms[6] == 3);
+//                 REQUIRE(t_cell_num_atoms[7] == 0);
+//                 REQUIRE(t_cell_num_atoms[8] == 3);
+//             }
 
-            THEN("Then the global cell_cumulative_num_atoms = {0, 1, 1, 2, 2, 3, 4, 7, 7}") {
-                REQUIRE(t_cell_cumulative_num_atoms[0] == 0);
-                REQUIRE(t_cell_cumulative_num_atoms[1] == 1);
-                REQUIRE(t_cell_cumulative_num_atoms[2] == 1);
-                REQUIRE(t_cell_cumulative_num_atoms[3] == 2);
-                REQUIRE(t_cell_cumulative_num_atoms[4] == 2);
-                REQUIRE(t_cell_cumulative_num_atoms[5] == 3);
-                REQUIRE(t_cell_cumulative_num_atoms[6] == 4);
-                REQUIRE(t_cell_cumulative_num_atoms[7] == 7);
-                REQUIRE(t_cell_cumulative_num_atoms[8] == 7);
-            }
-        }
+//             THEN("Then the global cell_cumulative_num_atoms = {0, 1, 1, 2, 2, 3, 4, 7, 7}") {
+//                 REQUIRE(t_cell_cumulative_num_atoms[0] == 0);
+//                 REQUIRE(t_cell_cumulative_num_atoms[1] == 1);
+//                 REQUIRE(t_cell_cumulative_num_atoms[2] == 1);
+//                 REQUIRE(t_cell_cumulative_num_atoms[3] == 2);
+//                 REQUIRE(t_cell_cumulative_num_atoms[4] == 2);
+//                 REQUIRE(t_cell_cumulative_num_atoms[5] == 3);
+//                 REQUIRE(t_cell_cumulative_num_atoms[6] == 4);
+//                 REQUIRE(t_cell_cumulative_num_atoms[7] == 7);
+//                 REQUIRE(t_cell_cumulative_num_atoms[8] == 7);
+//             }
+//         }
 
-        cudaFree(d_cell_id);
-    }
-}
+//         cudaFree(d_cell_id);
+//     }
+// }
 
 SCENARIO("[DEVICE] Collide atoms", "[d-collide]") {
     GIVEN("An array of 10 atoms in a single cell.") {
@@ -313,22 +313,24 @@ SCENARIO("[DEVICE] Collide atoms", "[d-collide]") {
         double dt = 100*1.e-6;
 
         double3 vel[num_atoms];
-        vel[0] = make_double3(0., 0., 0.);
-        vel[1] = make_double3(0., 0., 0.);
-        vel[2] = make_double3(0., 0., 0.);
-        vel[3] = make_double3(0., 0., 0.);
-        vel[4] = make_double3(0., 0., 0.);
-        vel[5] = make_double3(0., 0., 0.);
-        vel[6] = make_double3(0., 0., 0.);
-        vel[7] = make_double3(0., 0., 0.);
-        vel[8] = make_double3(0., 0., 0.);
-        vel[9] = make_double3(0., 0., 0.);
+        // Nothing special about these velcoities
+        // They are just randomly generated for T=20uK
+        vel[0] = make_double3( 0.034,-0.079, 0.006);
+        vel[1] = make_double3(-0.012, 0.025,-0.012);
+        vel[2] = make_double3(-0.044, 0.018,-0.031);
+        vel[3] = make_double3( 0.064,-0.025,-0.009);
+        vel[4] = make_double3(-0.006,-0.017, 0.017);
+        vel[5] = make_double3(-0.000,-0.023, 0.052);
+        vel[6] = make_double3( 0.063, 0.018, 0.069);
+        vel[7] = make_double3( 0.021, 0.022, 0.002);
+        vel[8] = make_double3(-0.032,-0.127,-0.074);
+        vel[9] = make_double3( 0.066, 0.022, 0.075);
         double3 *d_vel;
         checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&d_vel),
-                                   num_atoms*sizeof(double)));
+                                   num_atoms*sizeof(double3)));
         checkCudaErrors(cudaMemcpy(d_vel,
                                    vel,
-                                   num_atoms*sizeof(double),
+                                   num_atoms*sizeof(double3),
                                    cudaMemcpyHostToDevice));
 
         int cell_id[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
@@ -339,13 +341,14 @@ SCENARIO("[DEVICE] Collide atoms", "[d-collide]") {
                                    cell_id,
                                    num_atoms*sizeof(int),
                                    cudaMemcpyHostToDevice));
+
         int cell_cumulative_num_atoms[2] = {0, 10};
         int *d_cell_cumulative_num_atoms;
         checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&d_cell_cumulative_num_atoms),
                                    (num_cells+1)*sizeof(int)));
         checkCudaErrors(cudaMemcpy(d_cell_cumulative_num_atoms,
                                    cell_cumulative_num_atoms,
-                                   (num_atoms+1)*sizeof(int),
+                                   (num_cells+1)*sizeof(int),
                                    cudaMemcpyHostToDevice));
 
         curandState *state;
@@ -356,17 +359,24 @@ SCENARIO("[DEVICE] Collide atoms", "[d-collide]") {
 
         int *d_collision_count;
         checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&d_collision_count),
-                                   (num_cells+1)*sizeof(int)));
+                                   num_cells*sizeof(int)));
         checkCudaErrors(cudaMemset(d_collision_count,
                                    0,
-                                   (num_cells+1)*sizeof(int)));
+                                   num_cells*sizeof(int)));
 
+        double sig_vr_max[1] = {sqrt(16.*kB*20.e-6/h_pi/mass)*cross_section};
         double *d_sig_vr_max;
         checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&d_sig_vr_max),
-                                   (num_cells+1)*sizeof(double)));
-        checkCudaErrors(cudaMemset(d_sig_vr_max,
-                                   0.,
-                                   (num_cells+1)*sizeof(double)));
+                                   num_cells*sizeof(double)));
+        checkCudaErrors(cudaMemcpy(d_sig_vr_max,
+                                   sig_vr_max,
+                                   num_cells*sizeof(double),
+                                   cudaMemcpyHostToDevice));
+
+        // Make cell really small so that we can have collisions between the ten atoms
+        copy_collision_params_to_device<<<1, 1>>>(make_double3(0., 0., 0.),
+                                                  make_double3(2.5e-6, 2.5e-6, 2.5e-6),
+                                                  make_int3(1,1,1));
 
         WHEN("The cu_collide function is called once") {
 
@@ -391,12 +401,11 @@ SCENARIO("[DEVICE] Collide atoms", "[d-collide]") {
                                        num_cells*sizeof(double),
                                        cudaMemcpyDeviceToHost));
 
-            THEN("Since the sig_vr_max array is initialised to zero we would expect zero collisions.") {
-                REQUIRE(t_collision_count[0] == 0);
+            THEN("We should expect two simulated collisions") {
+                REQUIRE(t_collision_count[0] == 2*FN);
             }
-
-            THEN("The sig_vr_max array should have been updated") {
-                // REQUIRE(t_sig_vr_max[0] == 0.);
+            THEN("The sig_vr_max array should not have been updated") {
+                REQUIRE(t_sig_vr_max[0] == sig_vr_max[0]);
             }
         }
 

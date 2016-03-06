@@ -448,9 +448,9 @@ __global__ void g_collide(int num_cells,
         curandState l_state = state[cell];
 
         if (cell_num_atoms > 2) {
-            int num_collision_paris = 0.5 * cell_num_atoms * cell_num_atoms *
-                                      d_FN * l_sig_vr_max * dt /
-                                      d_cell_volume;
+            int num_collision_pairs = floor(0.5 * cell_num_atoms * cell_num_atoms *
+                                            d_FN * l_sig_vr_max * dt /
+                                            d_cell_volume);
 
             double3 vel_cm, new_vel, point_on_sphere;
 
@@ -458,7 +458,7 @@ __global__ void g_collide(int num_cells,
             double prob_collision;
 
             for (int l_collision = 0;
-                 l_collision < num_collision_paris;
+                 l_collision < num_collision_pairs;
                  l_collision++ ) {
                 int2 colliding_atoms = make_int2(0, 0);
 
@@ -471,8 +471,9 @@ __global__ void g_collide(int num_cells,
 
                 // Check if this is the more probable than current
                 // most probable.
-                if (mag_rel_vel*d_cross_section > l_sig_vr_max)
+                if (mag_rel_vel*d_cross_section > l_sig_vr_max) {
                     l_sig_vr_max = mag_rel_vel * d_cross_section;
+                }
 
                 prob_collision = mag_rel_vel*d_cross_section / l_sig_vr_max;
 

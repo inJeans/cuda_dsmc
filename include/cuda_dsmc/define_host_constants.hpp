@@ -18,10 +18,14 @@ double a    = 5.3e-9;           // Constant cross-section formula
 double kB   = 1.3806503e-23;    // Boltzmann's Constant
 double hbar = 1.05457148e-34;   // hbar
 
+double cross_section = 8. * h_pi * a * a;
+
 // COMPUTATIONAL CONSTANTS
-int3 num_cells = make_int3(128, 128, 128);
-int total_num_cells = num_cells.x*num_cells.y*num_cells.z;
+int FN = 100;
+int3 k_num_cells = make_int3(128, 128, 128);
+int total_num_cells = k_num_cells.x*k_num_cells.y*k_num_cells.z;
 double3 grid_min = make_double3(0., 0., 0.);
 double3 cell_length = make_double3(0., 0., 0.);
+double cell_volume = cell_length.x * cell_length.y * cell_length.z;
 
 #endif  // DEFINE_HOST_CONSTANTS_HPP_INCLUDED

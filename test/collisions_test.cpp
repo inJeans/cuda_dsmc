@@ -21,7 +21,7 @@ SCENARIO("[HOST] Initialise grid parameters", "[h-initgrid]") {
         pos[8] = make_double3(1., -2., -10.);
         pos[9] = make_double3(0., 2., 0.);
 
-        num_cells = make_int3(2, 3, 4);
+        k_num_cells = make_int3(2, 3, 4);
 
         WHEN("The initialise_grid_params function is called") {
             cublasHandle_t cublas_handle;
@@ -57,7 +57,7 @@ SCENARIO("[HOST] Index atoms", "[h-index]") {
         pos[8] = make_double3(1., -2., -10.);
         pos[9] = make_double3(0., 2., 0.);
 
-        num_cells = make_int3(2, 3, 4);
+        k_num_cells = make_int3(2, 3, 4);
         cublasHandle_t cublas_handle;
         initialise_grid_params(10,
                                cublas_handle,
@@ -172,6 +172,68 @@ SCENARIO("[HOST] Count atoms", "[h-count]") {
                 REQUIRE(t_cell_cumulative_num_atoms[6] == 4);
                 REQUIRE(t_cell_cumulative_num_atoms[7] == 7);
                 REQUIRE(t_cell_cumulative_num_atoms[8] == 7);
+            }
+        }
+    }
+}
+
+SCENARIO("[HOST] Collide atoms", "[h-collide]") {
+    GIVEN("An array of 10 atoms in a single cell.") {
+        int num_atoms = 10;
+        int num_cells = 1;
+        double dt = 100*1.e-6;
+
+        double3 vel[num_atoms];
+        // Nothing special about these velcoities
+        // They are just randomly generated for T=20uK
+        vel[0] = make_double3( 0.034,-0.079, 0.006);
+        vel[1] = make_double3(-0.012, 0.025,-0.012);
+        vel[2] = make_double3(-0.044, 0.018,-0.031);
+        vel[3] = make_double3( 0.064,-0.025,-0.009);
+        vel[4] = make_double3(-0.006,-0.017, 0.017);
+        vel[5] = make_double3(-0.000,-0.023, 0.052);
+        vel[6] = make_double3( 0.063, 0.018, 0.069);
+        vel[7] = make_double3( 0.021, 0.022, 0.002);
+        vel[8] = make_double3(-0.032,-0.127,-0.074);
+        vel[9] = make_double3( 0.066, 0.022, 0.075);
+
+        int cell_id[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+        int cell_cumulative_num_atoms[2] = {0, 10};
+
+        pcg32_random_t *state;
+        state = reinterpret_cast<pcg32_random_t*>(calloc(num_atoms,
+                                                         sizeof(pcg32_random_t)));
+        initialise_rng_states(num_cells,
+                              state,
+                              false);
+
+        int t_collision_count[num_cells];
+
+        double sig_vr_max = sqrt(16.*kB*20.e-6/h_pi/mass)*cross_section;
+        double t_sig_vr_max = sig_vr_max;
+
+        // Make cell really small so that we can have collisions between the ten atoms
+        grid_min = make_double3(0., 0., 0.);
+        cell_length = make_double3(2.5e-6, 2.5e-6, 2.5e-6);
+        cell_volume = cell_length.x * cell_length.y * cell_length.z;
+        k_num_cells = make_int3(1, 1, 1);
+
+        WHEN("The collide function is called once") {
+
+            collide(num_cells,
+                    cell_id,
+                    cell_cumulative_num_atoms,
+                    dt,
+                    state,
+                    t_collision_count,
+                    &t_sig_vr_max,
+                    vel);
+
+            THEN("We should expect two simulated collisions") {
+                REQUIRE(t_collision_count[0] == 2*FN);
+            }
+            THEN("The sig_vr_max array should not have been updated") {
+                REQUIRE(t_sig_vr_max == sig_vr_max);
             }
         }
     }
