@@ -55,7 +55,7 @@ __host__ void cu_initialise_grid_params(int num_atoms,
 
     copy_collision_params_to_device<<<1, 1>>>(grid_min,
                                               cell_length,
-                                              num_cells);
+                                              k_num_cells);
     LOGF(DEBUG, "\nThe minimum grid points on the device are d_grid_min = {%f, %f, %f}\n",
          grid_min.x, grid_min.y, grid_min.z);
     LOGF(DEBUG, "\nThe cell widths on the device are d_cell_length = {%f, %f, %f}\n",
@@ -476,6 +476,7 @@ __global__ void g_collide(int num_cells,
                 }
 
                 prob_collision = mag_rel_vel*d_cross_section / l_sig_vr_max;
+                printf("prob_coll = %f\n", prob_collision);
 
                 // Collide with the collision probability.
                 if (prob_collision > curand_uniform_double(&l_state)) {

@@ -207,7 +207,9 @@ SCENARIO("[HOST] Collide atoms", "[h-collide]") {
                               state,
                               false);
 
-        int t_collision_count[num_cells];
+        int *t_collision_count;
+        t_collision_count = reinterpret_cast<int*>(calloc(num_atoms,
+                                                     sizeof(int)));
 
         double sig_vr_max = sqrt(16.*kB*20.e-6/h_pi/mass)*cross_section;
         double t_sig_vr_max = sig_vr_max;
@@ -236,5 +238,8 @@ SCENARIO("[HOST] Collide atoms", "[h-collide]") {
                 REQUIRE(t_sig_vr_max == sig_vr_max);
             }
         }
+
+        free(state);
+        free(t_collision_count);
     }
 }

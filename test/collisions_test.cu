@@ -29,7 +29,7 @@ SCENARIO("[DEVICE] Initialise grid parameters", "[d-initgrid]") {
                                    10*sizeof(double3),
                                    cudaMemcpyHostToDevice));
 
-        num_cells = make_int3(2, 3, 4);
+        k_num_cells = make_int3(2, 3, 4);
 
         WHEN("The initialise_grid_params function is called") {
             cublasHandle_t cublas_handle;
@@ -103,7 +103,7 @@ SCENARIO("[DEVICE] Index atoms", "[d-index]") {
                                    10*sizeof(double3),
                                    cudaMemcpyHostToDevice));
 
-        num_cells = make_int3(2, 3, 4);
+        k_num_cells = make_int3(2, 3, 4);
 
         cublasHandle_t cublas_handle;
         checkCudaErrors(cublasCreate(&cublas_handle));

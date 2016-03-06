@@ -425,8 +425,7 @@ void collide(int num_cells,
             for (int l_collision = 0;
                  l_collision < num_collision_pairs;
                  l_collision++ ) {
-                printf("cell = %i\n", cell);
-                printf("collision_count[%i] = %i\n", cell, collision_count[cell]);
+                printf("num_collision_pairs[%i] = %i\n", cell, num_collision_pairs);
                 int2 colliding_atoms = make_int2(0, 0);
 
                 colliding_atoms = choose_colliding_atoms(cell_num_atoms,
@@ -443,6 +442,7 @@ void collide(int num_cells,
                 }
 
                 prob_collision = mag_rel_vel*cross_section / l_sig_vr_max;
+                printf("prob_coll = %f\n", prob_collision);
 
                 // Collide with the collision probability.
                 if (prob_collision > uniform_prng(&l_state)) {
