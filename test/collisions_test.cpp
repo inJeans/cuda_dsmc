@@ -243,3 +243,106 @@ SCENARIO("[HOST] Collide atoms", "[h-collide]") {
         free(t_collision_count);
     }
 }
+
+SCENARIO("[Host] Collision rate", "[h-collrate]") {
+    GIVEN("An array of 1000 thermal atoms.") {
+        int num_atoms = 1e3;
+        
+        // Initialise grid parameters
+        k_num_cells = make_int3(2, 2, 2);
+        total_num_cells = k_num_cells.x*k_num_cells.y*k_num_cells.z;
+        
+        double dt = 100*1.e-6;
+
+        pcg32_random_t *state;
+        state = reinterpret_cast<pcg32_random_t*>(calloc(num_atoms,
+                                                         sizeof(pcg32_random_t)));
+        initialise_rng_states(num_atoms,
+                              state,
+                              false);
+
+        double3 vel[num_atoms];
+        // Generate velocity distribution
+        generate_thermal_velocities(num_atoms,
+                                    20.e-6,
+                                    state,
+                                    vel);
+
+        trap_geo trap_parameters;
+        trap_parameters.Bz = 2.0;
+        trap_parameters.B0 = 0.;
+
+        double3 pos[num_atoms];
+        // Generate position distribution
+        generate_thermal_positions(num_atoms,
+                                   20.e-6,
+                                   trap_parameters,
+                                   state,
+                                   pos);
+
+        int cell_id[num_atoms];
+        memset(cell_id,
+               0,
+               num_atoms*sizeof(int));
+
+        int atom_id[num_atoms];
+        initialise_atom_id(num_atoms,
+                           atom_id);
+
+        int2 cell_start_end[total_num_cells];
+        memset(cell_start_end,
+               -1,
+               (total_num_cells+1)*sizeof(int2));
+
+        int cell_num_atoms[total_num_cells+1];
+        memset(cell_num_atoms,
+               0,
+              (total_num_cells+1)*sizeof(int));
+
+        int cell_cumulative_num_atoms[total_num_cells];
+        memset(cell_cumulative_num_atoms,
+               0,
+               total_num_cells*sizeof(int));
+
+        int t_collision_count[total_num_cells];
+        memset(t_collision_count,
+               0,
+               total_num_cells*sizeof(int));
+
+        double sig_vr_max[total_num_cells];
+        for (int cell = 0; cell < total_num_cells; ++cell) {
+             sig_vr_max[cell] = sqrt(16.*kB*20.e-6/h_pi/mass)*cross_section;
+        }
+
+        cublasHandle_t cublas_handle = NULL;
+        // Set up global grid parameters
+        initialise_grid_params(num_atoms,
+                               cublas_handle,
+                               pos);
+        printf("\nColl rate test\n\n");
+        WHEN("The collide_atoms function is called once") {
+            collide_atoms(num_atoms,
+                          total_num_cells,
+                          dt,
+                          pos,
+                          vel,
+                          state,
+                          sig_vr_max,
+                          cell_id,
+                          atom_id,
+                          cell_start_end,
+                          cell_num_atoms,
+                          cell_cumulative_num_atoms,
+                          t_collision_count);
+
+            int total_coll = 0;
+            for (int cell = 0; cell < total_num_cells; ++cell) {
+                total_coll += t_collision_count[cell];
+            }
+            printf("%i\n", total_coll);
+            THEN("We should expect two simulated collisions") {
+                REQUIRE(t_collision_count[0] == 0*FN);
+            }
+        }
+    }
+}

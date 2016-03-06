@@ -12,6 +12,7 @@
 #define CATCH_CONFIG_MAIN
 #include "catch.hpp"
 
+#include "distribution_generation.hpp"
 #include "collisions.hpp" 
 #include "vector_math.cuh"
 
