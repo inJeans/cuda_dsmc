@@ -418,6 +418,118 @@ SCENARIO("[DEVICE] Collide atoms", "[d-collide]") {
     }
 }
 
+SCENARIO("[DEVICE] Collision rate", "[d-collrate]") {
+    GIVEN("An array of 10 atoms in a single cell.") {
+        int num_atoms = 10;
+        int num_cells = 1;
+        double dt = 100*1.e-6;
+
+        double3 vel[num_atoms];
+        // Nothing special about these velcoities
+        // They are just randomly generated for T=20uK
+        vel[0] = make_double3( 0.034,-0.079, 0.006);
+        vel[1] = make_double3(-0.012, 0.025,-0.012);
+        vel[2] = make_double3(-0.044, 0.018,-0.031);
+        vel[3] = make_double3( 0.064,-0.025,-0.009);
+        vel[4] = make_double3(-0.006,-0.017, 0.017);
+        vel[5] = make_double3(-0.000,-0.023, 0.052);
+        vel[6] = make_double3( 0.063, 0.018, 0.069);
+        vel[7] = make_double3( 0.021, 0.022, 0.002);
+        vel[8] = make_double3(-0.032,-0.127,-0.074);
+        vel[9] = make_double3( 0.066, 0.022, 0.075);
+        double3 *d_vel;
+        checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&d_vel),
+                                   num_atoms*sizeof(double3)));
+        checkCudaErrors(cudaMemcpy(d_vel,
+                                   vel,
+                                   num_atoms*sizeof(double3),
+                                   cudaMemcpyHostToDevice));
+
+        int cell_id[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+        int *d_cell_id;
+        checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&d_cell_id),
+                                   num_atoms*sizeof(int)));
+        checkCudaErrors(cudaMemcpy(d_cell_id,
+                                   cell_id,
+                                   num_atoms*sizeof(int),
+                                   cudaMemcpyHostToDevice));
+
+        int cell_cumulative_num_atoms[2] = {0, 10};
+        int *d_cell_cumulative_num_atoms;
+        checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&d_cell_cumulative_num_atoms),
+                                   (num_cells+1)*sizeof(int)));
+        checkCudaErrors(cudaMemcpy(d_cell_cumulative_num_atoms,
+                                   cell_cumulative_num_atoms,
+                                   (num_cells+1)*sizeof(int),
+                                   cudaMemcpyHostToDevice));
+
+        curandState *state;
+        checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&state),
+                                   num_cells*sizeof(curandState)));
+        initialise_rng_states(num_cells,
+                              state);
+
+        int *d_collision_count;
+        checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&d_collision_count),
+                                   num_cells*sizeof(int)));
+        checkCudaErrors(cudaMemset(d_collision_count,
+                                   0,
+                                   num_cells*sizeof(int)));
+
+        double sig_vr_max[1] = {sqrt(16.*kB*20.e-6/h_pi/mass)*cross_section};
+        double *d_sig_vr_max;
+        checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&d_sig_vr_max),
+                                   num_cells*sizeof(double)));
+        checkCudaErrors(cudaMemcpy(d_sig_vr_max,
+                                   sig_vr_max,
+                                   num_cells*sizeof(double),
+                                   cudaMemcpyHostToDevice));
+
+        // Make cell really small so that we can have collisions between the ten atoms
+        copy_collision_params_to_device<<<1, 1>>>(make_double3(0., 0., 0.),
+                                                  make_double3(2.5e-6, 2.5e-6, 2.5e-6),
+                                                  make_int3(1,1,1));
+
+        WHEN("The cu_collide function is called once") {
+
+            cu_collide(num_cells,
+                       d_cell_id,
+                       d_cell_cumulative_num_atoms,
+                       dt,
+                       state,
+                       d_collision_count,
+                       d_sig_vr_max,
+                       d_vel);
+
+            int t_collision_count[num_cells];
+            double t_sig_vr_max[num_cells];
+
+            checkCudaErrors(cudaMemcpy(t_collision_count,
+                                       d_collision_count,
+                                       num_cells*sizeof(int),
+                                       cudaMemcpyDeviceToHost));
+            checkCudaErrors(cudaMemcpy(t_sig_vr_max,
+                                       d_sig_vr_max,
+                                       num_cells*sizeof(double),
+                                       cudaMemcpyDeviceToHost));
+
+            THEN("We should expect two simulated collisions") {
+                REQUIRE(t_collision_count[0] == 2*FN);
+            }
+            THEN("The sig_vr_max array should not have been updated") {
+                REQUIRE(t_sig_vr_max[0] == sig_vr_max[0]);
+            }
+        }
+
+        cudaFree(d_vel);
+        cudaFree(d_cell_id);
+        cudaFree(d_cell_cumulative_num_atoms);
+        cudaFree(state);
+        cudaFree(d_collision_count);
+        cudaFree(d_sig_vr_max);
+    }
+}
+
 __global__ void copy_d_grid_min(double3 *grid_min) {
     grid_min[0] = d_grid_min;
     return;

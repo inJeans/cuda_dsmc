@@ -425,7 +425,6 @@ void collide(int num_cells,
             for (int l_collision = 0;
                  l_collision < num_collision_pairs;
                  l_collision++ ) {
-                printf("num_collision_pairs[%i] = %i\n", cell, num_collision_pairs);
                 int2 colliding_atoms = make_int2(0, 0);
 
                 colliding_atoms = choose_colliding_atoms(cell_num_atoms,

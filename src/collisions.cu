@@ -476,7 +476,6 @@ __global__ void g_collide(int num_cells,
                 }
 
                 prob_collision = mag_rel_vel*d_cross_section / l_sig_vr_max;
-                printf("prob_coll = %f\n", prob_collision);
 
                 // Collide with the collision probability.
                 if (prob_collision > curand_uniform_double(&l_state)) {

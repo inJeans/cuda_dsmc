@@ -232,7 +232,7 @@ SCENARIO("[HOST] Collide atoms", "[h-collide]") {
                     vel);
 
             THEN("We should expect two simulated collisions") {
-                REQUIRE(t_collision_count[0] == 2*FN);
+                REQUIRE(t_collision_count[0] == 0*FN);
             }
             THEN("The sig_vr_max array should not have been updated") {
                 REQUIRE(t_sig_vr_max == sig_vr_max);
