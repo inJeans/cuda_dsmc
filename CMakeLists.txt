@@ -20,7 +20,7 @@ ENDIF()
 
 # User defined pcg header destination
 IF(PCG_INCLUDE_PATH)
-    link_directories("${PCG_INCLUDE_PATH}")
+    include_directories("${PCG_INCLUDE_PATH}")
 ENDIF()
 
 # User defined pcg library destination
@@ -30,7 +30,7 @@ ENDIF()
 
 # User defined small crush header destination
 IF(TESTU01_INCLUDE_PATH)
-    link_directories("${TESTU01_INCLUDE_PATH}")
+    include_directories("${TESTU01_INCLUDE_PATH}")
 ENDIF()
 
 # User defined small crush library destination
