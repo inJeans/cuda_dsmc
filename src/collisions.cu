@@ -55,7 +55,8 @@ __host__ void cu_initialise_grid_params(int num_atoms,
 
     copy_collision_params_to_device<<<1, 1>>>(grid_min,
                                               cell_length,
-                                              k_num_cells);
+                                              k_num_cells,
+                                              FN);
     LOGF(DEBUG, "\nThe minimum grid points on the device are d_grid_min = {%f, %f, %f}\n",
          grid_min.x, grid_min.y, grid_min.z);
     LOGF(DEBUG, "\nThe cell widths on the device are d_cell_length = {%f, %f, %f}\n",
@@ -65,13 +66,16 @@ __host__ void cu_initialise_grid_params(int num_atoms,
 
 __global__ void copy_collision_params_to_device(double3 grid_min,
                                                 double3 cell_length,
-                                                int3 num_cells) {
+                                                int3 num_cells,
+                                                int FN) {
     d_grid_min = grid_min;
     d_cell_length = cell_length;
     d_cell_volume = d_cell_length.x * d_cell_length.y * d_cell_length.z;
     d_num_cells = num_cells;
 
     d_cross_section = 8. * d_pi * d_a * d_a;
+
+    d_FN = FN;
 
     return;
 }
@@ -446,8 +450,6 @@ __global__ void g_collide(int num_cells,
 
         double l_sig_vr_max = sig_vr_max[cell];
         curandState l_state = state[cell];
-
-        printf("cell[%i]: #-atoms = [%i]\n", cell, cell_num_atoms);
 
         if (cell_num_atoms > 2) {
             int num_collision_pairs = floor(0.5 * cell_num_atoms * cell_num_atoms *
