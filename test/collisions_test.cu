@@ -498,6 +498,13 @@ SCENARIO("[DEVICE] Collision rate", "[d-collrate]") {
                                    0,
                                    total_num_cells*sizeof(int)));
 
+        double *d_collision_remainder;
+        checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&d_collision_remainder),
+                                   total_num_cells*sizeof(double)));
+        checkCudaErrors(cudaMemset(d_collision_remainder,
+                                   0.,
+                                   total_num_cells*sizeof(double)));
+
         double sig_vr_max[total_num_cells];
         for (int cell = 0; cell < total_num_cells; ++cell) {
              sig_vr_max[cell] = sqrt(16.*kB*20.e-6/h_pi/mass)*cross_section;
@@ -530,6 +537,7 @@ SCENARIO("[DEVICE] Collision rate", "[d-collrate]") {
                           d_cell_start_end,
                           d_cell_num_atoms,
                           d_cell_cumulative_num_atoms,
+                          d_collision_remainder,
                           d_collision_count);
 
             int t_collision_count[total_num_cells];
@@ -558,6 +566,7 @@ SCENARIO("[DEVICE] Collision rate", "[d-collrate]") {
         cudaFree(d_cell_num_atoms);
         cudaFree(d_cell_cumulative_num_atoms);
         cudaFree(d_collision_count);
+        cudaFree(d_collision_remainder);
     }
 }
 
