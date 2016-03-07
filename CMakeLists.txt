@@ -19,8 +19,8 @@ IF(G3LOG_LIBRARY_PATH)
 ENDIF()
 
 # User defined pcg header destination
-IF(PCG_HEADER_PATH)
-    link_directories("${PCG_HEADER_PATH}")
+IF(PCG_INCLUDE_PATH)
+    link_directories("${PCG_INCLUDE_PATH}")
 ENDIF()
 
 # User defined pcg library destination
