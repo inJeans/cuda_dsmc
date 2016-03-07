@@ -202,6 +202,24 @@ int main(int argc, char const *argv[]) {
                                                        sizeof(int)));
 #endif
 
+    // Initialise collision_remainder
+    LOGF(INFO, "\nInitialising the collision_remainder array.");
+    double *collision_remainder;
+#ifdef CUDA
+    LOGF(DEBUG, "\nAllocating %i int elements on the device.",
+         total_num_cells);
+    checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&collision_remainder),
+                               (total_num_cells)*sizeof(double)));
+    checkCudaErrors(cudaMemset(collision_remainder,
+                               0.,
+                               (total_num_cells)*sizeof(double)));
+#else
+    LOGF(DEBUG, "\nAllocating %i int elements on the host.",
+         total_num_cells);
+    collision_remainder = reinterpret_cast<int*>(calloc(total_num_cells,
+                                                        sizeof(double)));
+#endif
+
     // Initialise sig_vr_max
     LOGF(INFO, "\nInitialising the sig_vr_max array.");
     double *sig_vr_max;
@@ -385,6 +403,7 @@ int main(int argc, char const *argv[]) {
                       cell_start_end,
                       cell_num_atoms,
                       cell_cumulative_num_atoms,
+                      collision_remainder,
                       collision_count);
     }
 #ifdef CUDA
@@ -437,6 +456,7 @@ int main(int argc, char const *argv[]) {
     cudaFree(cell_num_atoms);
     cudaFree(cell_cumulative_num_atoms);
     cudaFree(collision_count);
+    cudaFree(collision_remainder);
     cudaFree(sig_vr_max);
     cudaFree(vel);
     cudaFree(pos);
@@ -451,6 +471,7 @@ int main(int argc, char const *argv[]) {
     free(cell_num_atoms);
     free(cell_cumulative_num_atoms);
     free(collision_count);
+    free(collision_remainder);
     free(sig_vr_max);
     free(vel);
     free(pos);

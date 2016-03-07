@@ -12,10 +12,11 @@
 #define CATCH_CONFIG_MAIN
 #include "catch.hpp"
 
+#include "distribution_generation.hpp"
 #include "collisions.hpp" 
 
 #include "define_host_constants.hpp"
-#include "define_device_constants.cuh"
+#include "declare_device_constants.cuh"
 
 __global__ void copy_d_grid_min(double3 *grid_min);
 

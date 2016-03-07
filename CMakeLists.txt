@@ -174,6 +174,8 @@ IF(CUDA)
     # DEVICE - Collision tests
     SET(TEST_SOURCES test/collisions_test.cu
                      src/collisions.cpp src/collisions.cu
+                     src/distribution_generation.cpp src/distribution_generation.cu
+                     src/trapping_potential.cpp src/trapping_potential.cu
                      src/random_numbers.cpp src/random_numbers.cu
                      src/vector_math.cu src/entropy.c)
     cuda_add_executable(device_collisions_test ${TEST_SOURCES})
@@ -211,6 +213,8 @@ target_link_libraries(host_distribution_evolution_test pcg_random cudart cublas 
 # HOST - Collision tests
 SET(TEST_SOURCES test/collisions_test.cpp
                  src/collisions.cpp
+                 src/distribution_generation.cpp src/distribution_generation.cu
+                 src/trapping_potential.cpp src/trapping_potential.cu
                  src/random_numbers.cpp src/random_numbers.cu
                  src/vector_math.cu src/entropy.c)
 cuda_add_executable(host_collisions_test ${TEST_SOURCES})

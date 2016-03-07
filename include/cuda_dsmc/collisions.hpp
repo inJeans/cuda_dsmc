@@ -18,9 +18,9 @@
 #include <mkl.h>
 #else
 #if defined(__APPLE__) && defined(__MACH__)
-// #include <Accelerate/Accelerate.h>
+#include <Accelerate/Accelerate.h>
 // #include <Accelerate/../Frameworks/vecLib.framework/Headers/vecLib.h>
-#include <vecLib/cblas.h>
+// #include <vecLib/cblas.h>
 #else
 extern "C"
 {
@@ -53,6 +53,7 @@ void collide_atoms(int num_atoms,
                    int2 *cell_start_end,
                    int *cell_num_atoms,
                    int *cell_cumulative_num_atoms,
+                   double *collision_remainder,
                    int *collision_count);
 
 void collide_atoms(int num_atoms,
@@ -67,6 +68,7 @@ void collide_atoms(int num_atoms,
                    int2 *cell_start_end,
                    int *cell_num_atoms,
                    int *cell_cumulative_num_atoms,
+                   double *collision_remainder,
                    int *collision_count);
 
 void index_atoms(int num_atoms,
@@ -104,6 +106,7 @@ void collide(int num_cells,
              double dt,
              curandState *state,
              int *collision_count,
+             double *collision_remainder,
              double  *sig_vr_max,
              double3 *vel);
 
@@ -113,6 +116,7 @@ void collide(int num_cells,
              double dt,
              pcg32_random_t *state,
              int *collision_count,
+             double *collision_remainder,
              double  *sig_vr_max,
              double3 *vel);
 

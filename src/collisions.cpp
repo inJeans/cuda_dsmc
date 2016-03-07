@@ -92,6 +92,7 @@ void collide_atoms(int num_atoms,
                    int2 *cell_start_end,
                    int *cell_num_atoms,
                    int *cell_cumulative_num_atoms,
+                   double *collision_remainder,
                    int *collision_count) {
     // Index atoms
     index_atoms(num_atoms,
@@ -115,6 +116,7 @@ void collide_atoms(int num_atoms,
             dt,
             state,
             collision_count,
+            collision_remainder,
             sig_vr_max,
             vel);
     return;
@@ -133,6 +135,7 @@ void collide_atoms(int num_atoms,
                    int2 *cell_start_end,
                    int *cell_num_atoms,
                    int *cell_cumulative_num_atoms,
+                   double *collision_remainder,
                    int *collision_count) {
     // Index atoms
     index_atoms(num_atoms,
@@ -156,6 +159,7 @@ void collide_atoms(int num_atoms,
             dt,
             state,
             collision_count,
+            collision_remainder,
             sig_vr_max,
             vel);
     return;
@@ -383,6 +387,7 @@ void collide(int num_cells,
              double dt,
              curandState *state,
              int *collision_count,
+             double *collision_remainder,
              double  *sig_vr_max,
              double3 *vel) {
     cu_collide(num_cells,
@@ -403,29 +408,40 @@ void collide(int num_cells,
              double dt,
              pcg32_random_t *state,
              int *collision_count,
+             double *collision_remainder,
              double  *sig_vr_max,
              double3 *vel) {
     for (int cell = 0; cell < num_cells; ++cell) {
         int cell_num_atoms = cell_cumulative_num_atoms[cell+1] -
                              cell_cumulative_num_atoms[cell];
 
+        // printf("cell[%i]: #-atoms = %i\n", cell, cell_num_atoms);
+
         double l_sig_vr_max = sig_vr_max[cell];
         pcg32_random_t l_state = state[cell];
 
+        float f_num_collision_pairs = 0.5 * cell_num_atoms * cell_num_atoms *
+                                          FN * l_sig_vr_max * dt / cell_volume +
+                                          collision_remainder[cell];
+        int num_collision_pairs = floor(f_num_collision_pairs);
+        collision_remainder[cell] = f_num_collision_pairs - num_collision_pairs;
+
+        // if (cell_num_atoms > 0)
+        //     printf("collision_remainder[%i] = %f\n", cell, collision_remainder[cell]);
+
         if (cell_num_atoms > 2) {
-            int num_collision_pairs = floor(0.5 * cell_num_atoms * cell_num_atoms *
-                                            FN * l_sig_vr_max * dt /
-                                            cell_volume);
+            // printf("cell[%i]: FN = %i, l_sig_vr_max = %g, dt = %g, cell_volume = %g\n", cell, FN, l_sig_vr_max, dt, cell_volume);
 
             double3 vel_cm, new_vel, point_on_sphere;
 
             double mag_rel_vel;
             double prob_collision;
 
+            // printf("cell[%i]: #-coll-pairs = %f\n", cell, num_collision_pairs);
+
             for (int l_collision = 0;
                  l_collision < num_collision_pairs;
                  l_collision++ ) {
-                printf("num_collision_pairs[%i] = %i\n", cell, num_collision_pairs);
                 int2 colliding_atoms = make_int2(0, 0);
 
                 colliding_atoms = choose_colliding_atoms(cell_num_atoms,
@@ -442,7 +458,7 @@ void collide(int num_cells,
                 }
 
                 prob_collision = mag_rel_vel*cross_section / l_sig_vr_max;
-                printf("prob_coll = %f\n", prob_collision);
+                // printf("cell[%i]: #-col = %f, prob-coll = %f\n", cell, num_collision_pairs, prob_collision);
 
                 // Collide with the collision probability.
                 if (prob_collision > uniform_prng(&l_state)) {

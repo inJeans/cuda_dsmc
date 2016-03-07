@@ -447,6 +447,8 @@ __global__ void g_collide(int num_cells,
         double l_sig_vr_max = sig_vr_max[cell];
         curandState l_state = state[cell];
 
+        printf("cell[%i]: #-atoms = [%i]\n", cell, cell_num_atoms);
+
         if (cell_num_atoms > 2) {
             int num_collision_pairs = floor(0.5 * cell_num_atoms * cell_num_atoms *
                                             d_FN * l_sig_vr_max * dt /
@@ -476,7 +478,7 @@ __global__ void g_collide(int num_cells,
                 }
 
                 prob_collision = mag_rel_vel*d_cross_section / l_sig_vr_max;
-                printf("prob_coll = %f\n", prob_collision);
+                // printf("cell[%i]: #-col = %i, prob-coll = %f\n", cell, num_collision_pairs, prob_collision);
 
                 // Collide with the collision probability.
                 if (prob_collision > curand_uniform_double(&l_state)) {
