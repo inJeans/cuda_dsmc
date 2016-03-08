@@ -44,13 +44,13 @@ void initialise_grid_params(int num_atoms,
     grid_min.z = -1.0*std::abs(pos[max_id.z].z);
     LOGF(DEBUG, "\nThe minimum grid points are grid_min = {%f, %f, %f}\n",
          grid_min.x, grid_min.y, grid_min.z);
-#endif
 
     // Set the grid_max = -grid_min, so that the width of the grid would be
     // 2*abs(grid_min) or -2.0 * grid_min.
     cell_length = -2.0 * grid_min / k_num_cells;
     LOGF(DEBUG, "\nThe cell widths are cell_length = {%f, %f, %f}\n",
          cell_length.x, cell_length.y, cell_length.z);
+#endif
 
     cell_volume = cell_length.x * cell_length.y * cell_length.z;
     LOGF(DEBUG, "\nThe cell_volume = %f\n", cell_volume);
@@ -94,14 +94,17 @@ void collide_atoms(int num_atoms,
                    int *cell_cumulative_num_atoms,
                    double *collision_remainder,
                    int *collision_count) {
+  printf("Index\n");
     // Index atoms
     index_atoms(num_atoms,
                 pos,
                 cell_id);
+    printf("Sort\n");
     // Sort atoms
     sort_atoms(num_atoms,
                cell_id,
                atom_id);
+    printf("Count\n");
     // Count attoms
     count_atoms(num_atoms,
                 num_cells,
@@ -109,6 +112,7 @@ void collide_atoms(int num_atoms,
                 cell_start_end,
                 cell_num_atoms,
                 cell_cumulative_num_atoms);
+    printf("Collide atoms\n");
     // Collide atoms
     collide(num_cells,
             cell_id,
@@ -415,8 +419,6 @@ void collide(int num_cells,
         int cell_num_atoms = cell_cumulative_num_atoms[cell+1] -
                              cell_cumulative_num_atoms[cell];
 
-        // printf("cell[%i]: #-atoms = %i\n", cell, cell_num_atoms);
-
         double l_sig_vr_max = sig_vr_max[cell];
         pcg32_random_t l_state = state[cell];
 
@@ -426,18 +428,11 @@ void collide(int num_cells,
         int num_collision_pairs = floor(f_num_collision_pairs);
         collision_remainder[cell] = f_num_collision_pairs - num_collision_pairs;
 
-        // if (cell_num_atoms > 0)
-        //     printf("collision_remainder[%i] = %f\n", cell, collision_remainder[cell]);
-
         if (cell_num_atoms > 2) {
-            // printf("cell[%i]: FN = %i, l_sig_vr_max = %g, dt = %g, cell_volume = %g\n", cell, FN, l_sig_vr_max, dt, cell_volume);
-
             double3 vel_cm, new_vel, point_on_sphere;
 
             double mag_rel_vel;
             double prob_collision;
-
-            // printf("cell[%i]: #-coll-pairs = %f\n", cell, num_collision_pairs);
 
             for (int l_collision = 0;
                  l_collision < num_collision_pairs;
@@ -458,7 +453,6 @@ void collide(int num_cells,
                 }
 
                 prob_collision = mag_rel_vel*cross_section / l_sig_vr_max;
-                // printf("cell[%i]: #-col = %f, prob-coll = %f\n", cell, num_collision_pairs, prob_collision);
 
                 // Collide with the collision probability.
                 if (prob_collision > uniform_prng(&l_state)) {

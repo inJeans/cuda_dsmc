@@ -7,6 +7,8 @@
 
 #include "collisions_test.cuh"
 
+double fractional_tol = 0.05; 
+
 SCENARIO("[DEVICE] Initialise grid parameters", "[d-initgrid]") {
     GIVEN("A device array of 10 known positions, in a grid with num_cells = {2,3,4}.") {
         double3 pos[10];
@@ -309,6 +311,7 @@ SCENARIO("[DEVICE] Count atoms", "[d-count]") {
 SCENARIO("[DEVICE] Collide atoms", "[d-collide]") {
     GIVEN("An array of 10 atoms in a single cell.") {
         int num_atoms = 10;
+        FN = 100;
         int num_cells = 1;
         double dt = 100*1.e-6;
 
@@ -376,7 +379,8 @@ SCENARIO("[DEVICE] Collide atoms", "[d-collide]") {
         // Make cell really small so that we can have collisions between the ten atoms
         copy_collision_params_to_device<<<1, 1>>>(make_double3(0., 0., 0.),
                                                   make_double3(2.5e-6, 2.5e-6, 2.5e-6),
-                                                  make_int3(1,1,1));
+                                                  make_int3(1,1,1),
+                                                  FN);
 
         WHEN("The cu_collide function is called once") {
 
@@ -418,12 +422,19 @@ SCENARIO("[DEVICE] Collide atoms", "[d-collide]") {
     }
 }
 
+SCENARIO("[TEST] Collision rate", "[d-test]") {
+    GIVEN("Nothing") {
+        REQUIRE(1==1);
+    }
+}
+
 SCENARIO("[DEVICE] Collision rate", "[d-collrate]") {
     GIVEN("An array of 1000 thermal atoms.") {
-        int num_atoms = 1e3;
+        int num_atoms = 1e4;
+        FN = 100;
         
         // Initialise grid parameters
-        k_num_cells = make_int3(5, 5, 5);
+        k_num_cells = make_int3(10, 10, 10);
         total_num_cells = k_num_cells.x*k_num_cells.y*k_num_cells.z;
         
         double dt = 100*1.e-6;
@@ -508,7 +519,7 @@ SCENARIO("[DEVICE] Collision rate", "[d-collrate]") {
         double sig_vr_max[total_num_cells];
         for (int cell = 0; cell < total_num_cells; ++cell) {
              sig_vr_max[cell] = sqrt(16.*kB*20.e-6/h_pi/mass)*cross_section;
-         }
+        }
         double *d_sig_vr_max;
         checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&d_sig_vr_max),
                                    total_num_cells*sizeof(double)));
@@ -523,23 +534,25 @@ SCENARIO("[DEVICE] Collision rate", "[d-collrate]") {
         initialise_grid_params(num_atoms,
                                cublas_handle,
                                d_pos);
-
-        WHEN("The collide_atoms function is called once") {
-            collide_atoms(num_atoms,
-                          total_num_cells,
-                          dt,
-                          d_pos,
-                          d_vel,
-                          state,
-                          d_sig_vr_max,
-                          d_cell_id,
-                          d_atom_id,
-                          d_cell_start_end,
-                          d_cell_num_atoms,
-                          d_cell_cumulative_num_atoms,
-                          d_collision_remainder,
-                          d_collision_count);
-
+        printf("Hello\n");
+        WHEN("The collide_atoms function is called one hundred times") {
+            for (int i = 0; i < 100; ++i) {
+                collide_atoms(num_atoms,
+                              total_num_cells,
+                              dt,
+                              d_pos,
+                              d_vel,
+                              state,
+                              d_sig_vr_max,
+                              d_cell_id,
+                              d_atom_id,
+                              d_cell_start_end,
+                              d_cell_num_atoms,
+                              d_cell_cumulative_num_atoms,
+                              d_collision_remainder,
+                              d_collision_count);
+            }
+            printf("Hello after?\n");
             int t_collision_count[total_num_cells];
             checkCudaErrors(cudaMemcpy(t_collision_count,
                                        d_collision_count,
@@ -550,9 +563,10 @@ SCENARIO("[DEVICE] Collision rate", "[d-collrate]") {
             for (int cell = 0; cell < total_num_cells; ++cell) {
                 total_coll += t_collision_count[cell];
             }
-            printf("%i\n", total_coll);
-            THEN("We should expect two simulated collisions") {
-                REQUIRE(t_collision_count[0] == 0*FN);
+
+            THEN("We should expect the collision rate to agree with Walraven") {
+                REQUIRE(total_coll < 1026 * (1+fractional_tol));
+                REQUIRE(total_coll > 1026 * (1-fractional_tol));
             }
         }
 

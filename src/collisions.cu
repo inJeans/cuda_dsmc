@@ -52,10 +52,14 @@ __host__ void cu_initialise_grid_params(int num_atoms,
     free(h_pos);
     LOGF(DEBUG, "\nThe minimum grid points are grid_min = {%f, %f, %f}\n",
          grid_min.x, grid_min.y, grid_min.z);
-
+    // Set the grid_max = -grid_min, so that the width of the grid would be
+    // 2*abs(grid_min) or -2.0 * grid_min.
+    cell_length = -2.0 * grid_min / k_num_cells;
+    
     copy_collision_params_to_device<<<1, 1>>>(grid_min,
                                               cell_length,
-                                              k_num_cells);
+                                              k_num_cells,
+                                              FN);
     LOGF(DEBUG, "\nThe minimum grid points on the device are d_grid_min = {%f, %f, %f}\n",
          grid_min.x, grid_min.y, grid_min.z);
     LOGF(DEBUG, "\nThe cell widths on the device are d_cell_length = {%f, %f, %f}\n",
@@ -65,13 +69,16 @@ __host__ void cu_initialise_grid_params(int num_atoms,
 
 __global__ void copy_collision_params_to_device(double3 grid_min,
                                                 double3 cell_length,
-                                                int3 num_cells) {
+                                                int3 num_cells,
+                                                int FN) {
     d_grid_min = grid_min;
     d_cell_length = cell_length;
     d_cell_volume = d_cell_length.x * d_cell_length.y * d_cell_length.z;
     d_num_cells = num_cells;
 
     d_cross_section = 8. * d_pi * d_a * d_a;
+
+    d_FN = FN;
 
     return;
 }
@@ -229,33 +236,36 @@ __host__ void cu_sort_atoms(int num_atoms,
                             int *atom_id) {
     int  *d_cell_id_out;
     int  *d_atom_id_out;
-
+    printf("Malloc output arrays\n");
     checkCudaErrors(cudaMalloc(&d_cell_id_out,
                                num_atoms*sizeof(int)));
     checkCudaErrors(cudaMalloc(&d_atom_id_out,
                                num_atoms*sizeof(int)));
-
+    printf("Determine storage requirements\n");
     // Determine temporary device storage requirements
     void     *d_temp_storage = NULL;
     size_t   temp_storage_bytes = 0;
-    checkCudaErrors(cub::DeviceRadixSort::SortPairs(d_temp_storage,
-                                                    temp_storage_bytes,
-                                                    cell_id,
-                                                    d_cell_id_out,
-                                                    atom_id,
-                                                    d_atom_id_out,
-                                                    num_atoms));
+    CubDebug(cub::DeviceRadixSort::SortPairs(d_temp_storage,
+                                                 temp_storage_bytes,
+                                                 cell_id,
+                                                 d_cell_id_out,
+                                                 atom_id,
+                                                 d_atom_id_out,
+                                                 num_atoms));
+    printf("allocate temp\n");
     // Allocate temporary storage
     checkCudaErrors(cudaMalloc(&d_temp_storage,
                                temp_storage_bytes));
+    printf("run sort - %i\n", temp_storage_bytes);
     // Run sorting operation
-    checkCudaErrors(cub::DeviceRadixSort::SortPairs(d_temp_storage,
-                                                    temp_storage_bytes,
-                                                    cell_id,
-                                                    d_cell_id_out,
-                                                    atom_id,
-                                                    d_atom_id_out,
-                                                    num_atoms));
+    CubDebug(cub::DeviceRadixSort::SortPairs(d_temp_storage,
+                                                 temp_storage_bytes,
+                                                 cell_id,
+                                                 d_cell_id_out,
+                                                 atom_id,
+                                                 d_atom_id_out,
+                                                 num_atoms));
+    printf("copy arrays\n");
     // Copy sorted arrays back to original memory
     checkCudaErrors(cudaMemcpy(atom_id,
                                d_atom_id_out,
@@ -373,20 +383,20 @@ __host__ void cu_scan(int num_cells,
     // Determine temporary device storage requirements
     void *d_temp_storage = NULL;
     size_t temp_storage_bytes = 0;
-    cub::DeviceScan::ExclusiveSum(d_temp_storage,
-                                  temp_storage_bytes,
-                                  cell_num_atoms,
-                                  cell_cumulative_num_atoms,
-                                  num_cells+1);
+    CubDebug(cub::DeviceScan::ExclusiveSum(d_temp_storage,
+                                               temp_storage_bytes,
+                                               cell_num_atoms,
+                                               cell_cumulative_num_atoms,
+                                               num_cells+1));
     // Allocate temporary storage
-    cudaMalloc(&d_temp_storage,
-               temp_storage_bytes);
+    checkCudaErrors(cudaMalloc(&d_temp_storage,
+                               temp_storage_bytes));
     // Run exclusive prefix sum
-    cub::DeviceScan::ExclusiveSum(d_temp_storage,
-                                  temp_storage_bytes,
-                                  cell_num_atoms,
-                                  cell_cumulative_num_atoms,
-                                  num_cells+1);
+    CubDebug(cub::DeviceScan::ExclusiveSum(d_temp_storage,
+                                               temp_storage_bytes,
+                                               cell_num_atoms,
+                                               cell_cumulative_num_atoms,
+                                               num_cells+1));
 
     cudaFree(d_temp_storage);
     return;
@@ -446,8 +456,6 @@ __global__ void g_collide(int num_cells,
 
         double l_sig_vr_max = sig_vr_max[cell];
         curandState l_state = state[cell];
-
-        printf("cell[%i]: #-atoms = [%i]\n", cell, cell_num_atoms);
 
         if (cell_num_atoms > 2) {
             int num_collision_pairs = floor(0.5 * cell_num_atoms * cell_num_atoms *

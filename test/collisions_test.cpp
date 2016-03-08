@@ -7,6 +7,8 @@
 
 #include "collisions_test.hpp"
 
+double fractional_tol = 0.05; 
+
 SCENARIO("[HOST] Initialise grid parameters", "[h-initgrid]") {
     GIVEN("An array of 10 known positions, in a grid with num_cells = {2,3,4}.") {
         double3 pos[10];
@@ -250,15 +252,15 @@ SCENARIO("[HOST] Collide atoms", "[h-collide]") {
 }
 
 SCENARIO("[Host] Collision rate", "[h-collrate]") {
-    GIVEN("An array of 1000 thermal atoms.") {
-        int num_atoms = 1e3;
-        FN = 1000;
+    GIVEN("An array of 1e5 thermal atoms.") {
+        int num_atoms = 1e5;
+        FN = 10;
         
         // Initialise grid parameters
         k_num_cells = make_int3(10, 10, 10);
         total_num_cells = k_num_cells.x*k_num_cells.y*k_num_cells.z;
         
-        double dt = 1000*1.e-6;
+        double dt = 100*1.e-6;
 
         pcg32_random_t *state;
         state = reinterpret_cast<pcg32_random_t*>(calloc(num_atoms,
@@ -330,44 +332,33 @@ SCENARIO("[Host] Collision rate", "[h-collrate]") {
         initialise_grid_params(num_atoms,
                                cublas_handle,
                                pos);
-        printf("\nColl rate test\n\n");
-        WHEN("The collide_atoms function is called once") {
+
+        WHEN("The collide_atoms function is called one hundred times") {
             for (int i = 0; i < 100; ++i) {
-                // generate_thermal_velocities(num_atoms,
-                //                     20.e-6,
-                //                     state,
-                //                     vel);
-                // generate_thermal_positions(num_atoms,
-                //                    20.e-6,
-                //                    trap_parameters,
-                //                    state,
-                //                    pos);
-                // initialise_grid_params(num_atoms,
-                //                cublas_handle,
-                //                pos);
-            collide_atoms(num_atoms,
-                          total_num_cells,
-                          dt,
-                          pos,
-                          vel,
-                          state,
-                          sig_vr_max,
-                          cell_id,
-                          atom_id,
-                          cell_start_end,
-                          cell_num_atoms,
-                          cell_cumulative_num_atoms,
-                          collision_remainder,
-                          t_collision_count);
+                collide_atoms(num_atoms,
+                              total_num_cells,
+                              dt,
+                              pos,
+                              vel,
+                              state,
+                              sig_vr_max,
+                              cell_id,
+                              atom_id,
+                              cell_start_end,
+                              cell_num_atoms,
+                              cell_cumulative_num_atoms,
+                              collision_remainder,
+                              t_collision_count);
             }
 
             int total_coll = 0;
             for (int cell = 0; cell < total_num_cells; ++cell) {
                 total_coll += t_collision_count[cell];
             }
-            printf("%i\n", total_coll);
-            THEN("We should expect two simulated collisions") {
-                REQUIRE(total_coll == 96*FN);
+
+            THEN("We should expect the collision rate to agree with Walraven") {
+                REQUIRE(total_coll < 1026 * (1+fractional_tol));
+                REQUIRE(total_coll > 1026 * (1-fractional_tol));
             }
         }
     }

@@ -13,9 +13,24 @@ IF(G3LOG_INCLUDE_PATH)
     include_directories("${G3LOG_INCLUDE_PATH}")
 ENDIF()
 
+# User defined g3log library destination
+IF(G3LOG_LIBRARY_PATH)
+    link_directories("${G3LOG_LIBRARY_PATH}")
+ENDIF()
+
+# User defined pcg header destination
+IF(PCG_INCLUDE_PATH)
+    include_directories("${PCG_INCLUDE_PATH}")
+ENDIF()
+
 # User defined pcg library destination
 IF(PCG_LIBRARY_PATH)
     link_directories("${PCG_LIBRARY_PATH}")
+ENDIF()
+
+# User defined small crush header destination
+IF(TESTU01_INCLUDE_PATH)
+    include_directories("${TESTU01_INCLUDE_PATH}")
 ENDIF()
 
 # User defined small crush library destination
