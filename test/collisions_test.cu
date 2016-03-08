@@ -528,8 +528,8 @@ SCENARIO("[DEVICE] Collision rate", "[d-collrate]") {
         initialise_grid_params(num_atoms,
                                cublas_handle,
                                d_pos);
-
-        WHEN("The collide_atoms function is called once") {
+        printf("Hello\n");
+        WHEN("The collide_atoms function is called one hundred times") {
             for (int i = 0; i < 100; ++i) {
                 collide_atoms(num_atoms,
                               total_num_cells,
@@ -546,7 +546,7 @@ SCENARIO("[DEVICE] Collision rate", "[d-collrate]") {
                               d_collision_remainder,
                               d_collision_count);
             }
-
+            printf("Hello after?\n");
             int t_collision_count[total_num_cells];
             checkCudaErrors(cudaMemcpy(t_collision_count,
                                        d_collision_count,

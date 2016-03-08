@@ -233,12 +233,12 @@ __host__ void cu_sort_atoms(int num_atoms,
                             int *atom_id) {
     int  *d_cell_id_out;
     int  *d_atom_id_out;
-
+    printf("Malloc output arrays\n");
     checkCudaErrors(cudaMalloc(&d_cell_id_out,
                                num_atoms*sizeof(int)));
     checkCudaErrors(cudaMalloc(&d_atom_id_out,
                                num_atoms*sizeof(int)));
-
+    printf("Determine storage requirements\n");
     // Determine temporary device storage requirements
     void     *d_temp_storage = NULL;
     size_t   temp_storage_bytes = 0;
@@ -249,9 +249,11 @@ __host__ void cu_sort_atoms(int num_atoms,
                                                     atom_id,
                                                     d_atom_id_out,
                                                     num_atoms));
+    printf("allocate temp\n");
     // Allocate temporary storage
     checkCudaErrors(cudaMalloc(&d_temp_storage,
                                temp_storage_bytes));
+    printf("run sort - %i\n", temp_storage_bytes);
     // Run sorting operation
     checkCudaErrors(cub::DeviceRadixSort::SortPairs(d_temp_storage,
                                                     temp_storage_bytes,
@@ -260,6 +262,7 @@ __host__ void cu_sort_atoms(int num_atoms,
                                                     atom_id,
                                                     d_atom_id_out,
                                                     num_atoms));
+    printf("copy arrays\n");
     // Copy sorted arrays back to original memory
     checkCudaErrors(cudaMemcpy(atom_id,
                                d_atom_id_out,

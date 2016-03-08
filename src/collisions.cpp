@@ -94,14 +94,17 @@ void collide_atoms(int num_atoms,
                    int *cell_cumulative_num_atoms,
                    double *collision_remainder,
                    int *collision_count) {
+  printf("Index\n");
     // Index atoms
     index_atoms(num_atoms,
                 pos,
                 cell_id);
+    printf("Sort\n");
     // Sort atoms
     sort_atoms(num_atoms,
                cell_id,
                atom_id);
+    printf("Count\n");
     // Count attoms
     count_atoms(num_atoms,
                 num_cells,
@@ -109,6 +112,7 @@ void collide_atoms(int num_atoms,
                 cell_start_end,
                 cell_num_atoms,
                 cell_cumulative_num_atoms);
+    printf("Collide atoms\n");
     // Collide atoms
     collide(num_cells,
             cell_id,
