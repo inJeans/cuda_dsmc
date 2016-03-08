@@ -258,7 +258,7 @@ SCENARIO("[Host] Collision rate", "[h-collrate]") {
         k_num_cells = make_int3(10, 10, 10);
         total_num_cells = k_num_cells.x*k_num_cells.y*k_num_cells.z;
         
-        double dt = 1000000*1.e-6;
+        double dt = 1000*1.e-6;
 
         pcg32_random_t *state;
         state = reinterpret_cast<pcg32_random_t*>(calloc(num_atoms,
@@ -332,7 +332,7 @@ SCENARIO("[Host] Collision rate", "[h-collrate]") {
                                pos);
         printf("\nColl rate test\n\n");
         WHEN("The collide_atoms function is called once") {
-            for (int i = 0; i < 1; ++i) {
+            for (int i = 0; i < 100; ++i) {
                 // generate_thermal_velocities(num_atoms,
                 //                     20.e-6,
                 //                     state,
