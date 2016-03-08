@@ -52,7 +52,10 @@ __host__ void cu_initialise_grid_params(int num_atoms,
     free(h_pos);
     LOGF(DEBUG, "\nThe minimum grid points are grid_min = {%f, %f, %f}\n",
          grid_min.x, grid_min.y, grid_min.z);
-
+    // Set the grid_max = -grid_min, so that the width of the grid would be
+    // 2*abs(grid_min) or -2.0 * grid_min.
+    cell_length = -2.0 * grid_min / k_num_cells;
+    
     copy_collision_params_to_device<<<1, 1>>>(grid_min,
                                               cell_length,
                                               k_num_cells,
@@ -242,26 +245,26 @@ __host__ void cu_sort_atoms(int num_atoms,
     // Determine temporary device storage requirements
     void     *d_temp_storage = NULL;
     size_t   temp_storage_bytes = 0;
-    checkCudaErrors(cub::DeviceRadixSort::SortPairs(d_temp_storage,
-                                                    temp_storage_bytes,
-                                                    cell_id,
-                                                    d_cell_id_out,
-                                                    atom_id,
-                                                    d_atom_id_out,
-                                                    num_atoms));
+    CubDebug(cub::DeviceRadixSort::SortPairs(d_temp_storage,
+                                                 temp_storage_bytes,
+                                                 cell_id,
+                                                 d_cell_id_out,
+                                                 atom_id,
+                                                 d_atom_id_out,
+                                                 num_atoms));
     printf("allocate temp\n");
     // Allocate temporary storage
     checkCudaErrors(cudaMalloc(&d_temp_storage,
                                temp_storage_bytes));
     printf("run sort - %i\n", temp_storage_bytes);
     // Run sorting operation
-    checkCudaErrors(cub::DeviceRadixSort::SortPairs(d_temp_storage,
-                                                    temp_storage_bytes,
-                                                    cell_id,
-                                                    d_cell_id_out,
-                                                    atom_id,
-                                                    d_atom_id_out,
-                                                    num_atoms));
+    CubDebug(cub::DeviceRadixSort::SortPairs(d_temp_storage,
+                                                 temp_storage_bytes,
+                                                 cell_id,
+                                                 d_cell_id_out,
+                                                 atom_id,
+                                                 d_atom_id_out,
+                                                 num_atoms));
     printf("copy arrays\n");
     // Copy sorted arrays back to original memory
     checkCudaErrors(cudaMemcpy(atom_id,
@@ -380,20 +383,20 @@ __host__ void cu_scan(int num_cells,
     // Determine temporary device storage requirements
     void *d_temp_storage = NULL;
     size_t temp_storage_bytes = 0;
-    cub::DeviceScan::ExclusiveSum(d_temp_storage,
-                                  temp_storage_bytes,
-                                  cell_num_atoms,
-                                  cell_cumulative_num_atoms,
-                                  num_cells+1);
+    CubDebug(cub::DeviceScan::ExclusiveSum(d_temp_storage,
+                                               temp_storage_bytes,
+                                               cell_num_atoms,
+                                               cell_cumulative_num_atoms,
+                                               num_cells+1));
     // Allocate temporary storage
-    cudaMalloc(&d_temp_storage,
-               temp_storage_bytes);
+    checkCudaErrors(cudaMalloc(&d_temp_storage,
+                               temp_storage_bytes));
     // Run exclusive prefix sum
-    cub::DeviceScan::ExclusiveSum(d_temp_storage,
-                                  temp_storage_bytes,
-                                  cell_num_atoms,
-                                  cell_cumulative_num_atoms,
-                                  num_cells+1);
+    CubDebug(cub::DeviceScan::ExclusiveSum(d_temp_storage,
+                                               temp_storage_bytes,
+                                               cell_num_atoms,
+                                               cell_cumulative_num_atoms,
+                                               num_cells+1));
 
     cudaFree(d_temp_storage);
     return;

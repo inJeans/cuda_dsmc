@@ -422,10 +422,16 @@ SCENARIO("[DEVICE] Collide atoms", "[d-collide]") {
     }
 }
 
+SCENARIO("[TEST] Collision rate", "[d-test]") {
+    GIVEN("Nothing") {
+        REQUIRE(1==1);
+    }
+}
+
 SCENARIO("[DEVICE] Collision rate", "[d-collrate]") {
     GIVEN("An array of 1000 thermal atoms.") {
-        int num_atoms = 1e5;
-        FN = 10;
+        int num_atoms = 1e4;
+        FN = 100;
         
         // Initialise grid parameters
         k_num_cells = make_int3(10, 10, 10);

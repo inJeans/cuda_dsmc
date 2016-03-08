@@ -44,13 +44,13 @@ void initialise_grid_params(int num_atoms,
     grid_min.z = -1.0*std::abs(pos[max_id.z].z);
     LOGF(DEBUG, "\nThe minimum grid points are grid_min = {%f, %f, %f}\n",
          grid_min.x, grid_min.y, grid_min.z);
-#endif
 
     // Set the grid_max = -grid_min, so that the width of the grid would be
     // 2*abs(grid_min) or -2.0 * grid_min.
     cell_length = -2.0 * grid_min / k_num_cells;
     LOGF(DEBUG, "\nThe cell widths are cell_length = {%f, %f, %f}\n",
          cell_length.x, cell_length.y, cell_length.z);
+#endif
 
     cell_volume = cell_length.x * cell_length.y * cell_length.z;
     LOGF(DEBUG, "\nThe cell_volume = %f\n", cell_volume);
