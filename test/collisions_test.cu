@@ -200,22 +200,26 @@ SCENARIO("[DEVICE] Sort atoms", "[d-sort]") {
         cudaFree(d_atom_id);
         cudaFree(d_cell_id);
     }
+    printf("end sort\n");
 }
 
 SCENARIO("[DEVICE] Count atoms", "[d-count]") {
+    printf("start count\n");
     GIVEN("An array of 10 sorted cell_ids with num_cells = 8.") {
         int num_atoms = 10;
         int num_cells = 8;
 
         int cell_id[10] = {0, 2, 4, 5, 6, 6, 6, 8, 8, 8};
         int *d_cell_id;
+        printf("Hello cout7\n");
         checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&d_cell_id),
                                    num_atoms*sizeof(int)));
+        printf("Hello cout6\n");
         checkCudaErrors(cudaMemcpy(d_cell_id,
                                    cell_id,
                                    num_atoms*sizeof(int),
                                    cudaMemcpyHostToDevice));
-
+        printf("Hello cout7\n");
         WHEN("The sort_atoms function is called") {
             int *d_cell_num_atoms;
             int *d_cell_cumulative_num_atoms;
@@ -223,39 +227,44 @@ SCENARIO("[DEVICE] Count atoms", "[d-count]") {
             int2 *d_cell_start_end;
             
             checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&d_cell_num_atoms),
-                                       num_atoms*sizeof(int)));
+                                       (num_cells+1)*sizeof(int)));
             checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&d_cell_cumulative_num_atoms),
-                                       num_atoms*sizeof(int)));
+                                       (num_cells+1)*sizeof(int)));
             checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&d_cell_start_end),
-                                       num_atoms*sizeof(int2)));
+                                       (num_cells+1)*sizeof(int2)));
 
-            checkCudaErrors(cudaMemset(d_cell_start_end,
-                                       -1,
-                                       num_atoms*sizeof(int2)));
-
+            // checkCudaErrors(cudaMemset(d_cell_start_end,
+            //                            -1,
+            //                            num_atoms*sizeof(int2)));
+            negative_elements<<<num_cells+1,1>>>(num_cells+1,
+                                                 d_cell_start_end);
+            printf("Hello cout5\n");
             count_atoms(num_atoms,
                         num_cells,
                         d_cell_id,
                         d_cell_start_end,
                         d_cell_num_atoms,
                         d_cell_cumulative_num_atoms);
-
+            printf("Hello cout4\n");
             int t_cell_num_atoms[9];
             int t_cell_cumulative_num_atoms[9];
             int2 t_cell_start_end[9];
-
+            printf("Hello cout\n");
             checkCudaErrors(cudaMemcpy(t_cell_num_atoms,
                                        d_cell_num_atoms,
-                                       num_atoms*sizeof(int),
+                                       (num_cells+1)*sizeof(int),
                                        cudaMemcpyDeviceToHost));
+            printf("Hello count1\n");
             checkCudaErrors(cudaMemcpy(t_cell_cumulative_num_atoms,
                                        d_cell_cumulative_num_atoms,
-                                       num_atoms*sizeof(int),
+                                       (num_cells+1)*sizeof(int),
                                        cudaMemcpyDeviceToHost));
+            printf("Hello count2\n");
             checkCudaErrors(cudaMemcpy(t_cell_start_end,
                                        d_cell_start_end,
-                                       num_atoms*sizeof(int2),
+                                       (num_cells+1)*sizeof(int2),
                                        cudaMemcpyDeviceToHost));
+            printf("Hello count3\n");
 
             cudaFree(d_cell_num_atoms);
             cudaFree(d_cell_cumulative_num_atoms);
@@ -430,6 +439,7 @@ SCENARIO("[TEST] Collision rate", "[d-test]") {
 
 SCENARIO("[DEVICE] Collision rate", "[d-collrate]") {
     GIVEN("An array of 1000 thermal atoms.") {
+        printf("Hellp1\n");
         int num_atoms = 1e4;
         FN = 100;
         
@@ -478,44 +488,50 @@ SCENARIO("[DEVICE] Collision rate", "[d-collrate]") {
         int *d_atom_id;
         checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&d_atom_id),
                                    num_atoms*sizeof(int)));
+        printf("Hello2\n");
         initialise_atom_id(num_atoms,
                            d_atom_id);
+        printf("Hello4\n");
 
         int2 *d_cell_start_end;
         checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&d_cell_start_end),
                                    (total_num_cells+1)*sizeof(int2)));
-        checkCudaErrors(cudaMemset(d_cell_start_end,
-                                   -1,
-                                   (total_num_cells+1)*sizeof(int2)));
-
+        // checkCudaErrors(cudaMemset(d_cell_start_end,
+        //                            -1,
+        //                            (total_num_cells+1)*sizeof(int2)));
+        negative_elements<<<total_num_cells+1,1>>>(total_num_cells+1,
+                                                 d_cell_start_end);
+        printf("Hello6\n");
         int *d_cell_num_atoms;
         checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&d_cell_num_atoms),
                                    (total_num_cells+1)*sizeof(int)));
         checkCudaErrors(cudaMemset(d_cell_num_atoms,
                                    0,
                                    (total_num_cells+1)*sizeof(int)));
-
+        printf("Hello7\n");
         int *d_cell_cumulative_num_atoms;
         checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&d_cell_cumulative_num_atoms),
                                    (total_num_cells+1)*sizeof(int)));
         checkCudaErrors(cudaMemset(d_cell_cumulative_num_atoms,
                                    0,
-                                   total_num_cells*sizeof(int)));
-
+                                   (total_num_cells+1)*sizeof(int)));
+        printf("Hello8\n");
         int *d_collision_count;
         checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&d_collision_count),
                                    total_num_cells*sizeof(int)));
         checkCudaErrors(cudaMemset(d_collision_count,
                                    0,
                                    total_num_cells*sizeof(int)));
-
+        printf("Hello5\n");
         double *d_collision_remainder;
         checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&d_collision_remainder),
                                    total_num_cells*sizeof(double)));
-        checkCudaErrors(cudaMemset(d_collision_remainder,
-                                   0.,
-                                   total_num_cells*sizeof(double)));
-
+        // checkCudaErrors(cudaMemset(d_collision_remainder,
+        //                            0.,
+        //                            total_num_cells*sizeof(double)));
+        zero_elements<<<total_num_cells,1>>>(total_num_cells,
+                                             d_collision_remainder);
+        printf("Hello3\n");
         double sig_vr_max[total_num_cells];
         for (int cell = 0; cell < total_num_cells; ++cell) {
              sig_vr_max[cell] = sqrt(16.*kB*20.e-6/h_pi/mass)*cross_section;
@@ -570,6 +586,8 @@ SCENARIO("[DEVICE] Collision rate", "[d-collrate]") {
             }
         }
 
+        checkCudaErrors(cublasDestroy(cublas_handle));
+
         cudaFree(d_pos);
         cudaFree(d_vel);
         cudaFree(state);
@@ -591,5 +609,25 @@ __global__ void copy_d_grid_min(double3 *grid_min) {
 
 __global__ void copy_d_cell_length(double3 *cell_length) {
     cell_length[0] = d_cell_length;
+    return;
+}
+
+__global__ void zero_elements(int num_elements,
+                               double *array) {
+    for (int element = blockIdx.x * blockDim.x + threadIdx.x;
+         element < num_elements;
+         element += blockDim.x * gridDim.x)
+        array[element] = 0.;
+
+    return;
+}
+
+__global__ void negative_elements(int num_elements,
+                                  int2 *array) {
+    for (int element = blockIdx.x * blockDim.x + threadIdx.x;
+         element < num_elements;
+         element += blockDim.x * gridDim.x)
+        array[element] = make_int2(-1, -1);
+
     return;
 }

@@ -394,6 +394,7 @@ void collide(int num_cells,
              double *collision_remainder,
              double  *sig_vr_max,
              double3 *vel) {
+    printf("cuda collide?\n");
     cu_collide(num_cells,
                cell_id,
                cell_cumulative_num_atoms,

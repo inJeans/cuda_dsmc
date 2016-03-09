@@ -114,6 +114,8 @@ __host__ void cu_index_atoms(int num_atoms,
                                        (const void *) g_index_atoms,
                                        0,
                                        num_atoms);
+    if (block_size < 1) block_size = 1;
+    printf("index block_size = %i\n", block_size);
     grid_size = (num_atoms + block_size - 1) / block_size;
     LOGF(DEBUG, "\nLaunch config set as <<<%i,%i>>>\n",
                 grid_size, block_size);
@@ -256,7 +258,7 @@ __host__ void cu_sort_atoms(int num_atoms,
     // Allocate temporary storage
     checkCudaErrors(cudaMalloc(&d_temp_storage,
                                temp_storage_bytes));
-    printf("run sort - %i\n", temp_storage_bytes);
+    printf("run sort - %zu\n", temp_storage_bytes);
     // Run sorting operation
     CubDebug(cub::DeviceRadixSort::SortPairs(d_temp_storage,
                                                  temp_storage_bytes,
@@ -419,13 +421,18 @@ __host__ void cu_collide(int num_cells,
     int block_size = 0;
     int min_grid_size = 0;
     int grid_size = 0;
+    printf("cu_collide1\n");
     cudaOccupancyMaxPotentialBlockSize(&min_grid_size,
                                        &block_size,
                                        (const void *) g_collide,
                                        0,
                                        num_cells);
+    printf("occupancy %i, blocksize = %i\n", num_cells, block_size);
+    if (block_size < 1) block_size = 1;
     grid_size = (num_cells + block_size - 1) / block_size;
+    printf("occupancy\n");
     LOGF(DEBUG, "\nLaunch config set as <<<%i,%i>>>\n", grid_size, block_size);
+    printf("cu_collide\n");
     g_collide<<<grid_size,
                 block_size>>>
              (num_cells,

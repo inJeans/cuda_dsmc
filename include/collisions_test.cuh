@@ -22,4 +22,10 @@ __global__ void copy_d_grid_min(double3 *grid_min);
 
 __global__ void copy_d_cell_length(double3 *cell_length);
 
+__global__ void zero_elements(int num_elements,
+                               double *array);
+
+__global__ void negative_elements(int num_elements,
+                                  int2 *array);
+
 #endif  // COLLISIONS_EVOLUTION_TEST_HPP_INCLUDED
