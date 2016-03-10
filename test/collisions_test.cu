@@ -518,7 +518,7 @@ SCENARIO("[DEVICE] Collision rate", "[d-collrate]") {
         checkCudaErrors(cudaMemset(d_collision_count,
                                    0,
                                    total_num_cells*sizeof(int)));
-                                           double *d_collision_remainder;
+        double *d_collision_remainder;
         checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&d_collision_remainder),
                                    total_num_cells*sizeof(double)));
         // checkCudaErrors(cudaMemset(d_collision_remainder,
