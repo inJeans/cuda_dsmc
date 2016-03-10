@@ -23,7 +23,9 @@
 
 #include <helper_string.h>
 
+#if defined(LOGGING)
 #include <g3log/g3log.hpp>
+#endif
 
 #ifndef EXIT_WAIVED
 #define EXIT_WAIVED 2
@@ -970,10 +972,13 @@ void check(T result, char const *const func, const char *const file, int const l
 {
     if (result)
     {
-//        fprintf(stderr, "CUDA error at %s:%d code=%d(%s) \"%s\" \n",
-//                file, line, static_cast<unsigned int>(result), _cudaGetErrorEnum(result), func);
+#if defined(LOGGING)
         LOGF(FATAL, "CUDA error at %s:%d code=%d(%s) \"%s\" \n",
              file, line, static_cast<unsigned int>(result), _cudaGetErrorEnum(result), func);
+#else
+        fprintf(stderr, "CUDA error at %s:%d code=%d(%s) \"%s\" \n",
+                file, line, static_cast<unsigned int>(result), _cudaGetErrorEnum(result), func);
+#endif
         DEVICE_RESET
         // Make sure we call CUDA Device Reset before exiting
         exit(EXIT_FAILURE);
@@ -993,10 +998,13 @@ inline void __getLastCudaError(const char *errorMessage, const char *file, const
 
     if (cudaSuccess != err)
     {
-//        fprintf(stderr, "%s(%i) : getLastCudaError() CUDA error : %s : (%d) %s.\n",
-//                file, line, errorMessage, (int)err, cudaGetErrorString(err));
+#if defined(LOGGING)
         LOGF(FATAL, "%s(%i) : getLastCudaError() CUDA error : %s : (%d) %s.\n",
              file, line, errorMessage, (int)err, cudaGetErrorString(err));
+#else
+        fprintf(stderr, "%s(%i) : getLastCudaError() CUDA error : %s : (%d) %s.\n",
+                file, line, errorMessage, (int)err, cudaGetErrorString(err));
+#endif
         DEVICE_RESET
         exit(EXIT_FAILURE);
     }
