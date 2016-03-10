@@ -29,8 +29,10 @@ __host__ void cu_generate_aligned_spins(int num_atoms,
                                         trap_geo params,
                                         double3 *pos,
                                         zomplex2 *psi) {
+#if defined(LOGGING)
     LOGF(DEBUG, "\nCalculating optimal launch configuration for the wavefunction "
                 "initialisation kernel.\n");
+#endif
     int block_size = 0;
     int min_grid_size = 0;
     int grid_size = 0;
@@ -40,8 +42,10 @@ __host__ void cu_generate_aligned_spins(int num_atoms,
                                        0,
                                        num_atoms);
     grid_size = (num_atoms + block_size - 1) / block_size;
+#if defined(LOGGING)
     LOGF(DEBUG, "\nLaunch config set as <<<%i,%i>>>\n",
                 grid_size, block_size);
+#endif
     g_generate_aligned_spins<<<grid_size,
                                block_size>>>
                             (num_atoms,
@@ -121,8 +125,10 @@ __host__ void cu_generate_thermal_velocities(int num_atoms,
                                              double temp,
                                              curandState *state,
                                              double3 *vel) {
+#if defined(LOGGING)
     LOGF(DEBUG, "\nCalculating optimal launch configuration for the velocity "
                 "initialisation kernel.\n");
+#endif
     int block_size = 0;
     int min_grid_size = 0;
     int grid_size = 0;
@@ -132,8 +138,10 @@ __host__ void cu_generate_thermal_velocities(int num_atoms,
                                        0,
                                        num_atoms);
     grid_size = (num_atoms + block_size - 1) / block_size;
+#if defined(LOGGING)
     LOGF(DEBUG, "\nLaunch config set as <<<%i,%i>>>\n",
                 grid_size, block_size);
+#endif
 
     g_generate_thermal_velocities<<<grid_size,
                                     block_size>>>
@@ -212,8 +220,10 @@ __host__ void cu_generate_thermal_positions(int num_atoms,
                                             trap_geo params,
                                             curandState *state,
                                             double3 *pos) {
+#if defined(LOGGING)
     LOGF(DEBUG, "\nCalculating optimal launch configuration for the velocity "
                 "initialisation kernel.\n");
+#endif
     int block_size = 0;
     int min_grid_size = 0;
     int grid_size = 0;
@@ -223,8 +233,10 @@ __host__ void cu_generate_thermal_positions(int num_atoms,
                                        0,
                                        num_atoms);
     grid_size = (num_atoms + block_size - 1) / block_size;
+#if defined(LOGGING)
     LOGF(DEBUG, "\nLaunch config set as <<<%i,%i>>>\n",
                 grid_size, block_size);
+#endif
 
     g_generate_thermal_positions<<<grid_size,
                                     block_size>>>
@@ -318,8 +330,10 @@ __device__ double3 thermal_pos(double temp,
 
 __host__ void cu_initialise_atom_id(int num_atoms,
                                     int *atom_id) {
+#if defined(LOGGING)
     LOGF(DEBUG, "\nCalculating optimal launch configuration for the atom_id "
                 "initialisation kernel.\n");
+#endif
     int block_size = 0;
     int min_grid_size = 0;
     int grid_size = 0;
@@ -329,8 +343,10 @@ __host__ void cu_initialise_atom_id(int num_atoms,
                                        0,
                                        num_atoms);
     grid_size = (num_atoms + block_size - 1) / block_size;
+#if defined(LOGGING)
     LOGF(DEBUG, "\nLaunch config set as <<<%i,%i>>>\n",
                 grid_size, block_size);
+#endif
 
     g_initialise_atom_id<<<grid_size,
                            block_size>>>

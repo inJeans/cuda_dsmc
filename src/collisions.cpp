@@ -18,42 +18,58 @@
 void initialise_grid_params(int num_atoms,
                             cublasHandle_t cublas_handle,
                             double3 *pos) {
+#if defined(LOGGING)
     LOGF(INFO, "\nInitialising grid parameters.\n");
+#endif
     int3 max_id = make_int3(0, 0, 0);
 #if defined(CUDA)
     cu_initialise_grid_params(num_atoms,
                               cublas_handle,
                               pos);
 #else
+#if defined(LOGGING)
     LOGF(DEBUG, "\nLaunching BLAS idamax to find max x position.\n");
+#endif
     max_id.x = cblas_idamax(num_atoms,
                             reinterpret_cast<double *>(pos)+0,
                             3);
+#if defined(LOGGING)
     LOGF(DEBUG, "\nLaunching BLAS idamax to find max y position.\n");
+#endif
     max_id.y = cblas_idamax(num_atoms,
                             reinterpret_cast<double *>(pos)+1,
                             3);
+#if defined(LOGGING)
     LOGF(DEBUG, "\nLaunching BLAS idamax to find max z position.\n");
+#endif
     max_id.z = cblas_idamax(num_atoms,
                             reinterpret_cast<double *>(pos)+2,
                             3);
+#if defined(LOGGING)
     LOGF(DEBUG, "\nThe ids of the max positions are max_id = {%i, %i, %i\n",
          max_id.x, max_id.y, max_id.z);
+#endif
     grid_min.x = -1.0*std::abs(pos[max_id.x].x);
     grid_min.y = -1.0*std::abs(pos[max_id.y].y);
     grid_min.z = -1.0*std::abs(pos[max_id.z].z);
+#if defined(LOGGING)
     LOGF(DEBUG, "\nThe minimum grid points are grid_min = {%f, %f, %f}\n",
          grid_min.x, grid_min.y, grid_min.z);
+#endif
 
     // Set the grid_max = -grid_min, so that the width of the grid would be
     // 2*abs(grid_min) or -2.0 * grid_min.
     cell_length = -2.0 * grid_min / k_num_cells;
+#if defined(LOGGING)
     LOGF(DEBUG, "\nThe cell widths are cell_length = {%f, %f, %f}\n",
          cell_length.x, cell_length.y, cell_length.z);
 #endif
+#endif
 
     cell_volume = cell_length.x * cell_length.y * cell_length.z;
+#if defined(LOGGING)
     LOGF(DEBUG, "\nThe cell_volume = %f\n", cell_volume);
+#endif
 
     return;
 }
@@ -111,7 +127,7 @@ void collide_atoms(int num_atoms,
                 cell_start_end,
                 cell_num_atoms,
                 cell_cumulative_num_atoms);
-    
+
     // Collide atoms
     collide(num_cells,
             cell_id,

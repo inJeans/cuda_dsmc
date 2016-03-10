@@ -16,20 +16,25 @@ __host__ void cu_initialise_grid_params(int num_atoms,
                                         cublasHandle_t cublas_handle,
                                         double3 *pos) {
     int3 max_id = make_int3(0, 0, 0);
-
+#if defined(LOGGING)
     LOGF(DEBUG, "\nLaunching cuBLAS idamax to find max x position.\n");
+#endif
     checkCudaErrors(cublasIdamax(cublas_handle,
                                  num_atoms,
                                  reinterpret_cast<double *>(pos)+0,
                                  3,
                                  &max_id.x));
+#if defined(LOGGING)
     LOGF(DEBUG, "\nLaunching cuBLAS idamax to find max y position.\n");
+#endif
     checkCudaErrors(cublasIdamax(cublas_handle,
                                  num_atoms,
                                  reinterpret_cast<double *>(pos)+1,
                                  3,
                                  &max_id.y));
+#if defined(LOGGING)
     LOGF(DEBUG, "\nLaunching cuBLAS idamax to find max z position.\n");
+#endif
     checkCudaErrors(cublasIdamax(cublas_handle,
                                  num_atoms,
                                  reinterpret_cast<double *>(pos)+2,
@@ -37,8 +42,10 @@ __host__ void cu_initialise_grid_params(int num_atoms,
                                  &max_id.z));
     // cuBLAS returns indices with FORTRAN 1-based indexing.
     max_id = max_id - 1;
+#if defined(LOGGING)
     LOGF(DEBUG, "\nThe ids of the max positions are max_id = {%i, %i, %i}\n",
          max_id.x, max_id.y, max_id.z);
+#endif
     double3 *h_pos;
     h_pos = reinterpret_cast<double3*>(calloc(num_atoms,
                                               sizeof(double3)));
@@ -50,8 +57,10 @@ __host__ void cu_initialise_grid_params(int num_atoms,
     grid_min.y = -1.0*std::abs(h_pos[max_id.y].y);
     grid_min.z = -1.0*std::abs(h_pos[max_id.z].z);
     free(h_pos);
+#if defined(LOGGING)
     LOGF(DEBUG, "\nThe minimum grid points are grid_min = {%f, %f, %f}\n",
          grid_min.x, grid_min.y, grid_min.z);
+#endif
     // Set the grid_max = -grid_min, so that the width of the grid would be
     // 2*abs(grid_min) or -2.0 * grid_min.
     cell_length = -2.0 * grid_min / k_num_cells;
@@ -60,10 +69,12 @@ __host__ void cu_initialise_grid_params(int num_atoms,
                                               cell_length,
                                               k_num_cells,
                                               FN);
+#if defined(LOGGING)
     LOGF(DEBUG, "\nThe minimum grid points on the device are d_grid_min = {%f, %f, %f}\n",
          grid_min.x, grid_min.y, grid_min.z);
     LOGF(DEBUG, "\nThe cell widths on the device are d_cell_length = {%f, %f, %f}\n",
          cell_length.x, cell_length.y, cell_length.z);
+#endif
   return;
 }
 
@@ -104,8 +115,10 @@ __global__ void copy_collision_params_to_device(double3 grid_min,
 __host__ void cu_index_atoms(int num_atoms,
                              double3 *pos,
                              int *cell_id) {
+#if defined(LOGGING)
     LOGF(DEBUG, "\nCalculating optimal launch configuration for the atom "
                 "indexing kernel.\n");
+#endif
     int block_size = 0;
     int min_grid_size = 0;
     int grid_size = 0;
@@ -116,8 +129,10 @@ __host__ void cu_index_atoms(int num_atoms,
                                        num_atoms);
     if (block_size < 1) block_size = 1;
     grid_size = (num_atoms + block_size - 1) / block_size;
+#if defined(LOGGING)
     LOGF(DEBUG, "\nLaunch config set as <<<%i,%i>>>\n",
                 grid_size, block_size);
+#endif
     g_index_atoms<<<grid_size,
                     block_size>>>
                    (num_atoms,
@@ -287,8 +302,10 @@ __host__ void cu_sort_atoms(int num_atoms,
 __host__ void cu_find_cell_start_end(int num_atoms,
                                      int *cell_id,
                                      int2 *cell_start_end) {
+#if defined(LOGGING)
     LOGF(DEBUG, "\nCalculating optimal launch configuration for the cell "
                 "start/end kernel.\n");
+#endif
     int block_size = 0;
     int min_grid_size = 0;
     int grid_size = 0;
@@ -298,8 +315,10 @@ __host__ void cu_find_cell_start_end(int num_atoms,
                                        0,
                                        num_atoms);
     grid_size = (num_atoms + block_size - 1) / block_size;
+#if defined(LOGGING)
     LOGF(DEBUG, "\nLaunch config set as <<<%i,%i>>>\n",
                 grid_size, block_size);
+#endif
     g_find_cell_start_end<<<grid_size,
                             block_size>>>
                            (num_atoms,
@@ -337,8 +356,10 @@ __global__ void g_find_cell_start_end(int num_atoms,
 __host__ void cu_find_cell_num_atoms(int num_cells,
                                      int2 *cell_start_end,
                                      int *cell_num_atoms) {
+#if defined(LOGGING)
     LOGF(DEBUG, "\nCalculating optimal launch configuration for the cell "
                 "atom counting kernel.\n");
+#endif
     int block_size = 0;
     int min_grid_size = 0;
     int grid_size = 0;
@@ -348,8 +369,10 @@ __host__ void cu_find_cell_num_atoms(int num_cells,
                                        0,
                                        num_cells+1);
     grid_size = (num_cells+1 + block_size - 1) / block_size;
+#if defined(LOGGING)
     LOGF(DEBUG, "\nLaunch config set as <<<%i,%i>>>\n",
                 grid_size, block_size);
+#endif
     g_find_cell_num_atoms<<<grid_size,
                             block_size>>>
                            (num_cells,
@@ -413,8 +436,10 @@ __host__ void cu_collide(int num_cells,
                          double *collision_remainder,
                          double  *sig_vr_max,
                          double3 *vel) {
+#if defined(LOGGING)
     LOGF(DEBUG, "\nCalculating optimal launch configuration for the atom "
                 "collision kernel.\n");
+#endif
     int block_size = 0;
     int min_grid_size = 0;
     int grid_size = 0;
@@ -426,9 +451,9 @@ __host__ void cu_collide(int num_cells,
                                        num_cells);
     if (block_size < 1) block_size = 1;
     grid_size = (num_cells + block_size - 1) / block_size;
-
+#if defined(LOGGING)
     LOGF(DEBUG, "\nLaunch config set as <<<%i,%i>>>\n", grid_size, block_size);
-
+#endif
     g_collide<<<grid_size,
                 block_size>>>
              (num_cells,

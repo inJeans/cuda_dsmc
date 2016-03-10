@@ -9,7 +9,9 @@
 #include <cuda_runtime.h>
 #include <curand_kernel.h>
 #include "cublas_v2.h"
+#if defined(LOGGING)
 #include <g3log/g3log.hpp>
+#endif
 
 #include "helper_cuda.h"
 #include "vector_math.cuh"

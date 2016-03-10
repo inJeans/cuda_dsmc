@@ -31,7 +31,9 @@ extern "C"
 #include <cmath>
 #include <math.h>
 
+#if defined(LOGGING)
 #include <g3log/g3log.hpp>
+#endif
 
 #include "vector_math.cuh"
 #include "random_numbers.hpp"

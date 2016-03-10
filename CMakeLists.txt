@@ -75,6 +75,13 @@ IF(NOT WIN32)
     ENDIF()
 ENDIF()
 
+# Add option to turn logging off
+option(LOGGING "Turn on the g3logger" ON)
+
+IF(LOGGING)
+    add_definitions(-DLOGGING)
+ENDIF()
+
 SET(CMAKE_C_FLAGS "-std=c99 ${CMAKE_C_FLAGS}")
 SET(CMAKE_CXX_FLAGS "-std=gnu++11 ${CMAKE_CXX_FLAGS}")
 

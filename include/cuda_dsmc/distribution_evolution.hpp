@@ -23,7 +23,9 @@ extern "C"
 }
 #endif  // OS
 #endif  // MKL
+#if defined(LOGGING)
 #include <g3log/g3log.hpp>
+#endif
 
 #include "trapping_potential.hpp"
 #include "vector_math.cuh"

@@ -8,8 +8,9 @@
 #include <cuda_runtime.h>
 #include <cuda.h>
 #include <curand_kernel.h>
-
+#if defined(LOGGING)
 #include <g3log/g3log.hpp>
+#endif
 #include <iostream>
 #include <iomanip>
 
