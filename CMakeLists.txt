@@ -38,6 +38,9 @@ IF(TESTU01_LIBRARY_PATH)
     link_directories("${TESTU01_LIBRARY_PATH}")
 ENDIF()
 
+# Identifier for MASSIVE cluster
+option(MASSIVE "Use MASSIVE specific directories" OFF)
+
 # We will optionally build with MKL.
 option(MKL "Compile with MKL acceleration" OFF)
 
@@ -53,9 +56,11 @@ IF(MKL)
     LIST(APPEND BLAS m)
     add_definitions(-DMKL)
     IF(MASSIVE)
-        include_directories(${MKL_HOME}/include)
+        SET(CMAKE_C_FLAGS "-I${MKL_HOME}/include")
+        SET(CMAKE_CXX_FLAGS "-I${MKL_HOME}/include")
     ELSE()
-        include_directories(${MKL_ROOT}/include)
+        SET(CMAKE_C_FLAGS "-I${MKL_ROOT}/include")
+        SET(CMAKE_CXX_FLAGS "-I${MKL_ROOT}/include")
     ENDIF()
 ELSE()
 IF(APPLE)
