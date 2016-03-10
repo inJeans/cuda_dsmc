@@ -67,7 +67,9 @@ option(CUDA "Compile with GPU acceleration" OFF)
 
 IF(NOT WIN32)
     find_package(CUDA QUIET REQUIRED)
-    SET(CUDA_NVCC_FLAGS "-std=c++11")
+    IF(LOGGING)
+        SET(CUDA_NVCC_FLAGS "-std=c++11")
+    ENDIF()
     SET(CUDA_SEPARABLE_COMPILATION ON)
     SET(CUDA_PROPAGATE_HOST_FLAGS OFF)
     IF(APPLE)
@@ -79,11 +81,11 @@ ENDIF()
 option(LOGGING "Turn on the g3logger" ON)
 
 IF(LOGGING)
+    SET(CMAKE_CXX_FLAGS "-std=gnu++11 ${CMAKE_CXX_FLAGS}")
     add_definitions(-DLOGGING)
 ENDIF()
 
 SET(CMAKE_C_FLAGS "-std=c99 ${CMAKE_C_FLAGS}")
-SET(CMAKE_CXX_FLAGS "-std=gnu++11 ${CMAKE_CXX_FLAGS}")
 
 include_directories("${PROJECT_SOURCE_DIR}/include" "${PROJECT_SOURCE_DIR}/include/cuda_dsmc")
 IF(CUDA)
