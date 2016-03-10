@@ -115,7 +115,6 @@ __host__ void cu_index_atoms(int num_atoms,
                                        0,
                                        num_atoms);
     if (block_size < 1) block_size = 1;
-    printf("index block_size = %i\n", block_size);
     grid_size = (num_atoms + block_size - 1) / block_size;
     LOGF(DEBUG, "\nLaunch config set as <<<%i,%i>>>\n",
                 grid_size, block_size);
@@ -238,12 +237,12 @@ __host__ void cu_sort_atoms(int num_atoms,
                             int *atom_id) {
     int  *d_cell_id_out;
     int  *d_atom_id_out;
-    printf("Malloc output arrays\n");
+
     checkCudaErrors(cudaMalloc(&d_cell_id_out,
                                num_atoms*sizeof(int)));
     checkCudaErrors(cudaMalloc(&d_atom_id_out,
                                num_atoms*sizeof(int)));
-    printf("Determine storage requirements\n");
+
     // Determine temporary device storage requirements
     void     *d_temp_storage = NULL;
     size_t   temp_storage_bytes = 0;
@@ -254,11 +253,9 @@ __host__ void cu_sort_atoms(int num_atoms,
                                                  atom_id,
                                                  d_atom_id_out,
                                                  num_atoms));
-    printf("allocate temp\n");
     // Allocate temporary storage
     checkCudaErrors(cudaMalloc(&d_temp_storage,
                                temp_storage_bytes));
-    printf("run sort - %zu\n", temp_storage_bytes);
     // Run sorting operation
     CubDebug(cub::DeviceRadixSort::SortPairs(d_temp_storage,
                                                  temp_storage_bytes,
@@ -267,7 +264,6 @@ __host__ void cu_sort_atoms(int num_atoms,
                                                  atom_id,
                                                  d_atom_id_out,
                                                  num_atoms));
-    printf("copy arrays\n");
     // Copy sorted arrays back to original memory
     checkCudaErrors(cudaMemcpy(atom_id,
                                d_atom_id_out,
@@ -414,6 +410,7 @@ __host__ void cu_collide(int num_cells,
                          double dt,
                          curandState *state,
                          int *collision_count,
+                         double *collision_remainder,
                          double  *sig_vr_max,
                          double3 *vel) {
     LOGF(DEBUG, "\nCalculating optimal launch configuration for the atom "
@@ -421,18 +418,17 @@ __host__ void cu_collide(int num_cells,
     int block_size = 0;
     int min_grid_size = 0;
     int grid_size = 0;
-    printf("cu_collide1\n");
+
     cudaOccupancyMaxPotentialBlockSize(&min_grid_size,
                                        &block_size,
                                        (const void *) g_collide,
                                        0,
                                        num_cells);
-    printf("occupancy %i, blocksize = %i\n", num_cells, block_size);
     if (block_size < 1) block_size = 1;
     grid_size = (num_cells + block_size - 1) / block_size;
-    printf("occupancy\n");
+
     LOGF(DEBUG, "\nLaunch config set as <<<%i,%i>>>\n", grid_size, block_size);
-    printf("cu_collide\n");
+
     g_collide<<<grid_size,
                 block_size>>>
              (num_cells,
@@ -441,6 +437,7 @@ __host__ void cu_collide(int num_cells,
               dt,
               state,
               collision_count,
+              collision_remainder,
               sig_vr_max,
               vel);
 
@@ -453,6 +450,7 @@ __global__ void g_collide(int num_cells,
                           double dt,
                           curandState *state,
                           int *collision_count,
+                          double *collision_remainder,
                           double  *sig_vr_max,
                           double3 *vel) {
     for (int cell = blockIdx.x * blockDim.x + threadIdx.x;
@@ -464,11 +462,13 @@ __global__ void g_collide(int num_cells,
         double l_sig_vr_max = sig_vr_max[cell];
         curandState l_state = state[cell];
 
+        double f_num_collision_pairs = 0.5 * cell_num_atoms * cell_num_atoms *
+                                       d_FN * l_sig_vr_max * dt / d_cell_volume +
+                                       collision_remainder[cell];
+        int num_collision_pairs = floor(f_num_collision_pairs);
+        collision_remainder[cell] = f_num_collision_pairs - num_collision_pairs;
+        // printf("num_atoms[%i] = %i\n", cell, cell_num_atoms);
         if (cell_num_atoms > 2) {
-            int num_collision_pairs = floor(0.5 * cell_num_atoms * cell_num_atoms *
-                                            d_FN * l_sig_vr_max * dt /
-                                            d_cell_volume);
-
             double3 vel_cm, new_vel, point_on_sphere;
 
             double mag_rel_vel;

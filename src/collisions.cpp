@@ -94,17 +94,16 @@ void collide_atoms(int num_atoms,
                    int *cell_cumulative_num_atoms,
                    double *collision_remainder,
                    int *collision_count) {
-  printf("Index\n");
     // Index atoms
     index_atoms(num_atoms,
                 pos,
                 cell_id);
-    printf("Sort\n");
+
     // Sort atoms
     sort_atoms(num_atoms,
                cell_id,
                atom_id);
-    printf("Count\n");
+
     // Count attoms
     count_atoms(num_atoms,
                 num_cells,
@@ -112,7 +111,7 @@ void collide_atoms(int num_atoms,
                 cell_start_end,
                 cell_num_atoms,
                 cell_cumulative_num_atoms);
-    printf("Collide atoms\n");
+    
     // Collide atoms
     collide(num_cells,
             cell_id,
@@ -394,13 +393,13 @@ void collide(int num_cells,
              double *collision_remainder,
              double  *sig_vr_max,
              double3 *vel) {
-    printf("cuda collide?\n");
     cu_collide(num_cells,
                cell_id,
                cell_cumulative_num_atoms,
                dt,
                state,
                collision_count,
+               collision_remainder,
                sig_vr_max,
                vel);
     return;
@@ -423,9 +422,9 @@ void collide(int num_cells,
         double l_sig_vr_max = sig_vr_max[cell];
         pcg32_random_t l_state = state[cell];
 
-        float f_num_collision_pairs = 0.5 * cell_num_atoms * cell_num_atoms *
-                                          FN * l_sig_vr_max * dt / cell_volume +
-                                          collision_remainder[cell];
+        double f_num_collision_pairs = 0.5 * cell_num_atoms * cell_num_atoms *
+                                       FN * l_sig_vr_max * dt / cell_volume +
+                                       collision_remainder[cell];
         int num_collision_pairs = floor(f_num_collision_pairs);
         collision_remainder[cell] = f_num_collision_pairs - num_collision_pairs;
 

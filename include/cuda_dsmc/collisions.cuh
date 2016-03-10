@@ -68,6 +68,7 @@ __host__ void cu_collide(int num_cells,
                          double dt,
                          curandState *state,
                          int *collision_count,
+                         double *collision_remainder,
                          double  *sig_vr_max,
                          double3 *vel);
 
@@ -77,6 +78,7 @@ __global__ void g_collide(int num_cells,
                           double dt,
                           curandState *state,
                           int *collision_count,
+                          double *collision_remainder,
                           double  *sig_vr_max,
                           double3 *vel);
 

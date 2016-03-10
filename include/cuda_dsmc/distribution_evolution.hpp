@@ -13,9 +13,9 @@
 #include <mkl.h>
 #else
 #if defined(__APPLE__) && defined(__MACH__)
-// #include <Accelerate/Accelerate.h>
+#include <Accelerate/Accelerate.h>
 // #include <Accelerate/../Frameworks/vecLib.framework/Headers/vecLib.h>
-#include <vecLib/cblas.h>
+// #include <vecLib/cblas.h>
 #else
 extern "C"
 {
