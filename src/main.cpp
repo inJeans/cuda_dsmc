@@ -273,7 +273,7 @@ int main(int argc, char const *argv[]) {
     LOGF(DEBUG, "\nAllocating %i int elements on the host.",
          total_num_cells);
 #endif
-    collision_remainder = reinterpret_cast<int*>(calloc(total_num_cells,
+    collision_remainder = reinterpret_cast<double*>(calloc(total_num_cells,
                                                         sizeof(double)));
 #endif
 
