@@ -437,11 +437,11 @@ SCENARIO("[TEST] Collision rate", "[d-test]") {
 
 SCENARIO("[DEVICE] Collision rate", "[d-collrate]") {
     GIVEN("An array of 10,000 thermal atoms.") {
-        int num_atoms = 1e3;
-        FN = 1000;
+        int num_atoms = 1e5;
+        FN = 10;
         
         // Initialise grid parameters
-        k_num_cells = make_int3(10, 10, 10);
+        k_num_cells = make_int3(15, 15, 15);
         total_num_cells = k_num_cells.x*k_num_cells.y*k_num_cells.z;
         
         double dt = 100*1.e-6;

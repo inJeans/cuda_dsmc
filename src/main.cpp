@@ -29,7 +29,7 @@
 #include "distribution_evolution.hpp"
 #include "collisions.hpp"
 
-#define NUM_ATOMS 2
+#define NUM_ATOMS 10000
 
 #if (defined(WIN32) || defined(_WIN32) || defined(__WIN32__))
     const std::string path_to_log_file = "./";
@@ -75,7 +75,7 @@ int main(int argc, char const *argv[]) {
 
     // Initialise computational parameters
     double dt = 1.e-6;
-    int num_time_steps = 1;
+    int num_time_steps = 100;
 
     // Initialise grid parameters
     k_num_cells = make_int3(2, 2, 2);
