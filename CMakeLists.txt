@@ -38,6 +38,13 @@ IF(TESTU01_LIBRARY_PATH)
     link_directories("${TESTU01_LIBRARY_PATH}")
 ENDIF()
 
+# Add option to turn logging off
+option(LOGGING "Turn on the g3logger" ON)
+IF(LOGGING)
+    SET(CMAKE_CXX_FLAGS "-std=gnu++11 ${CMAKE_CXX_FLAGS}")
+    add_definitions(-DLOGGING)
+ENDIF()
+
 # Identifier for MASSIVE cluster
 option(MASSIVE "Use MASSIVE specific directories" OFF)
 
@@ -84,14 +91,6 @@ IF(NOT WIN32)
     IF(APPLE)
         SET(CUDA_NVCC_FLAGS "-D__ACCELERATE__ ${CUDA_NVCC_FLAGS}")
     ENDIF()
-ENDIF()
-
-# Add option to turn logging off
-option(LOGGING "Turn on the g3logger" ON)
-
-IF(LOGGING)
-    SET(CMAKE_CXX_FLAGS "-std=gnu++11 ${CMAKE_CXX_FLAGS}")
-    add_definitions(-DLOGGING)
 ENDIF()
 
 SET(CMAKE_C_FLAGS "-std=c99 ${CMAKE_C_FLAGS}")
