@@ -245,8 +245,10 @@ __host__ void cu_update_wavefunctions(int num_atoms,
                                       trap_geo params,
                                       double3 *pos,
                                       wavefunction *psi) {
+#if defined(LOGGING)
     LOGF(DEBUG, "\nCalculating optimal launch configuration for the wavefunction "
                 "update kernel.\n");
+#endif
     int block_size = 0;
     int min_grid_size = 0;
     int grid_size = 0;
@@ -256,8 +258,10 @@ __host__ void cu_update_wavefunctions(int num_atoms,
                                        0,
                                        num_atoms);
     grid_size = (num_atoms + block_size - 1) / block_size;
+#if defined(LOGGING)
     LOGF(DEBUG, "\nLaunch config set as <<<%i,%i>>>\n",
                 grid_size, block_size);
+#endif
 
     g_update_atom_wavefunction<<<grid_size,
                                  block_size>>>
