@@ -87,9 +87,16 @@ SCENARIO("[DEVICE] Thermal position distribution", "[d-posdist]") {
 
         WHEN("We generate 5,000 thermal positions with an initial temperature of 20uK") {
             double init_temp = 20.e-6;
-            trap_geo trap_parameters;
-            trap_parameters.Bz = 2.0;
-            trap_parameters.B0 = 0.;
+#if defined(IP)  // Ioffe Pritchard trap
+          trap_geo trap_parameters;
+          trap_parameters.B0 = 0.01;
+          trap_parameters.dB = 20.;
+          trap_parameters.ddB = 40000.;
+#else  // Quadrupole trap
+          trap_geo trap_parameters;
+          trap_parameters.Bz = 2.0;
+          trap_parameters.B0 = 0.;
+#endif
 
             double3 *d_test_pos;
             checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&d_test_pos),
@@ -110,14 +117,27 @@ SCENARIO("[DEVICE] Thermal position distribution", "[d-posdist]") {
                                        cudaMemcpyDeviceToHost));
 
             THEN("The result give a mean speed and standard deviation as predicted by standard kinetic gas theory") {
-                double modified_radius_mean = mean_modified_radius(test_pos,
-                                                                   num_test);
-                double modified_radius_std = std_modified_radius(test_pos,
-                                                                 num_test);
                 double pos_mean = mean(test_pos,
                                       num_test);
                 double pos_std  = std_dev(test_pos,
                                           num_test);
+#if defined(IP)  // Ioffe Pritchard trap
+                double radius_squared_mean = mean_norm_squared(test_pos,
+                                                               num_test);
+
+                double B_rho = trap_parameters.dB*trap_parameters.dB / trap_parameters.B0 -
+                               0.5 * trap_parameters.ddB*trap_parameters.ddB;
+                double expected_radius_squared_mean = (B_rho + 2*trap_parameters.ddB) * kB * init_temp / 
+                                                      (B_rho*trap_parameters.ddB*gs*muB);
+                printf("%g\n",expected_radius_squared_mean);
+
+                REQUIRE(radius_squared_mean >= expected_radius_squared_mean - radius_squared_mean / sqrt(num_test));
+                REQUIRE(radius_squared_mean <= expected_radius_squared_mean + radius_squared_mean / sqrt(num_test));
+#else  // Quadrupole trap
+                double modified_radius_mean = mean_modified_radius(test_pos,
+                                                                   num_test);
+                double modified_radius_std = std_modified_radius(test_pos,
+                                                                 num_test);
 
                 double expected_radius_mean = 12.*kB*init_temp/gs/muB/trap_parameters.Bz;
                 double expected_radius_std = 4.*sqrt(3)*kB*init_temp/gs/muB/trap_parameters.Bz;
@@ -126,7 +146,7 @@ SCENARIO("[DEVICE] Thermal position distribution", "[d-posdist]") {
                 REQUIRE(modified_radius_mean <= expected_radius_mean + modified_radius_mean / sqrt(num_test));
                 REQUIRE(modified_radius_std >= expected_radius_std - modified_radius_std / sqrt(num_test));
                 REQUIRE(modified_radius_std <= expected_radius_std + modified_radius_std / sqrt(num_test));
-
+#endif
                 double expected_pos_mean = 0.;
                 // double expected_pos_std = sqrt(kB * init_temp / mass);
 
@@ -156,9 +176,16 @@ SCENARIO("[DEVICE] Wavefunction generation", "[d-psigen]") {
                               state);
 
         double init_temp = 20.e-6;
+#if defined(IP)  // Ioffe Pritchard trap
+        trap_geo trap_parameters;
+        trap_parameters.B0 = 0.01;
+        trap_parameters.dB = 20.;
+        trap_parameters.ddB = 40000.;
+#else  // Quadrupole trap
         trap_geo trap_parameters;
         trap_parameters.Bz = 2.0;
         trap_parameters.B0 = 0.;
+#endif
 
         double3 *d_pos;
         checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&d_pos),

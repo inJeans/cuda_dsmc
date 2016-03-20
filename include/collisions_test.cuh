@@ -15,6 +15,7 @@
 #include "distribution_generation.hpp"
 #include "collisions.hpp" 
 
+#include "utilities.hpp"
 #include "define_host_constants.hpp"
 #include "declare_device_constants.cuh"
 

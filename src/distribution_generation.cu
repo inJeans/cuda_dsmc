@@ -9,7 +9,8 @@
 
 #include "declare_device_constants.cuh"
 
-__constant__ double d_max_grid_width = 2.e-3;
+// __constant__ double d_max_grid_width = 2.e-3;
+__constant__ double d_max_grid_width = 2.5e-5;
 
 /** \fn __host__ void cu_generate_aligned_spins(int num_atoms,
  *                                              trap_geo params,
@@ -307,9 +308,13 @@ __device__ double3 thermal_pos(double temp,
 
         double magB = norm(B(r,
                              params));
-        double U = 0.5 * (magB - params.B0) * d_gs * d_muB;
+        // double U = 0.5 * magB * d_gs * d_muB;
+        double B_rho = params.dB*params.dB / params.B0 -
+                       0.5 * params.ddB*params.ddB;
+        double U = d_gs * d_muB *(params.B0 + 0.5*(B_rho*(r.x*r.x+r.y*r.y) +
+                                          params.ddB*r.z*r.z));
         double Pr = exp(-U / d_kB / temp);
-
+        // printf("prob = %g\n",Pr );
         if (curand_uniform(state) < Pr) {
             pos = r;
             no_atom_selected = false;

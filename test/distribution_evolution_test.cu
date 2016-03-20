@@ -14,9 +14,16 @@ SCENARIO("[DEVICE] Acceleration Update", "[d-acc]") {
         int num_test = 5000;
 
         // Initialise trapping parameters
+#if defined(IP)  // Ioffe Pritchard trap
+        trap_geo trap_parameters;
+        trap_parameters.B0 = 0.01;
+        trap_parameters.dB = 20.;
+        trap_parameters.ddB = 40000.;
+#else  // Quadrupole trap
         trap_geo trap_parameters;
         trap_parameters.Bz = 2.0;
         trap_parameters.B0 = 0.;
+#endif
 
         // Initialise rng
         curandState *state;
@@ -81,6 +88,8 @@ SCENARIO("[DEVICE] Acceleration Update", "[d-acc]") {
                 REQUIRE(mean_acc_z >= 0. - std_acc_z / sqrt(num_test));
             }
 
+#if defined(IP)  // Ioffe Pritchard trap
+#else  // Quadrupole trap
             double expected_std_x_y = sqrt(trap_parameters.Bz*trap_parameters.Bz * gs*gs * muB*muB / 
                                            (48. * mass*mass));
             double expected_std_z = sqrt(trap_parameters.Bz*trap_parameters.Bz * gs*gs * muB*muB / 
@@ -93,6 +102,7 @@ SCENARIO("[DEVICE] Acceleration Update", "[d-acc]") {
                 REQUIRE(std_acc_z <= expected_std_z + std_acc_z / sqrt(num_test));
                 REQUIRE(std_acc_z >= expected_std_z - std_acc_z / sqrt(num_test));
             }
+#endif
 
             cudaFree(d_test_acc);
             free(test_acc);
@@ -108,9 +118,16 @@ SCENARIO("[DEVICE] Velocity Update", "[d-vel]") {
         int num_test = 5000;
 
         // Initialise trapping parameters
+#if defined(IP)  // Ioffe Pritchard trap
+        trap_geo trap_parameters;
+        trap_parameters.B0 = 0.01;
+        trap_parameters.dB = 20.;
+        trap_parameters.ddB = 40000.;
+#else  // Quadrupole trap
         trap_geo trap_parameters;
         trap_parameters.Bz = 2.0;
         trap_parameters.B0 = 0.;
+#endif
 
         // Initialise rng
         curandState *state;

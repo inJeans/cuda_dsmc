@@ -28,6 +28,9 @@ double mean_z(double3 *array,
 double mean_norm(double3 *array,
                  int num_elements);
 
+double mean_norm_squared(double3 *array,
+                         int num_elements);
+
 double mean_modified_radius(double3 *pos,
                             int num_elements);
 

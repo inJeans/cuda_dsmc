@@ -263,12 +263,6 @@ SCENARIO("[DEVICE] Count atoms", "[d-count]") {
             cudaFree(d_cell_cumulative_num_atoms);
             cudaFree(d_cell_start_end);
 
-            for (int i = 0; i < 9; ++i)
-            {
-                printf("t_cell_num_atoms[%i] = %i, t_cell_cumulative_num_atoms[%i] = %i\n",
-                       i, t_cell_num_atoms[i], i, t_cell_cumulative_num_atoms[i]);
-            }
-
             THEN("Then the global cell_start_end = {{0, 0}, {-1, -1}, {1, 1}, {-1, -1}, {2, 2}, {3, 3}, {4, 6}, {7, 9}}") {
                 REQUIRE(t_cell_start_end[0] == make_int2(0, 0));
                 REQUIRE(t_cell_start_end[1] == make_int2(-1, -1));
@@ -429,12 +423,6 @@ SCENARIO("[DEVICE] Collide atoms", "[d-collide]") {
     }
 }
 
-SCENARIO("[TEST] Collision rate", "[d-test]") {
-    GIVEN("Nothing") {
-        REQUIRE(1==1);
-    }
-}
-
 SCENARIO("[DEVICE] Collision rate", "[d-collrate]") {
     GIVEN("An array of 10,000 thermal atoms.") {
         int num_atoms = 1e5;
@@ -461,9 +449,16 @@ SCENARIO("[DEVICE] Collision rate", "[d-collrate]") {
                                     state,
                                     d_vel);
 
+#if defined(IP)  // Ioffe Pritchard trap
+        trap_geo trap_parameters;
+        trap_parameters.B0 = 0.01;
+        trap_parameters.dB = 20.;
+        trap_parameters.ddB = 40000.;
+#else  // Quadrupole trap
         trap_geo trap_parameters;
         trap_parameters.Bz = 2.0;
         trap_parameters.B0 = 0.;
+#endif
 
         double3 *d_pos;
         checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&d_pos),
@@ -562,6 +557,8 @@ SCENARIO("[DEVICE] Collision rate", "[d-collrate]") {
                               d_cell_cumulative_num_atoms,
                               d_collision_remainder,
                               d_collision_count);
+                progress_bar(i,
+                             100);
             }
 
             int t_collision_count[total_num_cells];
@@ -575,10 +572,17 @@ SCENARIO("[DEVICE] Collision rate", "[d-collrate]") {
                 total_coll += t_collision_count[cell];
             }
 
+#if defined(IP)  // Ioffe Pritchard trap
+            THEN("We should expect the collision rate to agree with Walraven") {
+                REQUIRE(total_coll < 2407 * (1+fractional_tol));
+                REQUIRE(total_coll > 2407 * (1-fractional_tol));
+            }
+#else  // Quadrupole
             THEN("We should expect the collision rate to agree with Walraven") {
                 REQUIRE(total_coll < 1026 * (1+fractional_tol));
                 REQUIRE(total_coll > 1026 * (1-fractional_tol));
             }
+#endif
         }
 
         checkCudaErrors(cublasDestroy(cublas_handle));

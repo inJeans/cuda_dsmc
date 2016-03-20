@@ -7,7 +7,48 @@
 
 #include "define_device_constants.cuh"
 #include "trapping_potential.cuh"
+ #include "stdio.h"
 
+#if defined(IP)  // Ioffe pritchard trap
+__host__ __device__ double3 B(double3 pos,
+                               trap_geo params) {
+    double3 mag_field = make_double3(0., 0., 0.);
+    
+    mag_field.x = params.dB*pos.x - 0.5*params.ddB*pos.x*pos.z;
+    mag_field.y =-params.dB*pos.x - 0.5*params.ddB*pos.y*pos.z;
+    mag_field.z = params.B0 +
+                  0.5*params.ddB*(pos.z*pos.z - 0.5*(pos.x*pos.x + pos.y*pos.y));
+
+    return mag_field;
+}
+
+__host__ __device__ double3 dB_dx(double3 pos,
+                                  trap_geo params) {
+    double3 dBdx = make_double3(params.dB - 0.5*params.ddB*pos.z,
+                                0.,
+                                -0.5*params.ddB*pos.x);
+
+    return dBdx;
+}
+
+__host__ __device__ double3 dB_dy(double3 pos,
+                                  trap_geo params) {
+    double3 dBdy = make_double3(0.,
+                                params.dB - 0.5*params.ddB*pos.z,
+                                -0.5*params.ddB*pos.y);
+
+    return dBdy;
+}
+
+__host__ __device__ double3 dB_dz(double3 pos,
+                                  trap_geo params) {
+    double3 dBdz = make_double3(-0.5*params.ddB*pos.x,
+                                -0.5*params.ddB*pos.y,
+                                params.ddB*pos.z);
+
+    return dBdz;
+}
+#else  // Quadrupole trap
 __host__ __device__ double3 B(double3 pos,
                                trap_geo params) {
     double3 mag_field = make_double3(0., 0., 0.);
@@ -45,6 +86,7 @@ __host__ __device__ double3 dB_dz(double3 pos,
 
     return dBdz;
 }
+#endif
 
 __device__ double d_dV_dx(double3 pos,
                           trap_geo params) {

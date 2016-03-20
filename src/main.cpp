@@ -24,12 +24,13 @@
 #include "custom_sink.hpp"
 #endif
 #include "helper_cuda.h"
+#include "utilities.hpp"
 #include "define_host_constants.hpp"
 #include "distribution_generation.hpp"
 #include "distribution_evolution.hpp"
 #include "collisions.hpp"
 
-#define NUM_ATOMS 10000
+#define NUM_ATOMS 2
 
 #if (defined(WIN32) || defined(_WIN32) || defined(__WIN32__))
     const std::string path_to_log_file = "./";
@@ -69,13 +70,20 @@ int main(int argc, char const *argv[]) {
 #if defined(LOGGING)
     LOGF(INFO, "\nInitialising the trapping parameters.");
 #endif
+#if defined(IP)  // Ioffe Pritchard trap
+    trap_geo trap_parameters;
+    trap_parameters.B0 = 0.01;
+    trap_parameters.dB = 20.;
+    trap_parameters.ddB = 40000.;
+#else  // Quadrupole trap
     trap_geo trap_parameters;
     trap_parameters.Bz = 2.0;
     trap_parameters.B0 = 0.;
+#endif
 
     // Initialise computational parameters
     double dt = 1.e-6;
-    int num_time_steps = 100;
+    int num_time_steps = 10;
 
     // Initialise grid parameters
     k_num_cells = make_int3(2, 2, 2);
@@ -502,6 +510,8 @@ int main(int argc, char const *argv[]) {
                       cell_cumulative_num_atoms,
                       collision_remainder,
                       collision_count);
+        progress_bar(i,
+                     num_time_steps);
     }
 #ifdef CUDA
 #if defined(LOGGING)

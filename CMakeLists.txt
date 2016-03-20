@@ -5,7 +5,7 @@ SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE "Release")
 # Add project cmake modules to path.
 SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake)
 
-cmake_minimum_required (VERSION 2.8)
+cmake_minimum_required (VERSION 3.2)
 project (cuda_dsmc)
 
 # User defined g3log header destination
@@ -82,7 +82,7 @@ option(CUDA "Compile with GPU acceleration" OFF)
 
 IF(NOT WIN32)
     find_package(CUDA QUIET REQUIRED)
-    SET(CUDA_NVCC_FLAGS "--generate-code arch=compute_35,code=sm_35")
+    SET(CUDA_NVCC_FLAGS "--generate-code arch=compute_35,code=sm_35 -Xnvlink -w")
     IF(LOGGING)
         SET(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} -std=c++11")
     ENDIF()
@@ -109,13 +109,26 @@ IF(UNIX)
     ENDIF()
 ENDIF()
 
+# Trapping configuration
+option(IP "Use the Ioffe Pritchard trapping configuration" OFF)
+IF(IP)
+    message("Compiling with the Ioffe Pritchard trapping configuration")
+    add_definitions(-DIP)
+ENDIF()
+option(QUAD "Use the quadrupole trapping configuration" OFF)
+IF(QUAD)
+    message("Compiling with the quadrupole trapping configuration")
+    add_definitions(-DQUAD)
+ENDIF()
+
 IF(CUDA)
     SET(SOURCES src/main.cpp 
                 src/distribution_generation.cpp src/distribution_generation.cu 
                 src/distribution_evolution.cpp src/distribution_evolution.cu 
                 src/collisions.cpp src/collisions.cu
                 src/trapping_potential.cpp src/trapping_potential.cu 
-                src/random_numbers.cpp src/random_numbers.cu 
+                src/random_numbers.cpp src/random_numbers.cu
+                src/utilities.cpp
                 src/vector_math.cu src/entropy.c)
     cuda_add_executable(cuda_dsmc ${SOURCES})
     target_link_libraries(cuda_dsmc ${BLAS} pcg_random cudart cublas g3logger)
@@ -126,7 +139,8 @@ ELSE()
                 src/distribution_evolution.cpp 
                 src/collisions.cpp
                 src/trapping_potential.cu src/trapping_potential.cpp 
-                src/random_numbers.cpp 
+                src/random_numbers.cpp
+                src/utilities.cpp
                 src/vector_math.cu src/entropy.c)
     cuda_add_executable(cuda_dsmc ${SOURCES})
     target_link_libraries(cuda_dsmc ${BLAS} pcg_random g3logger)
@@ -152,11 +166,6 @@ add_custom_target(run
     DEPENDS cuda_dsmc
     WORKING_DIRECTORY ${CMAKE_PROJECT_DIR}
 )
-
-get_property(dirs DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY INCLUDE_DIRECTORIES)
-foreach(dir ${dirs})
-  message(STATUS "dir='${dir}'")
-endforeach()
 
 # ============================================================================
 # cmake clean command
@@ -214,6 +223,7 @@ IF(CUDA)
                      src/distribution_generation.cpp src/distribution_generation.cu
                      src/trapping_potential.cpp src/trapping_potential.cu
                      src/random_numbers.cpp src/random_numbers.cu
+                     src/utilities.cpp
                      src/vector_math.cu src/entropy.c)
     cuda_add_executable(device_collisions_test ${TEST_SOURCES})
     target_link_libraries(device_collisions_test cudart cublas g3logger ${BLAS})
@@ -253,6 +263,7 @@ SET(TEST_SOURCES test/collisions_test.cpp
                  src/distribution_generation.cpp src/distribution_generation.cu
                  src/trapping_potential.cpp src/trapping_potential.cu
                  src/random_numbers.cpp src/random_numbers.cu
+                 src/utilities.cpp
                  src/vector_math.cu src/entropy.c)
 cuda_add_executable(host_collisions_test ${TEST_SOURCES})
 target_link_libraries(host_collisions_test g3logger ${BLAS})

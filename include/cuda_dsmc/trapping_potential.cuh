@@ -11,10 +11,18 @@
 // #endif
 #include "vector_math.cuh"
 
+#if defined(IP) // Ioffe Pritchard trap
+typedef struct trap_geo{
+    double B0;
+    double dB;
+    double ddB;
+} trap_geo;
+#else // Quadrupole trap
 typedef struct trap_geo{
     double Bz;
-    double B0;
+    double B0 = 0.;
 } trap_geo;
+#endif
 
 __host__ __device__ double3 B(double3 r,
                               trap_geo params);

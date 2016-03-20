@@ -54,6 +54,15 @@ double mean_norm(double3 *array,
     return mean / num_elements;
 }
 
+double mean_norm_squared(double3 *array,
+                         int num_elements) {
+    double mean = 0.;
+    for (int i = 0; i < num_elements; ++i)
+        mean += norm(array[i])*norm(array[i]);
+
+    return mean / num_elements;
+}
+
 double mean_modified_radius(double3 *pos,
                             int num_elements) {
     double mean = 0.;

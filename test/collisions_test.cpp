@@ -276,9 +276,16 @@ SCENARIO("[Host] Collision rate", "[h-collrate]") {
                                     state,
                                     vel);
 
+#if defined(IP)  // Ioffe Pritchard trap
+        trap_geo trap_parameters;
+        trap_parameters.B0 = 0.01;
+        trap_parameters.dB = 20.;
+        trap_parameters.ddB = 40000.;
+#else  // Quadrupole trap
         trap_geo trap_parameters;
         trap_parameters.Bz = 2.0;
         trap_parameters.B0 = 0.;
+#endif
 
         double3 pos[num_atoms];
         // Generate position distribution
@@ -349,6 +356,8 @@ SCENARIO("[Host] Collision rate", "[h-collrate]") {
                               cell_cumulative_num_atoms,
                               collision_remainder,
                               t_collision_count);
+                progress_bar(i,
+                             100);
             }
 
             int total_coll = 0;

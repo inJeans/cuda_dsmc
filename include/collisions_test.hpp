@@ -15,6 +15,7 @@
 #include "distribution_generation.hpp"
 #include "collisions.hpp" 
 #include "vector_math.cuh"
+#include "utilities.hpp"
 
 #include "define_host_constants.hpp"
 
