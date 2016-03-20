@@ -18,12 +18,15 @@
 __host__ void cu_generate_aligned_spins(int num_atoms,
                                         trap_geo params,
                                         double3 *pos,
-                                        zomplex2 *psi);
+                                        wavefunction *psi);
 
 __global__ void g_generate_aligned_spins(int num_atoms,
                                          trap_geo params,
                                          double3 *pos,
-                                         zomplex2 *psi);
+                                         wavefunction *psi);
+
+__device__ wavefunction d_aligned_wavefunction(trap_geo params,
+                                               double3 pos);
 
 __device__ zomplex2 d_aligned_spin(trap_geo params,
                                    double3 pos);

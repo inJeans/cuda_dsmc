@@ -11,6 +11,7 @@
 // #endif
 
 #include <math.h>
+#include <stdbool.h>
 
 #include "cuComplex.h"
 struct zomplex2 {
@@ -20,6 +21,21 @@ typedef struct zomplex2 zomplex2;
 
 static __inline__ __host__ __device__ zomplex2 make_zomplex2(double x, double y, double z, double w) {
   zomplex2 t; t.up.x = x; t.up.y = y; t.dn.x = z; t.dn.y = w; return t;
+}
+
+struct wavefunction {
+    cuDoubleComplex up, dn;
+    bool isSpinUp = true;
+};
+typedef struct wavefunction wavefunction;
+
+static __inline__ __host__ __device__ wavefunction make_wavefunction(double x, double y, double z, double w, bool isSpinUp) {
+  wavefunction t; 
+  
+  t.up.x = x; t.up.y = y; t.dn.x = z; t.dn.y = w; 
+  t.isSpinUp = isSpinUp;
+
+  return t;
 }
 
 static __inline__ __host__ __device__ double3 operator*(double3 a, 
@@ -95,6 +111,11 @@ static __inline__ __host__ __device__ cuDoubleComplex operator/(cuDoubleComplex 
 static __inline__ __host__ __device__ cuDoubleComplex operator+(cuDoubleComplex a, 
                                                                 cuDoubleComplex b) {
     return cuCadd(a, b);
+}
+
+static __inline__ __host__ __device__ cuDoubleComplex operator-(cuDoubleComplex a, 
+                                                                cuDoubleComplex b) {
+    return cuCsub(a, b);
 }
 
 // static __inline__ __host__ __device__ cuDoubleComplex& operator+=(const cuDoubleComplex &a, 

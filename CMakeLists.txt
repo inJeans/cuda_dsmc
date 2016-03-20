@@ -119,6 +119,11 @@ option(QUAD "Use the quadrupole trapping configuration" OFF)
 IF(QUAD)
     message("Compiling with the quadrupole trapping configuration")
     add_definitions(-DQUAD)
+
+option(SPIN "Add spin tracking" OFF)
+IF(SPIN)
+    add_definitions(-DSPIN)
+
 ENDIF()
 
 IF(CUDA)
@@ -133,6 +138,15 @@ IF(CUDA)
     cuda_add_executable(cuda_dsmc ${SOURCES})
     target_link_libraries(cuda_dsmc ${BLAS} pcg_random cudart cublas g3logger)
     target_compile_definitions(cuda_dsmc PRIVATE -DCUDA)
+ELSEIF(MKL)
+    SET(SOURCES src/main.cpp 
+                src/distribution_generation.cpp 
+                src/distribution_evolution.cpp 
+                src/trapping_potential.cu src/trapping_potential.cpp 
+                src/random_numbers.cpp 
+                src/vector_math.cu src/entropy.c)
+    cuda_add_executable(cuda_dsmc ${SOURCES})
+    target_link_libraries(cuda_dsmc gomp mkl_intel_lp64 mkl_core mkl_gnu_thread dl pthread m pcg_random g3logger)
 ELSE()
     SET(SOURCES src/main.cpp
                 src/distribution_generation.cpp 
@@ -196,6 +210,7 @@ IF(CUDA)
     cuda_add_executable(device_random_number_generation_test ${TEST_SOURCES})
     target_link_libraries(device_random_number_generation_test pcg_random cudart g3logger)
     target_compile_definitions(device_random_number_generation_test PRIVATE -DCUDA)
+
     # DEVICE - Distribution generation tests
     SET(TEST_SOURCES test/distribution_generation_test.cu 
                      src/distribution_generation.cpp src/distribution_generation.cu 
@@ -206,6 +221,7 @@ IF(CUDA)
     cuda_add_executable(device_distribution_generation_test ${TEST_SOURCES})
     target_link_libraries(device_distribution_generation_test pcg_random cudart g3logger)
     target_compile_definitions(device_distribution_generation_test PRIVATE -DCUDA)
+
     # DEVICE - Distribution evolution tests
     SET(TEST_SOURCES test/distribution_evolution_test.cu 
                      src/distribution_evolution.cpp src/distribution_evolution.cu 
@@ -217,6 +233,7 @@ IF(CUDA)
     cuda_add_executable(device_distribution_evolution_test ${TEST_SOURCES})
     target_link_libraries(device_distribution_evolution_test pcg_random cudart cublas g3logger)
     target_compile_definitions(device_distribution_evolution_test PRIVATE -DCUDA)
+    
     # DEVICE - Collision tests
     SET(TEST_SOURCES test/collisions_test.cu
                      src/collisions.cpp src/collisions.cu
@@ -238,6 +255,7 @@ SET(TEST_SOURCES test/random_number_generation_test.cpp
                  src/vector_math.cu src/entropy.c)
 cuda_add_executable(host_random_number_generation_test ${TEST_SOURCES})
 target_link_libraries(host_random_number_generation_test pcg_random cudart g3logger testu01 mylib probdist)
+
 # HOST - Distribution generation tests
 SET(TEST_SOURCES test/distribution_generation_test.cpp 
                  src/distribution_generation.cpp src/distribution_generation.cu 
@@ -247,6 +265,7 @@ SET(TEST_SOURCES test/distribution_generation_test.cpp
                  src/vector_math.cu src/entropy.c)
 cuda_add_executable(host_distribution_generation_test ${TEST_SOURCES})
 target_link_libraries(host_distribution_generation_test pcg_random cudart g3logger)
+
 # HOST - Distribution evolution tests
 SET(TEST_SOURCES test/distribution_evolution_test.cpp 
                  src/distribution_evolution.cpp
@@ -257,6 +276,7 @@ SET(TEST_SOURCES test/distribution_evolution_test.cpp
                  src/vector_math.cu src/entropy.c)
 cuda_add_executable(host_distribution_evolution_test ${TEST_SOURCES})
 target_link_libraries(host_distribution_evolution_test pcg_random cudart cublas g3logger ${BLAS})
+
 # HOST - Collision tests
 SET(TEST_SOURCES test/collisions_test.cpp
                  src/collisions.cpp

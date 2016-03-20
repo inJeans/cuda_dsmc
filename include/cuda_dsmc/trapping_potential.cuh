@@ -39,10 +39,22 @@ __host__ __device__ double3 dB_dz(double3 pos,
 __device__ double d_dV_dx(double3 pos,
                           trap_geo params);
 
+__device__ double d_expectation_dV_dx(trap_geo params,
+                                      double3 pos,
+                                      zomplex2 psi);
+
 __device__ double d_dV_dy(double3 pos,
                           trap_geo params);
 
+__device__ double d_expectation_dV_dy(trap_geo params,
+                                      double3 pos,
+                                      zomplex2 psi);
+
 __device__ double d_dV_dz(double3 pos,
                           trap_geo params);
+
+__device__ double d_expectation_dV_dz(trap_geo params,
+                                      double3 pos,
+                                      zomplex2 psi);
 
 #endif  // TRAPPING_POTENTIAL_CUH_INCLUDED
