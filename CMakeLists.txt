@@ -5,7 +5,7 @@ SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE "Release")
 # Add project cmake modules to path.
 SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake)
 
-cmake_minimum_required (VERSION 3.2)
+cmake_minimum_required (VERSION 2.8)
 project (cuda_dsmc)
 
 # User defined g3log header destination
@@ -69,8 +69,8 @@ IF(MKL)
     ENDIF()
 ELSE()
 IF(APPLE)
-    find_library(BLAS vecLib)
-    # find_library(BLAS Accelerate)
+    # find_library(BLAS vecLib)
+    find_library(BLAS Accelerate)
     MESSAGE(${BLAS})
 ELSE()
     find_library(BLAS cblas)
@@ -119,11 +119,11 @@ option(QUAD "Use the quadrupole trapping configuration" OFF)
 IF(QUAD)
     message("Compiling with the quadrupole trapping configuration")
     add_definitions(-DQUAD)
+ENDIF()
 
 option(SPIN "Add spin tracking" OFF)
 IF(SPIN)
     add_definitions(-DSPIN)
-
 ENDIF()
 
 IF(CUDA)

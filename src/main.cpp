@@ -93,7 +93,7 @@ int main(int argc, char const *argv[]) {
 #if defined(LOGGING)
     LOGF(INFO, "\nInitialising the rng state array.");
 #endif
-#ifdef CUDA
+#if defined(CUDA)
 #if defined(LOGGING)
     LOGF(DEBUG, "\nAllocating %i curandState elements on the device.",
          NUM_ATOMS);
@@ -119,7 +119,7 @@ int main(int argc, char const *argv[]) {
     LOGF(INFO, "\nInitialising the atom_id array.");
 #endif
     int *atom_id;
-#ifdef CUDA
+#if defined(CUDA)
 #if defined(LOGGING)
     LOGF(DEBUG, "\nAllocating %i int elements on the device.",
          NUM_ATOMS);
@@ -143,7 +143,7 @@ int main(int argc, char const *argv[]) {
     LOGF(INFO, "\nInitialising the cell_id array.");
 #endif
     int *cell_id;
-#ifdef CUDA
+#if defined(CUDA)
 #if defined(LOGGING)
     LOGF(DEBUG, "\nAllocating %i int elements on the device.",
          NUM_ATOMS);
@@ -218,7 +218,7 @@ int main(int argc, char const *argv[]) {
     LOGF(INFO, "\nInitialising the cell_cumulative_num_atoms array.");
 #endif
     int *cell_cumulative_num_atoms;
-#ifdef CUDA
+#if defined(CUDA)
 #if defined(LOGGING)
     LOGF(DEBUG, "\nAllocating %i int elements on the device.",
          total_num_cells+1);
@@ -242,7 +242,7 @@ int main(int argc, char const *argv[]) {
     LOGF(INFO, "\nInitialising the collision_count array.");
 #endif
     int *collision_count;
-#ifdef CUDA
+#if defined(CUDA)
 #if defined(LOGGING)
     LOGF(DEBUG, "\nAllocating %i int elements on the device.",
          total_num_cells);
@@ -266,7 +266,7 @@ int main(int argc, char const *argv[]) {
     LOGF(INFO, "\nInitialising the collision_remainder array.");
 #endif
     double *collision_remainder;
-#ifdef CUDA
+#if defined(CUDA)
 #if defined(LOGGING)
     LOGF(DEBUG, "\nAllocating %i int elements on the device.",
          total_num_cells);
@@ -290,7 +290,7 @@ int main(int argc, char const *argv[]) {
     LOGF(INFO, "\nInitialising the sig_vr_max array.");
 #endif
     double *sig_vr_max;
-#ifdef CUDA
+#if defined(CUDA)
 #if defined(LOGGING)
     LOGF(DEBUG, "\nAllocating %i int elements on the device.",
          total_num_cells);
@@ -314,7 +314,7 @@ int main(int argc, char const *argv[]) {
     LOGF(INFO, "\nInitialising the velocity array.");
 #endif
     double3 *vel;
-#ifdef CUDA
+#if defined(CUDA)
 #if defined(LOGGING)
     LOGF(DEBUG, "\nAllocating %i double3 elements on the device.",
          NUM_ATOMS);
@@ -341,7 +341,7 @@ int main(int argc, char const *argv[]) {
     LOGF(INFO, "\nInitialising the position array.");
 #endif
     double3 *pos;
-#ifdef CUDA
+#if defined(CUDA)
 #if defined(LOGGING)
     LOGF(DEBUG, "\nAllocating %i double3 elements on the device.",
          NUM_ATOMS);
@@ -366,16 +366,22 @@ int main(int argc, char const *argv[]) {
 
 #if defined(SPIN)
     // Initialise wavefunction
+#if defined(LOGGING)
     LOGF(INFO, "\nInitialising the wavefunction array.");
+#endif
     wavefunction *psi;
 #if defined(CUDA)
+#if defined(LOGGING)
     LOGF(DEBUG, "\nAllocating %i wavefunction elements on the device.",
          NUM_ATOMS);
+#endif  // Logging
     checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&psi),
                                NUM_ATOMS*sizeof(wavefunction)));
 #else
+#if defined(LOGGING)
     LOGF(DEBUG, "\nAllocating %i wavefunction elements on the host.",
          NUM_ATOMS);
+#endif  // Logging
     psi = reinterpret_cast<wavefunction*>(calloc(NUM_ATOMS,
                                              sizeof(wavefunction)));
 #endif // CUDA
@@ -393,7 +399,7 @@ int main(int argc, char const *argv[]) {
     LOGF(INFO, "\nInitialising the acceleration array.");
 #endif
     double3 *acc;
-#ifdef CUDA
+#if defined(CUDA)
 #if defined(LOGGING)
     LOGF(DEBUG, "\nAllocating %i double3 elements on the device.",
          NUM_ATOMS);
@@ -424,6 +430,7 @@ int main(int argc, char const *argv[]) {
                          acc);
 #endif // Spin
 
+#if defined(LOGGING)
     LOGF(DEBUG, "\nBefore time evolution.\n");
 #if defined(CUDA)
     double3 h_vel[NUM_ATOMS];
@@ -451,8 +458,6 @@ int main(int argc, char const *argv[]) {
                NUM_ATOMS*sizeof(wavefunction),
                cudaMemcpyDeviceToHost);
 #endif // Spin
-
-#if defined(LOGGING)
     LOGF(INFO, "\nv1 = { %f,%f,%f }, v2 = { %f,%f,%f }\n", h_vel[0].x, h_vel[0].y, h_vel[0].z,
                                                            h_vel[1].x, h_vel[1].y, h_vel[1].z);
     LOGF(INFO, "\np1 = { %f,%f,%f }, p2 = { %f,%f,%f }\n", h_pos[0].x, h_pos[0].y, h_pos[0].z,
@@ -471,7 +476,6 @@ int main(int argc, char const *argv[]) {
 #endif // Ehrenfest
 #endif // Spin
 #else 
-#if defined(LOGGING)
     LOGF(INFO, "\nv1 = { %f,%f,%f }, v2 = { %f,%f,%f }\n", vel[0].x, vel[0].y, vel[0].z,
                                                            vel[1].x, vel[1].y, vel[1].z);
     LOGF(INFO, "\np1 = { %f,%f,%f }, p2 = { %f,%f,%f }\n", pos[0].x, pos[0].y, pos[0].z,
@@ -487,13 +491,13 @@ int main(int argc, char const *argv[]) {
     LOGF(INFO, "\npsi1 = { %f%+fi,%f%+fi %d }, psi2 = { %f%+fi,%f%+fi %d }\n", 
                psi[0].up.x, psi[0].up.y, psi[0].dn.x, psi[0].dn.y, psi[0].isSpinUp,
                psi[1].up.x, psi[1].up.y, psi[1].dn.x, psi[1].dn.y, psi[1].isSpinUp);
-#endif // Ehrenfest
-#endif // Spin
-#endif
-#endif
-    
+#endif  // Ehrenfest
+#endif  // Spin
+#endif  // CUDA
+#endif  // Logging
+
     cublasHandle_t cublas_handle;
-#ifdef CUDA
+#if defined(CUDA)
 #if defined(LOGGING)
     LOGF(DEBUG, "\nCreating the cuBLAS handle.\n");
 #endif
@@ -529,7 +533,7 @@ int main(int argc, char const *argv[]) {
                                acc);
 #endif // Spin
     }
-#ifdef CUDA
+#if defined(CUDA)
 #if defined(LOGGING)
     LOGF(DEBUG, "\nDestroying the cuBLAS handle.\n");
 #endif
@@ -537,8 +541,7 @@ int main(int argc, char const *argv[]) {
 #endif
 #if defined(LOGGING)
     LOGF(DEBUG, "\nAfter time evolution.\n");
-#endif
-    #ifdef CUDA
+#if defined(CUDA)
     cudaMemcpy(&h_vel,
                vel,
                NUM_ATOMS*sizeof(double3),
@@ -557,8 +560,6 @@ int main(int argc, char const *argv[]) {
                NUM_ATOMS*sizeof(wavefunction),
                cudaMemcpyDeviceToHost);
 #endif // Spin
-
-#if defined(LOGGING)
     LOGF(INFO, "\nv1 = { %f,%f,%f }, v2 = { %f,%f,%f }\n", h_vel[0].x, h_vel[0].y, h_vel[0].z,
                                                            h_vel[1].x, h_vel[1].y, h_vel[1].z);
     LOGF(INFO, "\np1 = { %f,%f,%f }, p2 = { %f,%f,%f }\n", h_pos[0].x, h_pos[0].y, h_pos[0].z,
@@ -577,7 +578,6 @@ int main(int argc, char const *argv[]) {
 #endif // Ehrenfest
 #endif // Spin
 #else 
-#if defined(LOGGING)
     LOGF(INFO, "\nv1 = { %f,%f,%f }, v2 = { %f,%f,%f }\n", vel[0].x, vel[0].y, vel[0].z,
                                                            vel[1].x, vel[1].y, vel[1].z);
     LOGF(INFO, "\np1 = { %f,%f,%f }, p2 = { %f,%f,%f }\n", pos[0].x, pos[0].y, pos[0].z,
@@ -593,12 +593,12 @@ int main(int argc, char const *argv[]) {
     LOGF(INFO, "\npsi1 = { %f%+fi,%f%+fi %d }, psi2 = { %f%+fi,%f%+fi %d }\n", 
                psi[0].up.x, psi[0].up.y, psi[0].dn.x, psi[0].dn.y, psi[0].isSpinUp,
                psi[1].up.x, psi[1].up.y, psi[1].dn.x, psi[1].dn.y, psi[1].isSpinUp);
-#endif // Ehrenfest
-#endif // Spin
-#endif
-#endif
+#endif  // Ehrenfest
+#endif  // Spin
+#endif  // CUDA
+#endif  // Logging
 
-#ifdef CUDA
+#if defined(CUDA)
 #if defined(LOGGING)
     LOGF(INFO, "\nCleaning up device memory.");
 #endif
@@ -635,7 +635,8 @@ int main(int argc, char const *argv[]) {
     free(acc);
 #if defined(SPIN)
     free(psi);
-#endif
+#endif  // Spin
+#endif  // CUDA
 #if defined(LOGGING)
     g3::internal::shutDownLogging();
 #endif

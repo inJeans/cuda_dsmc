@@ -8,6 +8,8 @@
 
 #include "distribution_generation_tests.cuh"
 
+double tol = 1.e-6;
+
 SCENARIO("[DEVICE] Thermal velocity distribution", "[d-veldist]") {
     GIVEN("An array of appropriate seeds") {
         int num_test = 5000;

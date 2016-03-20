@@ -7,6 +7,8 @@
 
 #include "distribution_evolution_tests.hpp"
 
+double tol = 1.e-6;
+
 SCENARIO("[HOST] Acceleration Update", "[h-acc]") {
     GIVEN("A thermal distribution of 5000 positions, help in a quadrupole trap with a Bz = 2.0") {
         double init_T = 20.e-6;
