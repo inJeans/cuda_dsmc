@@ -50,19 +50,15 @@ wavefunction aligned_wavefunction(trap_geo params,
                                   double3 pos) {
     wavefunction aligned_psi = make_wavefunction(0., 0., 0., 0., true);
 
-    zomplex2 psi = aligned_spin(params,
-                                pos);
-
-    aligned_psi.up = psi.up;
-    aligned_psi.dn = psi.dn;
-    aligned_psi.isSpinUp = true;
+    aligned_psi = aligned_spin(params,
+                               pos);
 
     return aligned_psi;
 }
 
-zomplex2 aligned_spin(trap_geo params,
+wavefunction aligned_spin(trap_geo params,
                       double3 pos) {
-    zomplex2 psi = make_zomplex2(0., 0., 0., 0.);
+    wavefunction psi = make_wavefunction(0., 0., 0., 0., true);
 
     double3 Bn = unit(B(pos,
                         params));

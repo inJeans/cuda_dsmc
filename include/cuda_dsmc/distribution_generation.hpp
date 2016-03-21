@@ -20,8 +20,8 @@ void generate_aligned_spins(int num_atoms,
 wavefunction aligned_wavefunction(trap_geo params,
                                   double3 pos);
 
-zomplex2 aligned_spin(trap_geo params,
-                      double3 pos);
+wavefunction aligned_spin(trap_geo params,
+                          double3 pos);
 
 // #ifdef CUDA
 __host__ void generate_thermal_velocities(int num_atoms,
