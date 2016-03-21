@@ -61,3 +61,23 @@ __global__ void g_gaussian_prng(int num_elements,
 
     return;
 }
+
+__global__ void zero_elements(int num_elements,
+                               double *array) {
+    for (int element = blockIdx.x * blockDim.x + threadIdx.x;
+         element < num_elements;
+         element += blockDim.x * gridDim.x)
+        array[element] = 0.;
+
+    return;
+}
+
+__global__ void negative_elements(int num_elements,
+                                  int2 *array) {
+    for (int element = blockIdx.x * blockDim.x + threadIdx.x;
+         element < num_elements;
+         element += blockDim.x * gridDim.x)
+        array[element] = make_int2(-1, -1);
+
+    return;
+}

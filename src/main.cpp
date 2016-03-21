@@ -532,6 +532,20 @@ int main(int argc, char const *argv[]) {
                                vel,
                                acc);
 #endif // Spin
+        collide_atoms(NUM_ATOMS,
+                     total_num_cells,
+                     dt,
+                     pos,
+                     vel,
+                     state,
+                     sig_vr_max,
+                     cell_id,
+                     atom_id,
+                     cell_start_end,
+                     cell_num_atoms,
+                     cell_cumulative_num_atoms,
+                     collision_remainder,
+                     collision_count);
     }
 #if defined(CUDA)
 #if defined(LOGGING)

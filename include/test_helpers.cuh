@@ -29,4 +29,10 @@ __global__ void g_gaussian_prng(int num_elements,
                                 curandState *state,
                                 double *r);
 
+__global__ void zero_elements(int num_elements,
+                               double *array);
+
+__global__ void negative_elements(int num_elements,
+                                  int2 *array);
+
 #endif // TEST_HELPERS_CUH_INCLUDED
