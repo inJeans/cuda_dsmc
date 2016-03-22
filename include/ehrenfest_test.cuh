@@ -39,10 +39,26 @@ __global__ void g_kinetic_energy(int num_atoms,
 
 __device__ double d_kinetic_energy(double3 vel);
 
-__host__ void cu_nan_checker(int num_atoms,
-                             double3 *array);
+__host__ double inst_potential_energy(int num_atoms,
+                                      double3 *pos,
+                                      trap_geo params,
+                                      wavefunction *psi,
+                                      double *potential_energy);
 
-__global__ void g_nan_checker(int num_atoms,
-                              double3 *array);
+__host__ void cu_potential_energy(int num_atoms,
+                                  double3 *pos,
+                                  trap_geo params,
+                                  wavefunction *psi,
+                                  double *potential_energy);
+
+__global__ void g_potential_energy(int num_atoms,
+                                   double3 *pos,
+                                   trap_geo params,
+                                   wavefunction *psi,
+                                   double *potential_energy);
+
+__device__ double d_potential_energy(double3 pos,
+                                     trap_geo params,
+                                     wavefunction psi);
 
 #endif  // EHRENFEST_TEST_HPP_INCLUDED

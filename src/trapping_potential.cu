@@ -11,7 +11,7 @@
 
 #if defined(IP)  // Ioffe pritchard trap
 __host__ __device__ double3 B(double3 pos,
-                               trap_geo params) {
+                              trap_geo params) {
     double3 mag_field = make_double3(0., 0., 0.);
     
     mag_field.x = params.dB*pos.x - 0.5*params.ddB*pos.x*pos.z;

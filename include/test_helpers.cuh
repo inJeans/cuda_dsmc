@@ -35,4 +35,10 @@ __global__ void zero_elements(int num_elements,
 __global__ void negative_elements(int num_elements,
                                   int2 *array);
 
+__host__ void cu_nan_checker(int num_atoms,
+                             double3 *array);
+
+__global__ void g_nan_checker(int num_atoms,
+                              double3 *array);
+
 #endif // TEST_HELPERS_CUH_INCLUDED

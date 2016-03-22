@@ -238,6 +238,19 @@ SCENARIO("[DEVICE] Execute a full ehrenfest simulation", "[d-ehrenfest]") {
         avg_kinetic_energy = reinterpret_cast<double*>(calloc(num_atoms,
                                                        sizeof(double)));
 
+        // Initialise potential energy
+#if defined(LOGGING)
+        LOGF(INFO, "\nInitialising the potential energy array.");
+        LOGF(DEBUG, "\nAllocating %i double elements on the device.",
+             num_atoms);
+#endif
+        double *d_potential_energy;
+        checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&d_potential_energy),
+                                   num_atoms*sizeof(double)));
+        double *avg_potential_energy;
+        avg_potential_energy = reinterpret_cast<double*>(calloc(num_atoms,
+                                                         sizeof(double)));
+
 #if defined(LOGGING)
         LOGF(DEBUG, "\nCreating the cuBLAS handle.\n");
 #endif
@@ -254,9 +267,6 @@ SCENARIO("[DEVICE] Execute a full ehrenfest simulation", "[d-ehrenfest]") {
         LOGF(INFO, "\nEvolving distribution for %i time steps.", num_time_steps);
 #endif
         for (int t = 0; t < num_time_steps; ++t) {
-            printf("Before velocity verlet\n");
-            cu_nan_checker(num_atoms,
-                           vel);
             velocity_verlet_update(num_atoms,
                                        dt,
                                        trap_parameters,
@@ -265,9 +275,6 @@ SCENARIO("[DEVICE] Execute a full ehrenfest simulation", "[d-ehrenfest]") {
                                        vel,
                                        acc,
                                        psi);
-            printf("Before collide\n");
-            cu_nan_checker(num_atoms,
-                           vel);
             collide_atoms(num_atoms,
                           total_num_cells,
                           dt,
@@ -282,21 +289,27 @@ SCENARIO("[DEVICE] Execute a full ehrenfest simulation", "[d-ehrenfest]") {
                           cell_cumulative_num_atoms,
                           collision_remainder,
                           collision_count);
-            printf("Before energy\n");
-            cu_nan_checker(num_atoms,
-                           vel);
             avg_kinetic_energy[t] = inst_kinetic_energy(num_atoms,
                                                         vel,
                                                         d_kinetic_energy) /
                                     num_atoms;
+            avg_potential_energy[t] = inst_potential_energy(num_atoms,
+                                                            pos,
+                                                            trap_parameters,
+                                                            psi,
+                                                            d_potential_energy) /
+                                       num_atoms;
 
             progress_bar(t,
                          num_time_steps);
         }
         printf("\n");
-        for (int i = 0; i < num_time_steps; ++i)
+        for (int i = 0; i < num_time_steps; ++i) {
             printf("avg_kinetic_energy[%i] = %g uK\n", i,
                                avg_kinetic_energy[i]/kB*1.e6);
+            printf("avg_potential_energy[%i] = %g uK\n", i,
+                               avg_potential_energy[i]/kB*1.e6);
+        }
 
 #if defined(LOGGING)
         LOGF(DEBUG, "\nDestroying the cuBLAS handle.\n");
@@ -320,8 +333,10 @@ SCENARIO("[DEVICE] Execute a full ehrenfest simulation", "[d-ehrenfest]") {
         cudaFree(acc);
         cudaFree(psi);
         cudaFree(d_kinetic_energy);
+        cudaFree(d_potential_energy);
 
         free(avg_kinetic_energy);
+        free(avg_potential_energy);
     }
 }
 
@@ -403,8 +418,6 @@ __global__ void g_kinetic_energy(int num_atoms,
          atom += blockDim.x * gridDim.x) {
         kinetic_energy[atom] = d_kinetic_energy(vel[atom]);
         if(kinetic_energy[atom] != kinetic_energy[atom]) {
-            printf("Nans - vel[%i] = {%g, %g, %g}\n",
-                    atom, vel[atom].x, vel[atom].y, vel[atom].z);
             kinetic_energy[atom] = 0.;
             vel[atom] = make_double3(0., 0., 0.);
         }
@@ -417,18 +430,65 @@ __device__ double d_kinetic_energy(double3 vel) {
     return 0.5 * d_mass * norm(vel) * norm(vel);
 }
 
-__host__ void cu_nan_checker(int num_atoms,
-                             double3 *array) {
+__host__ double inst_potential_energy(int num_atoms,
+                                      double3 *pos,
+                                      trap_geo params,
+                                      wavefunction *psi,
+                                      double *potential_energy) {
+    double *h_inst_pot = NULL;
+    h_inst_pot = reinterpret_cast<double*>(calloc(1,
+                                                  sizeof(double)));
+    double *d_inst_pot = NULL;
+    checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&d_inst_pot),
+                               sizeof(double)));
+
+    cu_potential_energy(num_atoms,
+                       pos,
+                       params,
+                       psi,
+                       potential_energy);
+    // Determine temporary device storage requirements
+    void     *d_temp_storage = NULL;
+    size_t   temp_storage_bytes = 0;
+    checkCudaErrors(cub::DeviceReduce::Sum(d_temp_storage,
+                                           temp_storage_bytes,
+                                           potential_energy,
+                                           d_inst_pot,
+                                           num_atoms));
+    // Allocate temporary storage
+    checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&d_temp_storage),
+                               temp_storage_bytes));
+    // Run sum-reduction
+    checkCudaErrors(cub::DeviceReduce::Sum(d_temp_storage,
+                                           temp_storage_bytes,
+                                           potential_energy,
+                                           d_inst_pot,
+                                           num_atoms));
+    checkCudaErrors(cudaMemcpy(h_inst_pot,
+                               d_inst_pot,
+                               1.*sizeof(double),
+                               cudaMemcpyDeviceToHost));
+    cudaFree(d_temp_storage);
+    cudaFree(d_inst_pot);
+
+    return h_inst_pot[0];
+}
+
+__host__ void cu_potential_energy(int num_atoms,
+                                  double3 *pos,
+                                  trap_geo params,
+                                  wavefunction *psi,
+                                  double *potential_energy) {
 #if defined(LOGGING)
-    LOGF(DEBUG, "\nCalculating optimal launch configuration for the nan "
-                "checker kernel.\n");
+    LOGF(DEBUG, "\nCalculating optimal launch configuration for the potential "
+                "energy calculation kernel.\n");
 #endif
     int block_size = 0;
     int min_grid_size = 0;
     int grid_size = 0;
     cudaOccupancyMaxPotentialBlockSize(&min_grid_size,
                                        &block_size,
-                                       (const void *) g_nan_checker,
+                                       (const void *) g_potential_energy,
                                        0,
                                        num_atoms);
     grid_size = (num_atoms + block_size - 1) / block_size;
@@ -437,30 +497,54 @@ __host__ void cu_nan_checker(int num_atoms,
                 grid_size, block_size);
 #endif
 
-    g_nan_checker<<<grid_size,
-                       block_size>>>
-                      (num_atoms,
-                       array);
+    g_potential_energy<<<grid_size,
+                         block_size>>>
+                        (num_atoms,
+                         pos,
+                         params,
+                         psi,
+                         potential_energy);
 
     return;
 }
 
-__global__ void g_nan_checker(int num_atoms,
-                              double3 *array) {
+__global__ void g_potential_energy(int num_atoms,
+                                   double3 *pos,
+                                   trap_geo params,
+                                   wavefunction *psi,
+                                   double *potential_energy) {
     for (int atom = blockIdx.x * blockDim.x + threadIdx.x;
          atom < num_atoms;
          atom += blockDim.x * gridDim.x) {
-        if(array[atom].x != array[atom].x) {
-            printf("Nan - array[%i] = {%g, %g, %g}\n",
-                    atom, array[atom].x, array[atom].y, array[atom].z);
-        } else if (array[atom].y != array[atom].y) {
-            printf("Nan - array[%i] = {%g, %g, %g}\n",
-                    atom, array[atom].x, array[atom].y, array[atom].z);
-        } else if (array[atom].z != array[atom].z) {
-            printf("Nan - array[%i] = {%g, %g, %g}\n",
-                    atom, array[atom].x, array[atom].y, array[atom].z);
+        potential_energy[atom] = d_potential_energy(pos[atom],
+                                                    params,
+                                                    psi[atom]);
+        if(potential_energy[atom] != potential_energy[atom]) {
+            potential_energy[atom] = 0.;
+            pos[atom] = make_double3(0., 0., 0.);
+            psi[atom] = make_wavefunction(0., 0., 0., 0., true);
         }
     }
 
     return;
+}
+
+__device__ double d_potential_energy(double3 pos,
+                                     trap_geo params,
+                                     wavefunction psi) {
+    double3 local_B = B(pos,
+                        params);
+    cuDoubleComplex H[2][2] = {make_cuDoubleComplex(0., 0.)};
+    H[0][0] = 0.5*d_gs*d_muB * make_cuDoubleComplex(local_B.z,
+                                                    0.);
+    H[0][1] = 0.5*d_gs*d_muB * make_cuDoubleComplex(local_B.x,
+                                                    -local_B.y);
+    H[1][0] = 0.5*d_gs*d_muB * make_cuDoubleComplex(local_B.x,
+                                                    local_B.y);
+    H[1][1] = 0.5*d_gs*d_muB * make_cuDoubleComplex(-local_B.z,
+                                                    0.);
+    cuDoubleComplex potential = psi.up*(H[0][0]*cuConj(psi.up) + H[1][0]*cuConj(psi.dn)) +
+                                psi.dn*(H[0][1]*cuConj(psi.up) + H[1][1]*cuConj(psi.dn));
+
+    return cuCreal(potential);
 }

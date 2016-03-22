@@ -81,3 +81,51 @@ __global__ void negative_elements(int num_elements,
 
     return;
 }
+
+__host__ void cu_nan_checker(int num_atoms,
+                             double3 *array) {
+#if defined(LOGGING)
+    LOGF(DEBUG, "\nCalculating optimal launch configuration for the nan "
+                "checker kernel.\n");
+#endif
+    int block_size = 0;
+    int min_grid_size = 0;
+    int grid_size = 0;
+    cudaOccupancyMaxPotentialBlockSize(&min_grid_size,
+                                       &block_size,
+                                       (const void *) g_nan_checker,
+                                       0,
+                                       num_atoms);
+    grid_size = (num_atoms + block_size - 1) / block_size;
+#if defined(LOGGING)
+    LOGF(DEBUG, "\nLaunch config set as <<<%i,%i>>>\n",
+                grid_size, block_size);
+#endif
+
+    g_nan_checker<<<grid_size,
+                       block_size>>>
+                      (num_atoms,
+                       array);
+
+    return;
+}
+
+__global__ void g_nan_checker(int num_atoms,
+                              double3 *array) {
+    for (int atom = blockIdx.x * blockDim.x + threadIdx.x;
+         atom < num_atoms;
+         atom += blockDim.x * gridDim.x) {
+        if(array[atom].x != array[atom].x) {
+            printf("Nan - array[%i] = {%g, %g, %g}\n",
+                    atom, array[atom].x, array[atom].y, array[atom].z);
+        } else if (array[atom].y != array[atom].y) {
+            printf("Nan - array[%i] = {%g, %g, %g}\n",
+                    atom, array[atom].x, array[atom].y, array[atom].z);
+        } else if (array[atom].z != array[atom].z) {
+            printf("Nan - array[%i] = {%g, %g, %g}\n",
+                    atom, array[atom].x, array[atom].y, array[atom].z);
+        }
+    }
+
+    return;
+}
