@@ -194,8 +194,6 @@ SCENARIO("[DEVICE] Execute a full ehrenfest simulation", "[d-ehrenfest]") {
         wavefunction *psi;
         checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&psi),
                                    num_atoms*sizeof(wavefunction)));
-        psi = reinterpret_cast<wavefunction*>(calloc(num_atoms,
-                                                     sizeof(wavefunction)));
 
         // Generate wavefunction
         generate_aligned_spins(num_atoms,
@@ -215,10 +213,10 @@ SCENARIO("[DEVICE] Execute a full ehrenfest simulation", "[d-ehrenfest]") {
 
         // Generate accelerations
         update_accelerations(num_atoms,
-                            trap_parameters,
-                            pos,
-                            acc,
-                            psi);
+                             trap_parameters,
+                             pos,
+                             acc,
+                             psi);
 
 #if defined(LOGGING)
         LOGF(DEBUG, "\nCreating the cuBLAS handle.\n");
