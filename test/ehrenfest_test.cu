@@ -49,12 +49,12 @@ SCENARIO("[DEVICE] Execute a full ehrenfest simulation", "[d-ehrenfest]") {
 #if defined(LOGGING)
         LOGF(INFO, "\nInitialising the rng state array.");
         LOGF(DEBUG, "\nAllocating %i curandState elements on the device.",
-             num_atoms);
+             largest);
 #endif
         curandState *state;
         checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&state),
                                    largest*sizeof(curandState)));
-        initialise_rng_states(num_atoms,
+        initialise_rng_states(largest,
                               state,
                               false);
 
@@ -424,6 +424,12 @@ __global__ void g_kinetic_energy(int num_atoms,
          atom < num_atoms;
          atom += blockDim.x * gridDim.x) {
         kinetic_energy[atom] = d_kinetic_energy(vel[atom]);
+        if(kinetic_energy[atom] != kinetic_energy[atom]) {
+            printf("Nans - vel[%i] = {%g, %g, %g}\n",
+                    atom, vel[atom].x, vel[atom].y, vel[atom].z);
+            kinetic_energy[atom] = 0.;
+            vel[atom] = make_double3(0., 0., 0.);
+        }
     }
 
     return;
