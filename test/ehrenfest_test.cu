@@ -218,6 +218,19 @@ SCENARIO("[DEVICE] Execute a full ehrenfest simulation", "[d-ehrenfest]") {
                              acc,
                              psi);
 
+        // Initialise kinetic energy
+#if defined(LOGGING)
+        LOGF(INFO, "\nInitialising the kinetic energy array.");
+        LOGF(DEBUG, "\nAllocating %i double elements on the device.",
+             num_atoms);
+#endif
+        double *d_kinetic_energy;
+        checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&d_kinetic_energy),
+                                   num_atoms*sizeof(double)));
+        double *avg_kinetic_energy;
+        avg_kinetic_energy = reinterpret_cast<double*>(calloc(num_atoms,
+                                                       sizeof(double)));
+
 #if defined(LOGGING)
         LOGF(DEBUG, "\nCreating the cuBLAS handle.\n");
 #endif
@@ -258,9 +271,18 @@ SCENARIO("[DEVICE] Execute a full ehrenfest simulation", "[d-ehrenfest]") {
                           collision_remainder,
                           collision_count);
 
+            avg_kinetic_energy[t] = inst_kinetic_energy(num_atoms,
+                                                        vel,
+                                                        d_kinetic_energy) /
+                                    num_atoms;
+
             progress_bar(t,
                          num_time_steps);
         }
+
+        for (int i = 0; i < num_time_steps; ++i)
+            printf("avg_kinetic_energy[%i] = %f uK\n", i,
+                                                      avg_kinetic_energy[i]*kB*1e6);
 
 #if defined(LOGGING)
         LOGF(DEBUG, "\nDestroying the cuBLAS handle.\n");
@@ -283,6 +305,94 @@ SCENARIO("[DEVICE] Execute a full ehrenfest simulation", "[d-ehrenfest]") {
         cudaFree(pos);
         cudaFree(acc);
         cudaFree(psi);
+        cudaFree(d_kinetic_energy);
 
+        free(avg_kinetic_energy);
     }
+}
+
+__host__ double inst_kinetic_energy(int num_atoms,
+                                    double3 *vel,
+                                    double *kinetic_energy) {
+    double h_inst_kin = 0.;
+    double *d_inst_kin;
+    checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(d_inst_kin),
+                               sizeof(double)));
+
+    cu_kinetic_energy(num_atoms,
+                      vel,
+                      kinetic_energy);
+
+    // Determine temporary device storage requirements
+    void     *d_temp_storage = NULL;
+    size_t   temp_storage_bytes = 0;
+    checkCudaErrors(cub::DeviceReduce::Sum(d_temp_storage,
+                                           temp_storage_bytes,
+                                           kinetic_energy,
+                                           d_inst_kin,
+                                           num_atoms));
+    // Allocate temporary storage
+    checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&d_temp_storage),
+                               temp_storage_bytes));
+    // Run sum-reduction
+    checkCudaErrors(cub::DeviceReduce::Sum(d_temp_storage,
+                                           temp_storage_bytes,
+                                           kinetic_energy,
+                                           d_inst_kin,
+                                           num_atoms));
+
+    checkCudaErrors(cudaMemcpy(&h_inst_kin,
+                               d_inst_kin,
+                               sizeof(double),
+                               cudaMemcpyDeviceToHost));
+    cudaFree(d_temp_storage);
+    cudaFree(d_inst_kin);
+
+    return h_inst_kin;
+}
+
+__host__ void cu_kinetic_energy(int num_atoms,
+                                double3 *vel,
+                                double *kinetic_energy) {
+#if defined(LOGGING)
+    LOGF(DEBUG, "\nCalculating optimal launch configuration for the kinetic "
+                "energy calculation kernel.\n");
+#endif
+    int block_size = 0;
+    int min_grid_size = 0;
+    int grid_size = 0;
+    cudaOccupancyMaxPotentialBlockSize(&min_grid_size,
+                                       &block_size,
+                                       (const void *) g_kinetic_energy,
+                                       0,
+                                       num_atoms);
+    grid_size = (num_atoms + block_size - 1) / block_size;
+#if defined(LOGGING)
+    LOGF(DEBUG, "\nLaunch config set as <<<%i,%i>>>\n",
+                grid_size, block_size);
+#endif
+
+    g_kinetic_energy<<<grid_size,
+                       block_size>>>
+                      (num_atoms,
+                       vel,
+                       kinetic_energy);
+
+    return;
+}
+
+__global__ void g_kinetic_energy(int num_atoms,
+                                 double3 *vel,
+                                 double *kinetic_energy) {
+    for (int atom = blockIdx.x * blockDim.x + threadIdx.x;
+         atom < num_atoms;
+         atom += blockDim.x * gridDim.x) {
+        kinetic_energy[atom] = d_kinetic_energy(vel[atom]);
+    }
+
+    return;
+}
+
+__device__ double d_kinetic_energy(double3 vel) {
+    return 0.5 * d_mass * norm(vel) * norm(vel);
 }
