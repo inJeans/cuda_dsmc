@@ -253,15 +253,21 @@ SCENARIO("[DEVICE] Execute a full ehrenfest simulation", "[d-ehrenfest]") {
 #if defined(LOGGING)
         LOGF(INFO, "\nEvolving distribution for %i time steps.", num_time_steps);
 #endif
-	for (int t = 0; t < num_time_steps; ++t) {
-	    velocity_verlet_update(num_atoms,
-                                   dt,
-                                   trap_parameters,
-                                   cublas_handle,
-                                   pos,
-                                   vel,
-                                   acc,
-                                   psi);
+        for (int t = 0; t < num_time_steps; ++t) {
+            printf("Before velocity verlet\n");
+            cu_nan_checker(num_atoms,
+                           vel);
+            velocity_verlet_update(num_atoms,
+                                       dt,
+                                       trap_parameters,
+                                       cublas_handle,
+                                       pos,
+                                       vel,
+                                       acc,
+                                       psi);
+            printf("Before collide\n");
+            cu_nan_checker(num_atoms,
+                           vel);
             collide_atoms(num_atoms,
                           total_num_cells,
                           dt,
@@ -276,6 +282,9 @@ SCENARIO("[DEVICE] Execute a full ehrenfest simulation", "[d-ehrenfest]") {
                           cell_cumulative_num_atoms,
                           collision_remainder,
                           collision_count);
+            printf("Before energy\n");
+            cu_nan_checker(num_atoms,
+                           vel);
             avg_kinetic_energy[t] = inst_kinetic_energy(num_atoms,
                                                         vel,
                                                         d_kinetic_energy) /
@@ -437,4 +446,52 @@ __global__ void g_kinetic_energy(int num_atoms,
 
 __device__ double d_kinetic_energy(double3 vel) {
     return 0.5 * d_mass * norm(vel) * norm(vel);
+}
+
+__host__ void cu_nan_checker(int num_atoms,
+                             double3 *array) {
+#if defined(LOGGING)
+    LOGF(DEBUG, "\nCalculating optimal launch configuration for the nan "
+                "checker kernel.\n");
+#endif
+    int block_size = 0;
+    int min_grid_size = 0;
+    int grid_size = 0;
+    cudaOccupancyMaxPotentialBlockSize(&min_grid_size,
+                                       &block_size,
+                                       (const void *) g_nan_checker,
+                                       0,
+                                       num_atoms);
+    grid_size = (num_atoms + block_size - 1) / block_size;
+#if defined(LOGGING)
+    LOGF(DEBUG, "\nLaunch config set as <<<%i,%i>>>\n",
+                grid_size, block_size);
+#endif
+
+    g_nan_checker<<<grid_size,
+                       block_size>>>
+                      (num_atoms,
+                       array);
+
+    return;
+}
+
+__global__ void g_nan_checker(int num_atoms,
+                              double3 *array) {
+    for (int atom = blockIdx.x * blockDim.x + threadIdx.x;
+         atom < num_atoms;
+         atom += blockDim.x * gridDim.x) {
+        if(array[atom].x != array[atom].x) {
+            printf("Nan - array[%i] = {%g, %g, %g}\n",
+                    atom, array[atom].x, array[atom].y, array[atom].z);
+        } else if (array[atom].y != array[atom].y) {
+            printf("Nan - array[%i] = {%g, %g, %g}\n",
+                    atom, array[atom].x, array[atom].y, array[atom].z);
+        } else if (array[atom].z != array[atom].z) {
+            printf("Nan - array[%i] = {%g, %g, %g}\n",
+                    atom, array[atom].x, array[atom].y, array[atom].z);
+        }
+    }
+
+    return;
 }

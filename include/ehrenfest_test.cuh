@@ -39,4 +39,10 @@ __global__ void g_kinetic_energy(int num_atoms,
 
 __device__ double d_kinetic_energy(double3 vel);
 
+__host__ void cu_nan_checker(int num_atoms,
+                             double3 *array);
+
+__global__ void g_nan_checker(int num_atoms,
+                              double3 *array);
+
 #endif  // EHRENFEST_TEST_HPP_INCLUDED
