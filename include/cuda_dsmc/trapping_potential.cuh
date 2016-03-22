@@ -20,7 +20,7 @@ typedef struct trap_geo{
 #else // Quadrupole trap
 typedef struct trap_geo{
     double Bz;
-    double B0 = 0.;
+    double B0;
 } trap_geo;
 #endif
 
