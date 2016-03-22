@@ -28,10 +28,10 @@ SCENARIO("[DEVICE] Execute a full ehrenfest simulation", "[d-ehrenfest]") {
 #endif
 
         // Initialise computational parameters
-        int num_atoms = 1e1;
+        int num_atoms = 1e5;
         FN = 10;
         double dt = 1.e-6;
-        int num_time_steps = 10;
+        int num_time_steps = 100;
         double init_temp = 20.e-6;
 
         // Initialise grid parameters
