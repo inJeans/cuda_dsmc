@@ -328,30 +328,12 @@ SCENARIO("[DEVICE] Execute a full ehrenfest simulation", "[d-ehrenfest]") {
 __host__ double inst_kinetic_energy(int num_atoms,
                                     double3 *vel,
                                     double *kinetic_energy) {
-    int NUM_BATCHES = 100;
     double *h_inst_kin = NULL;
     h_inst_kin = reinterpret_cast<double*>(calloc(1,
                                                   sizeof(double)));
-    double *b_inst_kin = NULL;
-    checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&b_inst_kin),
-                               NUM_BATCHES*sizeof(double)));
     double *d_inst_kin = NULL;
     checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&d_inst_kin),
                                sizeof(double)));
-    int *h_offsets = NULL;
-    h_offsets = reinterpret_cast<int*>(calloc(NUM_BATCHES+1,
-                                                 sizeof(int)));
-    int *d_offsets = NULL;
-    checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&d_offsets),
-                               (NUM_BATCHES+1)*sizeof(int)));
-    for (int b = 0; b < NUM_BATCHES; ++b) {
-        h_offsets[b] = b * num_atoms / NUM_BATCHES;
-    }
-    h_offsets[NUM_BATCHES+1] = num_atoms;
-    checkCudaErrors(cudaMemcpy(d_offsets,
-                               h_offsets,
-                               (NUM_BATCHES+1)*sizeof(int),
-                               cudaMemcpyHostToDevice));
 
     cu_kinetic_energy(num_atoms,
                       vel,
@@ -359,40 +341,27 @@ __host__ double inst_kinetic_energy(int num_atoms,
     // Determine temporary device storage requirements
     void     *d_temp_storage = NULL;
     size_t   temp_storage_bytes = 0;
-    checkCudaErrors(cub::DeviceSegmentedReduce::Sum(d_temp_storage,
-                                                    temp_storage_bytes,
-                                                    kinetic_energy,
-                                                    b_inst_kin,
-                                                    NUM_BATCHES,
-                                                    d_offsets,
-                                                    d_offsets+1));
+    checkCudaErrors(cub::DeviceReduce::Sum(d_temp_storage,
+                                           temp_storage_bytes,
+                                           kinetic_energy,
+                                           d_inst_kin,
+                                           num_atoms));
     // Allocate temporary storage
     checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&d_temp_storage),
                                temp_storage_bytes));
     // Run sum-reduction
-    checkCudaErrors(cub::DeviceSegmentedReduce::Sum(d_temp_storage,
-                                                    temp_storage_bytes,
-                                                    kinetic_energy,
-                                                    b_inst_kin,
-                                                    NUM_BATCHES,
-                                                    d_offsets,
-                                                    d_offsets+1));
-    // Reduce batches
-    // Run sum-reduction
     checkCudaErrors(cub::DeviceReduce::Sum(d_temp_storage,
                                            temp_storage_bytes,
-                                           b_inst_kin,
+                                           kinetic_energy,
                                            d_inst_kin,
-                                           NUM_BATCHES));
+                                           num_atoms));
     checkCudaErrors(cudaMemcpy(h_inst_kin,
                                d_inst_kin,
                                1.*sizeof(double),
                                cudaMemcpyDeviceToHost));
     cudaFree(d_temp_storage);
     cudaFree(d_inst_kin);
-    cudaFree(b_inst_kin);
-    cudaFree(d_offsets);
-    free(h_offsets);
+
     return h_inst_kin[0];
 }
 
