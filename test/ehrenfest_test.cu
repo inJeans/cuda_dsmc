@@ -38,6 +38,13 @@ SCENARIO("[DEVICE] Execute a full ehrenfest simulation", "[d-ehrenfest]") {
         k_num_cells = make_int3(35, 35, 35);
         total_num_cells = k_num_cells.x*k_num_cells.y*k_num_cells.z;
 
+        int largest = 0;
+        if (num_atoms > total_num_cells) {
+            largest = num_atoms;
+        } else {
+            largest = total_num_cells;
+        }
+
     // Initialise rng
 #if defined(LOGGING)
         LOGF(INFO, "\nInitialising the rng state array.");
@@ -46,7 +53,7 @@ SCENARIO("[DEVICE] Execute a full ehrenfest simulation", "[d-ehrenfest]") {
 #endif
         curandState *state;
         checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&state),
-                                   num_atoms*sizeof(curandState)));
+                                   largest*sizeof(curandState)));
         initialise_rng_states(num_atoms,
                               state,
                               false);
