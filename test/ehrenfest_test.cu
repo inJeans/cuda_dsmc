@@ -31,7 +31,7 @@ SCENARIO("[DEVICE] Execute a full ehrenfest simulation", "[d-ehrenfest]") {
         int num_atoms = 1e5;
         FN = 10;
         double dt = 1.e-6;
-        int num_time_steps = 100;
+        int num_time_steps = 10;
         double init_temp = 20.e-6;
 
         // Initialise grid parameters
@@ -246,9 +246,7 @@ SCENARIO("[DEVICE] Execute a full ehrenfest simulation", "[d-ehrenfest]") {
 #if defined(LOGGING)
         LOGF(INFO, "\nEvolving distribution for %i time steps.", num_time_steps);
 #endif
-        printf("Entering el loopo\n");
 	for (int t = 0; t < num_time_steps; ++t) {
-            printf("velocity verlet\n");   
 	    velocity_verlet_update(num_atoms,
                                    dt,
                                    trap_parameters,
@@ -257,7 +255,6 @@ SCENARIO("[DEVICE] Execute a full ehrenfest simulation", "[d-ehrenfest]") {
                                    vel,
                                    acc,
                                    psi);
-	    printf("collide\n");
             collide_atoms(num_atoms,
                           total_num_cells,
                           dt,
@@ -272,7 +269,6 @@ SCENARIO("[DEVICE] Execute a full ehrenfest simulation", "[d-ehrenfest]") {
                           cell_cumulative_num_atoms,
                           collision_remainder,
                           collision_count);
-            printf("energy\n");
             avg_kinetic_energy[t] = inst_kinetic_energy(num_atoms,
                                                         vel,
                                                         d_kinetic_energy) /
@@ -281,10 +277,10 @@ SCENARIO("[DEVICE] Execute a full ehrenfest simulation", "[d-ehrenfest]") {
             progress_bar(t,
                          num_time_steps);
         }
-
+        printf("\n");
         for (int i = 0; i < num_time_steps; ++i)
-            printf("avg_kinetic_energy[%i] = %f uK\n", i,
-                                                      avg_kinetic_energy[i]*kB*1e6);
+            printf("avg_kinetic_energy[%i] = %g uK\n", i,
+                               avg_kinetic_energy[i]/kB*1.e6);
 
 #if defined(LOGGING)
         LOGF(DEBUG, "\nDestroying the cuBLAS handle.\n");
@@ -320,13 +316,11 @@ __host__ double inst_kinetic_energy(int num_atoms,
     h_inst_kin = reinterpret_cast<double*>(calloc(1,
                                                   sizeof(double)));
     double *d_inst_kin;
-    checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(d_inst_kin),
+    checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&d_inst_kin),
                                sizeof(double)));
-    printf("Get individual energy\n");
     cu_kinetic_energy(num_atoms,
                       vel,
                       kinetic_energy);
-    printf("Allocate temp\n");
     // Determine temporary device storage requirements
     void     *d_temp_storage = NULL;
     size_t   temp_storage_bytes = 0;
@@ -338,21 +332,18 @@ __host__ double inst_kinetic_energy(int num_atoms,
     // Allocate temporary storage
     checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&d_temp_storage),
                                temp_storage_bytes));
-    printf("reduce\n");
     // Run sum-reduction
     checkCudaErrors(cub::DeviceReduce::Sum(d_temp_storage,
                                            temp_storage_bytes,
                                            kinetic_energy,
                                            d_inst_kin,
                                            num_atoms));
-    printf("copy results\n");
     checkCudaErrors(cudaMemcpy(h_inst_kin,
                                d_inst_kin,
                                1.*sizeof(double),
                                cudaMemcpyDeviceToHost));
     cudaFree(d_temp_storage);
     cudaFree(d_inst_kin);
-
     return h_inst_kin[0];
 }
 
