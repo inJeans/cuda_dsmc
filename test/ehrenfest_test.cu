@@ -28,7 +28,7 @@ SCENARIO("[DEVICE] Execute a full ehrenfest simulation", "[d-ehrenfest]") {
 #endif
 
         // Initialise computational parameters
-        int num_atoms = 1e5;
+        int num_atoms = 3e4;
         FN = 10;
         double dt = 1.e-6;
         int num_time_steps = 10;
@@ -312,7 +312,7 @@ SCENARIO("[DEVICE] Execute a full ehrenfest simulation", "[d-ehrenfest]") {
 __host__ double inst_kinetic_energy(int num_atoms,
                                     double3 *vel,
                                     double *kinetic_energy) {
-    int NUM_BATCHES = 10;
+    int NUM_BATCHES = 100;
     double *h_inst_kin = NULL;
     h_inst_kin = reinterpret_cast<double*>(calloc(1,
                                                   sizeof(double)));
