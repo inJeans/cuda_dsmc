@@ -314,7 +314,9 @@ SCENARIO("[DEVICE] Execute a full ehrenfest simulation", "[d-ehrenfest]") {
 __host__ double inst_kinetic_energy(int num_atoms,
                                     double3 *vel,
                                     double *kinetic_energy) {
-    double h_inst_kin = 0.;
+    double *h_inst_kin;
+    h_inst_kin = reinterpret_cast<double*>(calloc(1,
+                                                  sizeof(double)));
     double *d_inst_kin;
     checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(d_inst_kin),
                                sizeof(double)));
@@ -341,14 +343,14 @@ __host__ double inst_kinetic_energy(int num_atoms,
                                            d_inst_kin,
                                            num_atoms));
 
-    checkCudaErrors(cudaMemcpy(&h_inst_kin,
+    checkCudaErrors(cudaMemcpy(h_inst_kin,
                                d_inst_kin,
                                sizeof(double),
                                cudaMemcpyDeviceToHost));
     cudaFree(d_temp_storage);
     cudaFree(d_inst_kin);
 
-    return h_inst_kin;
+    return h_inst_kin[0];
 }
 
 __host__ void cu_kinetic_energy(int num_atoms,
