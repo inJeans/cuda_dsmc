@@ -338,6 +338,27 @@ SCENARIO("[DEVICE] Execute a full ehrenfest simulation", "[d-ehrenfest]") {
             printf("avg_projection[%i] = %g\n", i, avg_projection[i]);
         }
 
+        FILE *kinetic_file_pointer = fopen("kinetic_energy.data", "w");
+        fwrite(avg_kinetic_energy,
+               sizeof(double),
+               num_time_steps,
+               kinetic_file_pointer);
+        fclose(kinetic_file_pointer);
+
+        FILE *potential_file_pointer = fopen("potential_energy.data", "w");
+        fwrite(avg_potential_energy,
+               sizeof(double),
+               num_time_steps,
+               potential_file_pointer);
+        fclose(potential_file_pointer);
+
+        FILE *projection_file_pointer = fopen("projection.data", "w");
+        fwrite(avg_projection,
+               sizeof(double),
+               num_time_steps,
+               projection_file_pointer);
+        fclose(projection_file_pointer);
+
 #if defined(LOGGING)
         LOGF(DEBUG, "\nDestroying the cuBLAS handle.\n");
 #endif
