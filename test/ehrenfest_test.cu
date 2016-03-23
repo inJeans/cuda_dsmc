@@ -30,7 +30,7 @@ SCENARIO("[DEVICE] Execute a full ehrenfest simulation", "[d-ehrenfest]") {
         // Initialise computational parameters
         int num_atoms = 3e4;
         FN = 10;
-        double dt = 1.e-6;
+        double dt = 1.e-7;
         int num_time_steps = 10;
         double init_temp = 20.e-6;
 
