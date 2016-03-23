@@ -28,10 +28,10 @@ SCENARIO("[DEVICE] Execute a full ehrenfest simulation", "[d-ehrenfest]") {
 #endif
 
         // Initialise computational parameters
-        int num_atoms = 3e4;
+        int num_atoms = 1e5;
         FN = 10;
         double dt = 1.e-7;
-        int num_time_steps = 10;
+        int num_time_steps = 2;
         double init_temp = 20.e-6;
 
         // Initialise grid parameters
@@ -235,7 +235,7 @@ SCENARIO("[DEVICE] Execute a full ehrenfest simulation", "[d-ehrenfest]") {
         checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&d_kinetic_energy),
                                    num_atoms*sizeof(double)));
         double *avg_kinetic_energy;
-        avg_kinetic_energy = reinterpret_cast<double*>(calloc(num_time_steps,
+        avg_kinetic_energy = reinterpret_cast<double*>(calloc(num_time_steps+1,
                                                               sizeof(double)));
 
         // Initialise potential energy
@@ -248,7 +248,7 @@ SCENARIO("[DEVICE] Execute a full ehrenfest simulation", "[d-ehrenfest]") {
         checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&d_potential_energy),
                                    num_atoms*sizeof(double)));
         double *avg_potential_energy;
-        avg_potential_energy = reinterpret_cast<double*>(calloc(num_time_steps,
+        avg_potential_energy = reinterpret_cast<double*>(calloc(num_time_steps+1,
                                                                 sizeof(double)));
 
         // Initialise projection
@@ -261,8 +261,13 @@ SCENARIO("[DEVICE] Execute a full ehrenfest simulation", "[d-ehrenfest]") {
         checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&d_projection),
                                    num_atoms*sizeof(double)));
         double *avg_projection;
-        avg_projection = reinterpret_cast<double*>(calloc(num_time_steps,
+        avg_projection = reinterpret_cast<double*>(calloc(num_time_steps+1,
                                                           sizeof(double)));
+
+        // initialise time
+        double *sim_time;
+        sim_time = reinterpret_cast<double*>(calloc(num_time_steps+1,
+                                                    sizeof(double)));
 
 #if defined(LOGGING)
         LOGF(DEBUG, "\nCreating the cuBLAS handle.\n");
@@ -275,19 +280,58 @@ SCENARIO("[DEVICE] Execute a full ehrenfest simulation", "[d-ehrenfest]") {
                                cublas_handle,
                                pos);
 
-        double initial_proj = inst_projection(num_atoms,
-                                                pos,
-                                                trap_parameters,
-                                                psi,
-                                                d_projection) / num_atoms;
-        printf("Initial projection = %g\n", initial_proj);
+        double3 *h_pos;
+        h_pos = reinterpret_cast<double3*>(calloc(num_atoms,
+                                                  sizeof(double3)));
+        checkCudaErrors(cudaMemcpy(h_pos,
+                                   pos,
+                                   num_atoms*sizeof(double3),
+                                   cudaMemcpyDeviceToHost));
+        FILE *init_pos_file_pointer = fopen("initial_position.data", "w");
+        for (int i=0; i<num_time_steps+1; ++i) {
+            fprintf(init_pos_file_pointer, "%g, %g, %g\n", h_pos[i].x,
+                                                           h_pos[i].y,
+                                                           h_pos[i].z);
+        }
+        fclose(init_pos_file_pointer);
+
+        int *h_collision_count;
+        h_collision_count = reinterpret_cast<int*>(calloc(total_num_cells,
+                                                          sizeof(int)));
+
+        FILE *collision_file_pointer = fopen("collision.data", "w");
+        for (int i=0; i<total_num_cells+1; ++i) {
+            fprintf(collision_file_pointer, "%i\t", h_collision_count[i]);
+        }
+        fprintf(collision_file_pointer, "\n");
+        fclose(collision_file_pointer);
+
+        sim_time[0] = 0.;
+
+        avg_kinetic_energy[0] = inst_kinetic_energy(num_atoms,
+                                                    vel,
+                                                    d_kinetic_energy) /
+                                 num_atoms;
+        avg_potential_energy[0] = inst_potential_energy(num_atoms,
+                                                        pos,
+                                                        trap_parameters,
+                                                        psi,
+                                                        d_potential_energy) /
+                                  num_atoms;
+
+        avg_projection[0] = inst_projection(num_atoms,
+                                            pos,
+                                            trap_parameters,
+                                            psi,
+                                            d_projection) / num_atoms;
 
         // Evolve many time step
 #if defined(LOGGING)
         LOGF(INFO, "\nEvolving distribution for %i time steps.", num_time_steps);
 #endif
         for (int t = 0; t < num_time_steps; ++t) {
-            velocity_verlet_update(num_atoms,
+            for(int u=0; u<1000; ++u) {
+                velocity_verlet_update(num_atoms,
                                        dt,
                                        trap_parameters,
                                        cublas_handle,
@@ -295,9 +339,11 @@ SCENARIO("[DEVICE] Execute a full ehrenfest simulation", "[d-ehrenfest]") {
                                        vel,
                                        acc,
                                        psi);
+            }
+            sim_time[t+1] = sim_time[t] + 1000*dt;
             collide_atoms(num_atoms,
                           total_num_cells,
-                          dt,
+                          1000*dt,
                           pos,
                           vel,
                           state,
@@ -309,28 +355,40 @@ SCENARIO("[DEVICE] Execute a full ehrenfest simulation", "[d-ehrenfest]") {
                           cell_cumulative_num_atoms,
                           collision_remainder,
                           collision_count);
-            avg_kinetic_energy[t] = inst_kinetic_energy(num_atoms,
-                                                        vel,
-                                                        d_kinetic_energy) /
-                                    num_atoms;
-            avg_potential_energy[t] = inst_potential_energy(num_atoms,
-                                                            pos,
-                                                            trap_parameters,
-                                                            psi,
-                                                            d_potential_energy) /
-                                       num_atoms;
 
-            avg_projection[t] = inst_projection(num_atoms,
-                                                pos,
-                                                trap_parameters,
-                                                psi,
-                                                d_projection) / num_atoms;
+            checkCudaErrors(cudaMemcpy(h_collision_count,
+                                       collision_count,
+                                       total_num_cells*sizeof(int),
+                                       cudaMemcpyDeviceToHost));
+            collision_file_pointer = fopen("collision.data", "a");
+            for (int i=0; i<total_num_cells+1; ++i) {
+                fprintf(collision_file_pointer, "%i\t", h_collision_count[i]);
+            }
+            fprintf(collision_file_pointer, "\n");
+            fclose(collision_file_pointer);
+
+            avg_kinetic_energy[t+1] = inst_kinetic_energy(num_atoms,
+                                                          vel,
+                                                          d_kinetic_energy) /
+                                      num_atoms;
+            avg_potential_energy[t+1] = inst_potential_energy(num_atoms,
+                                                              pos,
+                                                              trap_parameters,
+                                                              psi,
+                                                              d_potential_energy) /
+                                         num_atoms;
+
+            avg_projection[t+1] = inst_projection(num_atoms,
+                                                  pos,
+                                                  trap_parameters,
+                                                  psi,
+                                                  d_projection) / num_atoms;
 
             progress_bar(t,
                          num_time_steps);
         }
         printf("\n");
-        for (int i = 0; i < num_time_steps; ++i) {
+        for (int i = 0; i < num_time_steps+1; ++i) {
             printf("avg_kinetic_energy[%i] = %g uK\n", i,
                                avg_kinetic_energy[i]/kB*1.e6);
             printf("avg_potential_energy[%i] = %g uK\n", i,
@@ -338,17 +396,28 @@ SCENARIO("[DEVICE] Execute a full ehrenfest simulation", "[d-ehrenfest]") {
             printf("avg_projection[%i] = %g\n", i, avg_projection[i]);
         }
 
+        FILE *time_file_pointer = fopen("time.data", "w");
         FILE *kinetic_file_pointer = fopen("kinetic_energy.data", "w");
         FILE *potential_file_pointer = fopen("potential_energy.data", "w");
         FILE *projection_file_pointer = fopen("projection.data", "w");
-	for (int i=0; i<num_time_steps; ++i) {
+        for (int i=0; i<num_time_steps+1; ++i) {
+            fprintf(time_file_pointer, "%g\n", sim_time[i]);
             fprintf(kinetic_file_pointer, "%g\n", avg_kinetic_energy[i]/kB*1.e6);
             fprintf(potential_file_pointer, "%g\n", avg_potential_energy[i]/kB*1.e6);
             fprintf(projection_file_pointer, "%g\n", avg_projection[i]);
         }
+        fclose(time_file_pointer);
         fclose(kinetic_file_pointer);
         fclose(potential_file_pointer);
         fclose(projection_file_pointer);
+
+        FILE *final_pos_file_pointer = fopen("final_position.data", "w");
+        for (int i=0; i<num_time_steps+1; ++i) {
+            fprintf(final_pos_file_pointer, "%g, %g, %g\n", h_pos[i].x,
+                                                            h_pos[i].y,
+                                                            h_pos[i].z);
+        }
+        fclose(final_pos_file_pointer);
 
 #if defined(LOGGING)
         LOGF(DEBUG, "\nDestroying the cuBLAS handle.\n");
@@ -378,6 +447,8 @@ SCENARIO("[DEVICE] Execute a full ehrenfest simulation", "[d-ehrenfest]") {
         free(avg_kinetic_energy);
         free(avg_potential_energy);
         free(avg_projection);
+        free(sim_time);
+        free(h_pos);
     }
 }
 
