@@ -31,7 +31,7 @@ SCENARIO("[DEVICE] Execute a full ehrenfest simulation", "[d-ehrenfest]") {
         int num_atoms = 1e5;
         FN = 10;
         double dt = 1.e-7;
-        int num_time_steps = 2;
+        int num_time_steps = 100;
         double init_temp = 20.e-6;
 
         // Initialise grid parameters
@@ -288,7 +288,7 @@ SCENARIO("[DEVICE] Execute a full ehrenfest simulation", "[d-ehrenfest]") {
                                    num_atoms*sizeof(double3),
                                    cudaMemcpyDeviceToHost));
         FILE *init_pos_file_pointer = fopen("initial_position.data", "w");
-        for (int i=0; i<num_time_steps+1; ++i) {
+        for (int i=0; i<num_atoms; ++i) {
             fprintf(init_pos_file_pointer, "%g, %g, %g\n", h_pos[i].x,
                                                            h_pos[i].y,
                                                            h_pos[i].z);
@@ -411,8 +411,12 @@ SCENARIO("[DEVICE] Execute a full ehrenfest simulation", "[d-ehrenfest]") {
         fclose(potential_file_pointer);
         fclose(projection_file_pointer);
 
+        checkCudaErrors(cudaMemcpy(h_pos,
+                                   pos,
+                                   num_atoms*sizeof(double3),
+                                   cudaMemcpyDeviceToHost));
         FILE *final_pos_file_pointer = fopen("final_position.data", "w");
-        for (int i=0; i<num_time_steps+1; ++i) {
+        for (int i=0; i<num_atoms; ++i) {
             fprintf(final_pos_file_pointer, "%g, %g, %g\n", h_pos[i].x,
                                                             h_pos[i].y,
                                                             h_pos[i].z);
