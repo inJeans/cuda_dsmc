@@ -31,7 +31,7 @@ SCENARIO("[DEVICE] Execute a full ehrenfest simulation", "[d-ehrenfest]") {
         int num_atoms = 1e5;
         FN = 10;
         double dt = 1.e-7;
-        int num_time_steps = 100;
+        int num_time_steps = 10;
         double init_temp = 20.e-6;
 
         // Initialise grid parameters
@@ -816,6 +816,7 @@ __device__ double d_projection(double3 pos,
             Bn.y*cuCimag(l_psi.up*cuConj(l_psi.dn));
 
         if (cuCreal(P)<0.) {
+            printf("An atom just flipped\n");
             psi[0].isSpinUp = false;
             P = make_cuDoubleComplex(0., 0.);
         }
