@@ -264,6 +264,19 @@ SCENARIO("[DEVICE] Execute a full ehrenfest simulation", "[d-ehrenfest]") {
         avg_projection = reinterpret_cast<double*>(calloc(num_time_steps+1,
                                                           sizeof(double)));
 
+        // Initialise spin up
+#if defined(LOGGING)
+        LOGF(INFO, "\nInitialising the spin up array.");
+        LOGF(DEBUG, "\nAllocating %i int elements on the device.",
+             num_atoms);
+#endif
+        int *is_spin_up;
+        checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&is_spin_up),
+                                   num_atoms*sizeof(int)));
+        int *num_spin_up;
+        num_spin_up = reinterpret_cast<int*>(calloc(num_time_steps+1,
+                                                    sizeof(int)));
+
         // initialise time
         double *sim_time;
         sim_time = reinterpret_cast<double*>(calloc(num_time_steps+1,
@@ -308,8 +321,19 @@ SCENARIO("[DEVICE] Execute a full ehrenfest simulation", "[d-ehrenfest]") {
 
         sim_time[0] = 0.;
 
+        avg_projection[0] = inst_projection(num_atoms,
+                                            pos,
+                                            trap_parameters,
+                                            psi,
+                                            d_projection) / num_atoms;
+
+        num_spin_up[0] = inst_is_spin_up(num_atoms,
+                                         psi,
+                                         is_spin_up);
+
         avg_kinetic_energy[0] = inst_kinetic_energy(num_atoms,
                                                     vel,
+                                                    psi,
                                                     d_kinetic_energy) /
                                  num_atoms;
         avg_potential_energy[0] = inst_potential_energy(num_atoms,
@@ -318,12 +342,6 @@ SCENARIO("[DEVICE] Execute a full ehrenfest simulation", "[d-ehrenfest]") {
                                                         psi,
                                                         d_potential_energy) /
                                   num_atoms;
-
-        avg_projection[0] = inst_projection(num_atoms,
-                                            pos,
-                                            trap_parameters,
-                                            psi,
-                                            d_projection) / num_atoms;
 
         // Evolve many time step
 #if defined(LOGGING)
@@ -367,22 +385,29 @@ SCENARIO("[DEVICE] Execute a full ehrenfest simulation", "[d-ehrenfest]") {
             fprintf(collision_file_pointer, "\n");
             fclose(collision_file_pointer);
 
+            avg_projection[t+1] = inst_projection(num_atoms,
+                                                  pos,
+                                                  trap_parameters,
+                                                  psi,
+                                                  d_projection);
+
+            num_spin_up[t+1] = inst_is_spin_up(num_atoms,
+                                               psi,
+                                               is_spin_up);
+
+            avg_projection[t+1] /= num_spin_up[t+1];
+
             avg_kinetic_energy[t+1] = inst_kinetic_energy(num_atoms,
                                                           vel,
+                                                          psi,
                                                           d_kinetic_energy) /
-                                      num_atoms;
+                                      num_spin_up[t+1];
             avg_potential_energy[t+1] = inst_potential_energy(num_atoms,
                                                               pos,
                                                               trap_parameters,
                                                               psi,
                                                               d_potential_energy) /
-                                         num_atoms;
-
-            avg_projection[t+1] = inst_projection(num_atoms,
-                                                  pos,
-                                                  trap_parameters,
-                                                  psi,
-                                                  d_projection) / num_atoms;
+                                         num_spin_up[t+1];
 
             progress_bar(t,
                          num_time_steps);
@@ -400,16 +425,19 @@ SCENARIO("[DEVICE] Execute a full ehrenfest simulation", "[d-ehrenfest]") {
         FILE *kinetic_file_pointer = fopen("kinetic_energy.data", "w");
         FILE *potential_file_pointer = fopen("potential_energy.data", "w");
         FILE *projection_file_pointer = fopen("projection.data", "w");
+        FILE *spin_up_file_pointer = fopen("num_spin_up.data", "w");
         for (int i=0; i<num_time_steps+1; ++i) {
             fprintf(time_file_pointer, "%g\n", sim_time[i]);
             fprintf(kinetic_file_pointer, "%g\n", avg_kinetic_energy[i]/kB*1.e6);
             fprintf(potential_file_pointer, "%g\n", avg_potential_energy[i]/kB*1.e6);
             fprintf(projection_file_pointer, "%g\n", avg_projection[i]);
+            fprintf(spin_up_file_pointer, "%i\n", num_spin_up[i]);
         }
         fclose(time_file_pointer);
         fclose(kinetic_file_pointer);
         fclose(potential_file_pointer);
         fclose(projection_file_pointer);
+        fclose(spin_up_file_pointer);
 
         checkCudaErrors(cudaMemcpy(h_pos,
                                    pos,
@@ -447,10 +475,12 @@ SCENARIO("[DEVICE] Execute a full ehrenfest simulation", "[d-ehrenfest]") {
         cudaFree(d_kinetic_energy);
         cudaFree(d_potential_energy);
         cudaFree(d_projection);
+        cudaFree(is_spin_up);
 
         free(avg_kinetic_energy);
         free(avg_potential_energy);
         free(avg_projection);
+        free(num_spin_up);
         free(sim_time);
         free(h_pos);
     }
@@ -458,6 +488,7 @@ SCENARIO("[DEVICE] Execute a full ehrenfest simulation", "[d-ehrenfest]") {
 
 __host__ double inst_kinetic_energy(int num_atoms,
                                     double3 *vel,
+                                    wavefunction *psi,
                                     double *kinetic_energy) {
     double *h_inst_kin = NULL;
     h_inst_kin = reinterpret_cast<double*>(calloc(1,
@@ -468,6 +499,7 @@ __host__ double inst_kinetic_energy(int num_atoms,
 
     cu_kinetic_energy(num_atoms,
                       vel,
+                      psi,
                       kinetic_energy);
     // Determine temporary device storage requirements
     void     *d_temp_storage = NULL;
@@ -498,6 +530,7 @@ __host__ double inst_kinetic_energy(int num_atoms,
 
 __host__ void cu_kinetic_energy(int num_atoms,
                                 double3 *vel,
+                                wavefunction *psi,
                                 double *kinetic_energy) {
 #if defined(LOGGING)
     LOGF(DEBUG, "\nCalculating optimal launch configuration for the kinetic "
@@ -521,6 +554,7 @@ __host__ void cu_kinetic_energy(int num_atoms,
                        block_size>>>
                       (num_atoms,
                        vel,
+                       psi,
                        kinetic_energy);
 
     return;
@@ -528,11 +562,13 @@ __host__ void cu_kinetic_energy(int num_atoms,
 
 __global__ void g_kinetic_energy(int num_atoms,
                                  double3 *vel,
+                                 wavefunction *psi,
                                  double *kinetic_energy) {
     for (int atom = blockIdx.x * blockDim.x + threadIdx.x;
          atom < num_atoms;
          atom += blockDim.x * gridDim.x) {
-        kinetic_energy[atom] = d_kinetic_energy(vel[atom]);
+        kinetic_energy[atom] = d_kinetic_energy(vel[atom],
+                                                psi[atom]);
         if(kinetic_energy[atom] != kinetic_energy[atom]) {
             kinetic_energy[atom] = 0.;
             vel[atom] = make_double3(0., 0., 0.);
@@ -542,8 +578,13 @@ __global__ void g_kinetic_energy(int num_atoms,
     return;
 }
 
-__device__ double d_kinetic_energy(double3 vel) {
-    return 0.5 * d_mass * norm(vel) * norm(vel);
+__device__ double d_kinetic_energy(double3 vel,
+                                   wavefunction psi) {
+    double kinetic = 0.;
+    if (psi.isSpinUp) {
+        kinetic = 0.5 * d_mass * norm(vel) * norm(vel);
+    }
+    return kinetic;
 }
 
 __host__ double inst_potential_energy(int num_atoms,
@@ -648,19 +689,22 @@ __global__ void g_potential_energy(int num_atoms,
 __device__ double d_potential_energy(double3 pos,
                                      trap_geo params,
                                      wavefunction psi) {
-    double3 local_B = B(pos,
-                        params);
-    cuDoubleComplex H[2][2] = {make_cuDoubleComplex(0., 0.)};
-    H[0][0] = 0.5*d_gs*d_muB * make_cuDoubleComplex(local_B.z,
-                                                    0.);
-    H[0][1] = 0.5*d_gs*d_muB * make_cuDoubleComplex(local_B.x,
-                                                    -local_B.y);
-    H[1][0] = 0.5*d_gs*d_muB * make_cuDoubleComplex(local_B.x,
-                                                    local_B.y);
-    H[1][1] = 0.5*d_gs*d_muB * make_cuDoubleComplex(-local_B.z,
-                                                    0.);
-    cuDoubleComplex potential = psi.up*(H[0][0]*cuConj(psi.up) + H[1][0]*cuConj(psi.dn)) +
-                                psi.dn*(H[0][1]*cuConj(psi.up) + H[1][1]*cuConj(psi.dn));
+    cuDoubleComplex potential = make_cuDoubleComplex(0., 0.);
+    if (psi.isSpinUp) {
+        double3 local_B = B(pos,
+                            params);
+        cuDoubleComplex H[2][2] = {make_cuDoubleComplex(0., 0.)};
+        H[0][0] = 0.5*d_gs*d_muB * make_cuDoubleComplex(local_B.z,
+                                                        0.);
+        H[0][1] = 0.5*d_gs*d_muB * make_cuDoubleComplex(local_B.x,
+                                                        -local_B.y);
+        H[1][0] = 0.5*d_gs*d_muB * make_cuDoubleComplex(local_B.x,
+                                                        local_B.y);
+        H[1][1] = 0.5*d_gs*d_muB * make_cuDoubleComplex(-local_B.z,
+                                                        0.);
+        potential = psi.up*(H[0][0]*cuConj(psi.up) + H[1][0]*cuConj(psi.dn)) +
+                    psi.dn*(H[0][1]*cuConj(psi.up) + H[1][1]*cuConj(psi.dn));
+    }
 
     return cuCreal(potential);
 }
@@ -753,7 +797,7 @@ __global__ void g_projection(int num_atoms,
          atom += blockDim.x * gridDim.x) {
         projection[atom] = d_projection(pos[atom],
                                         params,
-                                        psi[atom]);
+                                        &psi[atom]);
         if(projection[atom] != projection[atom]) {
             projection[atom] = 0.;
             pos[atom] = make_double3(0., 0., 0.);
@@ -766,13 +810,115 @@ __global__ void g_projection(int num_atoms,
 
 __device__ double d_projection(double3 pos,
                                trap_geo params,
-                               wavefunction psi) {
-    double3 Bn = unit(B(pos,
-                        params));
+                               wavefunction *psi) {
     cuDoubleComplex P = make_cuDoubleComplex(0., 0.);
-    P = 0.5 * (((1.-Bn.z)*psi.dn + Bn.x*psi.up)*cuConj(psi.dn) +
-               ((1.+Bn.z)*psi.up + Bn.x*psi.dn)*cuConj(psi.up)) -
-        Bn.y*cuCimag(psi.up*cuConj(psi.dn));;
+    wavefunction l_psi = psi[0];
+    if (l_psi.isSpinUp) {
+        double3 Bn = unit(B(pos,
+                            params));
+        P = 0.5 * (((1.-Bn.z)*l_psi.dn + Bn.x*l_psi.up)*cuConj(l_psi.dn) +
+                   ((1.+Bn.z)*l_psi.up + Bn.x*l_psi.dn)*cuConj(l_psi.up)) -
+            Bn.y*cuCimag(l_psi.up*cuConj(l_psi.dn));
+
+        if (cuCreal(P)<0.) {
+            psi[0].isSpinUp = false;
+            P = make_cuDoubleComplex(0., 0.);
+        }
+    }
 
     return cuCreal(P);
 }
+
+__host__ int inst_is_spin_up(int num_atoms,
+                             wavefunction *psi,
+                             int *is_spin_up) {
+    int *h_inst_spin_up = NULL;
+    h_inst_spin_up = reinterpret_cast<int*>(calloc(1,
+                                                   sizeof(int)));
+    int *d_inst_spin_up = NULL;
+    checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&d_inst_spin_up),
+                               sizeof(int)));
+
+    cu_is_spin_up(num_atoms,
+                  psi,
+                  is_spin_up);
+    // Determine temporary device storage requirements
+    void     *d_temp_storage = NULL;
+    size_t   temp_storage_bytes = 0;
+    checkCudaErrors(cub::DeviceReduce::Sum(d_temp_storage,
+                                           temp_storage_bytes,
+                                           is_spin_up,
+                                           d_inst_spin_up,
+                                           num_atoms));
+    // Allocate temporary storage
+    checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&d_temp_storage),
+                               temp_storage_bytes));
+    // Run sum-reduction
+    checkCudaErrors(cub::DeviceReduce::Sum(d_temp_storage,
+                                           temp_storage_bytes,
+                                           is_spin_up,
+                                           d_inst_spin_up,
+                                           num_atoms));
+    checkCudaErrors(cudaMemcpy(h_inst_spin_up,
+                               d_inst_spin_up,
+                               1.*sizeof(int),
+                               cudaMemcpyDeviceToHost));
+    cudaFree(d_temp_storage);
+    cudaFree(d_inst_spin_up);
+
+    return h_inst_spin_up[0];
+}
+
+__host__ void cu_is_spin_up(int num_atoms,
+                            wavefunction *psi,
+                            int *is_spin_up) {
+#if defined(LOGGING)
+    LOGF(DEBUG, "\nCalculating optimal launch configuration for the is_spin_up "
+                "calculation kernel.\n");
+#endif
+    int block_size = 0;
+    int min_grid_size = 0;
+    int grid_size = 0;
+    cudaOccupancyMaxPotentialBlockSize(&min_grid_size,
+                                       &block_size,
+                                       (const void *) is_spin_up,
+                                       0,
+                                       num_atoms);
+    grid_size = (num_atoms + block_size - 1) / block_size;
+#if defined(LOGGING)
+    LOGF(DEBUG, "\nLaunch config set as <<<%i,%i>>>\n",
+                grid_size, block_size);
+#endif
+
+    g_is_spin_up<<<grid_size,
+                   block_size>>>
+                  (num_atoms,
+                   psi,
+                   is_spin_up);
+
+    return;
+}
+
+__global__ void g_is_spin_up(int num_atoms,
+                             wavefunction *psi,
+                             int *is_spin_up) {
+    for (int atom = blockIdx.x * blockDim.x + threadIdx.x;
+         atom < num_atoms;
+         atom += blockDim.x * gridDim.x) {
+        is_spin_up[atom] = d_is_spin_up(psi[atom]);
+        if(is_spin_up[atom] != is_spin_up[atom]) {
+            is_spin_up[atom] = 0.;
+            psi[atom] = make_wavefunction(0., 0., 0., 0., true);
+        }
+    }
+
+    return;
+}
+
+__device__ int d_is_spin_up(wavefunction psi) {
+    int is_spin_up = 0;
+    if (psi.isSpinUp) is_spin_up = 1;
+
+    return is_spin_up;
+}
+

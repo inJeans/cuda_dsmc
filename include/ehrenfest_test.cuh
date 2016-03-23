@@ -27,17 +27,21 @@
 
 __host__ double inst_kinetic_energy(int num_atoms,
                                     double3 *vel,
+                                    wavefunction *psi,
                                     double *kinetic_energy);
 
 __host__ void cu_kinetic_energy(int num_atoms,
                                 double3 *vel,
+                                wavefunction *psi,
                                 double *kinetic_energy);
 
 __global__ void g_kinetic_energy(int num_atoms,
                                  double3 *vel,
+                                 wavefunction *psi,
                                  double *kinetic_energy);
 
-__device__ double d_kinetic_energy(double3 vel);
+__device__ double d_kinetic_energy(double3 vel,
+	                               wavefunction psi);
 
 __host__ double inst_potential_energy(int num_atoms,
                                       double3 *pos,
@@ -81,7 +85,21 @@ __global__ void g_projection(int num_atoms,
 
 __device__ double d_projection(double3 pos,
                                trap_geo params,
-                               wavefunction psi);
+                               wavefunction *psi);
+
+__host__ int inst_is_spin_up(int num_atoms,
+                             wavefunction *psi,
+                             int *is_spin_up);
+
+__host__ void cu_is_spin_up(int num_atoms,
+                            wavefunction *psi,
+                            int *is_spin_up);
+
+__global__ void g_is_spin_up(int num_atoms,
+                             wavefunction *psi,
+                             int *is_spin_up);
+
+__device__ int d_is_spin_up(wavefunction psi);
 
 
 #endif  // EHRENFEST_TEST_HPP_INCLUDED
