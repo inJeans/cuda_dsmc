@@ -275,6 +275,13 @@ SCENARIO("[DEVICE] Execute a full ehrenfest simulation", "[d-ehrenfest]") {
                                cublas_handle,
                                pos);
 
+        double initial_proj = inst_projection(num_atoms,
+                                                pos,
+                                                trap_parameters,
+                                                psi,
+                                                d_projection) / num_atoms;
+        printf("Initial projection = %g\n", initial_proj);
+
         // Evolve many time step
 #if defined(LOGGING)
         LOGF(INFO, "\nEvolving distribution for %i time steps.", num_time_steps);
