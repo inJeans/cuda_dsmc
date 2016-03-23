@@ -339,24 +339,15 @@ SCENARIO("[DEVICE] Execute a full ehrenfest simulation", "[d-ehrenfest]") {
         }
 
         FILE *kinetic_file_pointer = fopen("kinetic_energy.data", "w");
-        fwrite(avg_kinetic_energy,
-               sizeof(double),
-               num_time_steps,
-               kinetic_file_pointer);
-        fclose(kinetic_file_pointer);
-
         FILE *potential_file_pointer = fopen("potential_energy.data", "w");
-        fwrite(avg_potential_energy,
-               sizeof(double),
-               num_time_steps,
-               potential_file_pointer);
-        fclose(potential_file_pointer);
-
         FILE *projection_file_pointer = fopen("projection.data", "w");
-        fwrite(avg_projection,
-               sizeof(double),
-               num_time_steps,
-               projection_file_pointer);
+	for (int i=0; i<num_time_steps; ++i) {
+            fprintf(kinetic_file_pointer, "%g\n", avg_kinetic_energy[i]/kB*1.e6);
+            fprintf(potential_file_pointer, "%g\n", avg_potential_energy[i]/kB*1.e6);
+            fprintf(projection_file_pointer, "%g\n", avg_projection[i]);
+        }
+        fclose(kinetic_file_pointer);
+        fclose(potential_file_pointer);
         fclose(projection_file_pointer);
 
 #if defined(LOGGING)
