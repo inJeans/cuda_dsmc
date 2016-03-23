@@ -583,79 +583,7 @@ __device__ double d_kinetic_energy(double3 vel,
     double kinetic = 0.;
     if (psi.isSpinUp) {
         kinetic = 0.5 * d_mass * norm(vel) * norm(vel);
-    }
-    return kinetic;
-}
-
-__host__ double inst_potential_energy(int num_atoms,
-                                      double3 *pos,
-                                      trap_geo params,
-                                      wavefunction *psi,
-                                      double *potential_energy) {
-    double *h_inst_pot = NULL;
-    h_inst_pot = reinterpret_cast<double*>(calloc(1,
-                                                  sizeof(double)));
-    double *d_inst_pot = NULL;
-    checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&d_inst_pot),
-                               sizeof(double)));
-
-    cu_potential_energy(num_atoms,
-                       pos,
-                       params,
-                       psi,
-                       potential_energy);
-    // Determine temporary device storage requirements
-    void     *d_temp_storage = NULL;
-    size_t   temp_storage_bytes = 0;
-    checkCudaErrors(cub::DeviceReduce::Sum(d_temp_storage,
-                                           temp_storage_bytes,
-                                           potential_energy,
-                                           d_inst_pot,
-                                           num_atoms));
-    // Allocate temporary storage
-    checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&d_temp_storage),
-                               temp_storage_bytes));
-    // Run sum-reduction
-    checkCudaErrors(cub::DeviceReduce::Sum(d_temp_storage,
-                                           temp_storage_bytes,
-                                           potential_energy,
-                                           d_inst_pot,
-                                           num_atoms));
-    checkCudaErrors(cudaMemcpy(h_inst_pot,
-                               d_inst_pot,
-                               1.*sizeof(double),
-                               cudaMemcpyDeviceToHost));
-    cudaFree(d_temp_storage);
-    cudaFree(d_inst_pot);
-
-    return h_inst_pot[0];
-}
-
-__host__ void cu_potential_energy(int num_atoms,
-                                  double3 *pos,
-                                  trap_geo params,
-                                  wavefunction *psi,
-                                  double *potential_energy) {
-#if defined(LOGGING)
-    LOGF(DEBUG, "\nCalculating optimal launch configuration for the potential "
-                "energy calculation kernel.\n");
-#endif
-    int block_size = 0;
-    int min_grid_size = 0;
-    int grid_size = 0;
-    cudaOccupancyMaxPotentialBlockSize(&min_grid_size,
-                                       &block_size,
-                                       (const void *) g_potential_energy,
-                                       0,
-                                       num_atoms);
-    grid_size = (num_atoms + block_size - 1) / block_size;
-#if defined(LOGGING)
-    LOGF(DEBUG, "\nLaunch config set as <<<%i,%i>>>\n",
-                grid_size, block_size);
-#endif
-
-    g_potential_energy<<<grid_size,
-                         block_size>>>
+    } return kinetic; } __host__ double inst_potential_energy(int num_atoms, double3 *pos, trap_geo params, wavefunction *psi, double *potential_energy) { double *h_inst_pot = NULL; h_inst_pot = reinterpret_cast<double*>(calloc(1, sizeof(double))); double *d_inst_pot = NULL; checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&d_inst_pot), sizeof(double))); cu_potential_energy(num_atoms, pos, params, psi, potential_energy); // Determine temporary device storage requirements void     *d_temp_storage = NULL; size_t   temp_storage_bytes = 0; checkCudaErrors(cub::DeviceReduce::Sum(d_temp_storage, temp_storage_bytes, potential_energy, d_inst_pot, num_atoms)); // Allocate temporary storage checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&d_temp_storage), temp_storage_bytes)); // Run sum-reduction checkCudaErrors(cub::DeviceReduce::Sum(d_temp_storage, temp_storage_bytes, potential_energy, d_inst_pot, num_atoms)); checkCudaErrors(cudaMemcpy(h_inst_pot, d_inst_pot, 1.*sizeof(double), cudaMemcpyDeviceToHost)); cudaFree(d_temp_storage); cudaFree(d_inst_pot); return h_inst_pot[0]; } __host__ void cu_potential_energy(int num_atoms, double3 *pos, trap_geo params, wavefunction *psi, double *potential_energy) { #if defined(LOGGING) LOGF(DEBUG, "\nCalculating optimal launch configuration for the potential " "energy calculation kernel.\n"); #endif int block_size = 0; int min_grid_size = 0; int grid_size = 0; cudaOccupancyMaxPotentialBlockSize(&min_grid_size, &block_size, (const void *) g_potential_energy, 0, num_atoms); grid_size = (num_atoms + block_size - 1) / block_size; #if defined(LOGGING) LOGF(DEBUG, "\nLaunch config set as <<<%i,%i>>>\n", grid_size, block_size); #endif g_potential_energy<<<grid_size, block_size>>>
                         (num_atoms,
                          pos,
                          params,
@@ -881,7 +809,7 @@ __host__ void cu_is_spin_up(int num_atoms,
     int grid_size = 0;
     cudaOccupancyMaxPotentialBlockSize(&min_grid_size,
                                        &block_size,
-                                       (const void *) is_spin_up,
+                                       (const void *) g_is_spin_up,
                                        0,
                                        num_atoms);
     grid_size = (num_atoms + block_size - 1) / block_size;
@@ -907,7 +835,7 @@ __global__ void g_is_spin_up(int num_atoms,
          atom += blockDim.x * gridDim.x) {
         is_spin_up[atom] = d_is_spin_up(psi[atom]);
         if(is_spin_up[atom] != is_spin_up[atom]) {
-            is_spin_up[atom] = 0.;
+            is_spin_up[atom] = 0;
             psi[atom] = make_wavefunction(0., 0., 0., 0., true);
         }
     }
