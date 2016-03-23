@@ -61,4 +61,27 @@ __device__ double d_potential_energy(double3 pos,
                                      trap_geo params,
                                      wavefunction psi);
 
+__host__ double inst_projection(int num_atoms,
+                                double3 *pos,
+                                trap_geo params,
+                                wavefunction *psi,
+                                double *projection);
+
+__host__ void cu_projection(int num_atoms,
+                            double3 *pos,
+                            trap_geo params,
+                            wavefunction *psi,
+                            double *projection);
+
+__global__ void g_projection(int num_atoms,
+                             double3 *pos,
+                             trap_geo params,
+                             wavefunction *psi,
+                             double *potential_energy);
+
+__device__ double d_projection(double3 pos,
+                               trap_geo params,
+                               wavefunction psi);
+
+
 #endif  // EHRENFEST_TEST_HPP_INCLUDED

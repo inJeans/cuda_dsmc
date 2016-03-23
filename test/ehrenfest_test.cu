@@ -235,8 +235,8 @@ SCENARIO("[DEVICE] Execute a full ehrenfest simulation", "[d-ehrenfest]") {
         checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&d_kinetic_energy),
                                    num_atoms*sizeof(double)));
         double *avg_kinetic_energy;
-        avg_kinetic_energy = reinterpret_cast<double*>(calloc(num_atoms,
-                                                       sizeof(double)));
+        avg_kinetic_energy = reinterpret_cast<double*>(calloc(num_time_steps,
+                                                              sizeof(double)));
 
         // Initialise potential energy
 #if defined(LOGGING)
@@ -248,8 +248,21 @@ SCENARIO("[DEVICE] Execute a full ehrenfest simulation", "[d-ehrenfest]") {
         checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&d_potential_energy),
                                    num_atoms*sizeof(double)));
         double *avg_potential_energy;
-        avg_potential_energy = reinterpret_cast<double*>(calloc(num_atoms,
-                                                         sizeof(double)));
+        avg_potential_energy = reinterpret_cast<double*>(calloc(num_time_steps,
+                                                                sizeof(double)));
+
+        // Initialise projection
+#if defined(LOGGING)
+        LOGF(INFO, "\nInitialising the projection array.");
+        LOGF(DEBUG, "\nAllocating %i double elements on the device.",
+             num_atoms);
+#endif
+        double *d_projection;
+        checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&d_projection),
+                                   num_atoms*sizeof(double)));
+        double *avg_projection;
+        avg_projection = reinterpret_cast<double*>(calloc(num_time_steps,
+                                                          sizeof(double)));
 
 #if defined(LOGGING)
         LOGF(DEBUG, "\nCreating the cuBLAS handle.\n");
@@ -300,6 +313,12 @@ SCENARIO("[DEVICE] Execute a full ehrenfest simulation", "[d-ehrenfest]") {
                                                             d_potential_energy) /
                                        num_atoms;
 
+            avg_projection[t] = inst_projection(num_atoms,
+                                                pos,
+                                                trap_parameters,
+                                                psi,
+                                                d_projection) / num_atoms;
+
             progress_bar(t,
                          num_time_steps);
         }
@@ -309,6 +328,7 @@ SCENARIO("[DEVICE] Execute a full ehrenfest simulation", "[d-ehrenfest]") {
                                avg_kinetic_energy[i]/kB*1.e6);
             printf("avg_potential_energy[%i] = %g uK\n", i,
                                avg_potential_energy[i]/kB*1.e6);
+            printf("avg_projection[%i] = %g\n", i, avg_projection[i]);
         }
 
 #if defined(LOGGING)
@@ -334,9 +354,11 @@ SCENARIO("[DEVICE] Execute a full ehrenfest simulation", "[d-ehrenfest]") {
         cudaFree(psi);
         cudaFree(d_kinetic_energy);
         cudaFree(d_potential_energy);
+        cudaFree(d_projection);
 
         free(avg_kinetic_energy);
         free(avg_potential_energy);
+        free(avg_projection);
     }
 }
 
@@ -547,4 +569,116 @@ __device__ double d_potential_energy(double3 pos,
                                 psi.dn*(H[0][1]*cuConj(psi.up) + H[1][1]*cuConj(psi.dn));
 
     return cuCreal(potential);
+}
+
+__host__ double inst_projection(int num_atoms,
+                                double3 *pos,
+                                trap_geo params,
+                                wavefunction *psi,
+                                double *projection) {
+    double *h_inst_proj = NULL;
+    h_inst_proj = reinterpret_cast<double*>(calloc(1,
+                                                  sizeof(double)));
+    double *d_inst_proj = NULL;
+    checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&d_inst_proj),
+                               sizeof(double)));
+
+    cu_projection(num_atoms,
+                  pos,
+                  params,
+                  psi,
+                  projection);
+    // Determine temporary device storage requirements
+    void     *d_temp_storage = NULL;
+    size_t   temp_storage_bytes = 0;
+    checkCudaErrors(cub::DeviceReduce::Sum(d_temp_storage,
+                                           temp_storage_bytes,
+                                           projection,
+                                           d_inst_proj,
+                                           num_atoms));
+    // Allocate temporary storage
+    checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&d_temp_storage),
+                               temp_storage_bytes));
+    // Run sum-reduction
+    checkCudaErrors(cub::DeviceReduce::Sum(d_temp_storage,
+                                           temp_storage_bytes,
+                                           projection,
+                                           d_inst_proj,
+                                           num_atoms));
+    checkCudaErrors(cudaMemcpy(h_inst_proj,
+                               d_inst_proj,
+                               1.*sizeof(double),
+                               cudaMemcpyDeviceToHost));
+    cudaFree(d_temp_storage);
+    cudaFree(d_inst_proj);
+
+    return h_inst_proj[0];
+}
+
+__host__ void cu_projection(int num_atoms,
+                            double3 *pos,
+                            trap_geo params,
+                            wavefunction *psi,
+                            double *projection) {
+#if defined(LOGGING)
+    LOGF(DEBUG, "\nCalculating optimal launch configuration for the projection "
+                "calculation kernel.\n");
+#endif
+    int block_size = 0;
+    int min_grid_size = 0;
+    int grid_size = 0;
+    cudaOccupancyMaxPotentialBlockSize(&min_grid_size,
+                                       &block_size,
+                                       (const void *) g_projection,
+                                       0,
+                                       num_atoms);
+    grid_size = (num_atoms + block_size - 1) / block_size;
+#if defined(LOGGING)
+    LOGF(DEBUG, "\nLaunch config set as <<<%i,%i>>>\n",
+                grid_size, block_size);
+#endif
+
+    g_projection<<<grid_size,
+                   block_size>>>
+                  (num_atoms,
+                   pos,
+                   params,
+                   psi,
+                   projection);
+
+    return;
+}
+
+__global__ void g_projection(int num_atoms,
+                             double3 *pos,
+                             trap_geo params,
+                             wavefunction *psi,
+                             double *projection) {
+    for (int atom = blockIdx.x * blockDim.x + threadIdx.x;
+         atom < num_atoms;
+         atom += blockDim.x * gridDim.x) {
+        projection[atom] = d_projection(pos[atom],
+                                        params,
+                                        psi[atom]);
+        if(projection[atom] != projection[atom]) {
+            projection[atom] = 0.;
+            pos[atom] = make_double3(0., 0., 0.);
+            psi[atom] = make_wavefunction(0., 0., 0., 0., true);
+        }
+    }
+
+    return;
+}
+
+__device__ double d_projection(double3 pos,
+                               trap_geo params,
+                               wavefunction psi) {
+    double3 Bn = unit(B(pos,
+                        params));
+    cuDoubleComplex P = make_cuDoubleComplex(0., 0.);
+    P = 0.5 * (((1.-Bn.z)*psi.dn + Bn.x*psi.up)*cuConj(psi.dn) +
+               ((1.+Bn.z)*psi.up + Bn.x*psi.dn)*cuConj(psi.up)) -
+        Bn.y*cuCimag(psi.up*cuConj(psi.dn));;
+
+    return cuCreal(P);
 }
