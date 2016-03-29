@@ -290,6 +290,33 @@ SCENARIO("[HOST] Wavfunction Update", "[h-psiev]") {
             free(test_psi);
         }
 
+        WHEN("The update_wavefunctions function is called 1000 times with a dt=1.e-6") {
+            double dt = 1.e-6;
+            // Update wavefunctions
+            for (int l = 0; l < 1000; ++l) {
+                update_wavefunctions(num_test,
+                                     dt,
+                                     trap_parameters,
+                                     pos,
+                                     test_psi);
+            }
+
+            double N = 0.;
+            for (int atom = 0; atom < num_test; ++atom) {
+                cuDoubleComplex N2 = cuConj(test_psi[atom].up) * test_psi[atom].up + 
+                                     cuConj(test_psi[atom].dn) * test_psi[atom].dn;
+                N += sqrt(N2.x);
+            }
+            N /= num_test;
+
+            THEN("Unitarity of the system should be maintained") {
+                REQUIRE(N < 1. + tol);
+                REQUIRE(N > 1. - tol);
+            }
+
+            free(test_psi);
+        }
+
         free(pos);
     }
 }

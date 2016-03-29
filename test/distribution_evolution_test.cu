@@ -244,3 +244,113 @@ SCENARIO("[DEVICE] Velocity Update", "[d-vel]") {
         cudaFree(d_acc);
     }
 }
+
+SCENARIO("[DEVICE] Wavfunction Update", "[d-psiev]") {
+    GIVEN("A thermal distribution of 5000 aligned atoms, help in a quadrupole trap with a Bz = 2.0") {
+        double init_T = 20.e-6;
+        int num_test = 5000;
+
+        // Initialise trapping parameters
+        trap_geo trap_parameters;
+        trap_parameters.Bz = 2.0;
+        trap_parameters.B0 = 0.;
+
+        // Initialise rng
+        // Initialise rng
+        curandState *state;
+        checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&state),
+                                   num_test*sizeof(curandState)));
+
+
+        initialise_rng_states(num_test,
+                              state,
+                              false);
+
+        // Initialise positions
+        double3 *d_pos;
+        checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&d_pos),
+                                   num_test*sizeof(double3)));
+
+        // Generate position distribution
+        generate_thermal_positions(num_test,
+                                   init_T,
+                                   trap_parameters,
+                                   state,
+                                   d_pos);
+
+        // Initialise spins
+        wavefunction *d_psi;
+        checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&d_psi),
+                                   num_test*sizeof(wavefunction)));
+        wavefunction *test_psi;
+        test_psi = reinterpret_cast<wavefunction*>(calloc(num_test,
+                                                      sizeof(wavefunction)));
+
+        generate_aligned_spins(num_test,
+                               trap_parameters,
+                               d_pos,
+                               test_psi);
+
+        WHEN("The update_wavefunctions function is called with a dt=1.e-6") {
+            double dt = 1.e-6;
+            // Update wavefunctions
+            update_wavefunctions(num_test,
+                                 dt,
+                                 trap_parameters,
+                                 d_pos,
+                                 d_psi);
+
+            checkCudaErrors(cudaMemcpy(test_psi,
+                                       d_psi,
+                                       num_test*sizeof(wavefunction),
+                                       cudaMemcpyDeviceToHost));
+
+            double N = 0.;
+            for (int atom = 0; atom < num_test; ++atom) {
+                cuDoubleComplex N2 = cuConj(test_psi[atom].up) * test_psi[atom].up + 
+                                     cuConj(test_psi[atom].dn) * test_psi[atom].dn;
+                N += sqrt(N2.x);
+            }
+            N /= num_test;
+
+            THEN("Unitarity of the system should be maintained") {
+                REQUIRE(N < 1. + tol);
+                REQUIRE(N > 1. - tol);
+            }
+        }
+
+        WHEN("The update_wavefunctions function is called 1000 times with a dt=1.e-6") {
+            double dt = 1.e-6;
+            // Update wavefunctions
+            for (int l = 0; l < 1000; ++l) {
+                update_wavefunctions(num_test,
+                                     dt,
+                                     trap_parameters,
+                                     d_pos,
+                                     d_psi);
+            }
+
+            checkCudaErrors(cudaMemcpy(test_psi,
+                                       d_psi,
+                                       num_test*sizeof(wavefunction),
+                                       cudaMemcpyDeviceToHost));
+
+            double N = 0.;
+            for (int atom = 0; atom < num_test; ++atom) {
+                cuDoubleComplex N2 = cuConj(test_psi[atom].up) * test_psi[atom].up + 
+                                     cuConj(test_psi[atom].dn) * test_psi[atom].dn;
+                N += sqrt(N2.x);
+            }
+            N /= num_test;
+
+            THEN("Unitarity of the system should be maintained") {
+                REQUIRE(N < 1. + tol);
+                REQUIRE(N > 1. - tol);
+            }
+        }
+        free(test_psi);
+
+        cudaFree(d_pos);
+        cudaFree(d_psi);
+    }
+}
