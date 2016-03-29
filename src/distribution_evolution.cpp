@@ -328,20 +328,20 @@ wavefunction update_atom_wavefunction(double dt,
     double3 Bn = unit(mag_field);
     double norm_B = norm(mag_field);
 
-    double delta_theta = 0.5*gs*muB*norm_B*dt / hbar; 
+    double delta_theta = 0.5*gs*muB*norm_B*dt / hbar;
     double cos_delta_theta = cos(delta_theta);
     double sin_delta_theta = sin(delta_theta);
 
-    cuDoubleComplex U[2][2] = {make_cuDoubleComplex(0.,0.)};
+    cuDoubleComplex U[2][2] = {make_cuDoubleComplex(0., 0.)};
     U[0][0] = make_cuDoubleComplex(cos_delta_theta,
                                    -Bn.z*sin_delta_theta);
-    U[0][1] = make_cuDoubleComplex(Bn.y*sin_delta_theta,
+    U[0][1] = make_cuDoubleComplex(-Bn.y*sin_delta_theta,
                                    -Bn.x*sin_delta_theta);
-    U[1][0] = make_cuDoubleComplex(-Bn.y*sin_delta_theta,
+    U[1][0] = make_cuDoubleComplex(Bn.y*sin_delta_theta,
                                    -Bn.x*sin_delta_theta);
     U[1][1] = make_cuDoubleComplex(cos_delta_theta,
                                    Bn.z*sin_delta_theta);
-    
+
     wavefunction updated_psi = make_wavefunction(0., 0., 0., 0., psi.isSpinUp);
     updated_psi.up = U[0][0]*psi.up + U[0][1]*psi.dn;
     updated_psi.dn = U[1][0]*psi.up + U[1][1]*psi.dn;
