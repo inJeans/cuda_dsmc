@@ -30,8 +30,10 @@ SCENARIO("[DEVICE] Execute a full ehrenfest simulation", "[d-ehrenfest]") {
         // Initialise computational parameters
         int num_atoms = 1e5;
         FN = 10;
+        
         double dt = 1.e-9;
         int num_time_steps = 1000;
+        int loops_per_collision = 10000;
         double init_temp = 20.e-6;
 
         // Initialise grid parameters
@@ -313,7 +315,7 @@ SCENARIO("[DEVICE] Execute a full ehrenfest simulation", "[d-ehrenfest]") {
                                                           sizeof(int)));
 
         FILE *collision_file_pointer = fopen("collision.data", "w");
-        for (int i=0; i<total_num_cells+1; ++i) {
+        for (int i=0; i<total_num_cells; ++i) {
             fprintf(collision_file_pointer, "%i\t", h_collision_count[i]);
         }
         fprintf(collision_file_pointer, "\n");
@@ -348,7 +350,7 @@ SCENARIO("[DEVICE] Execute a full ehrenfest simulation", "[d-ehrenfest]") {
         LOGF(INFO, "\nEvolving distribution for %i time steps.", num_time_steps);
 #endif
         for (int t = 0; t < num_time_steps; ++t) {
-            for(int u=0; u<1000; ++u) {
+            for(int u=0; u<loops_per_collision; ++u) {
                 velocity_verlet_update(num_atoms,
                                        dt,
                                        trap_parameters,
@@ -358,10 +360,10 @@ SCENARIO("[DEVICE] Execute a full ehrenfest simulation", "[d-ehrenfest]") {
                                        acc,
                                        psi);
             }
-            sim_time[t+1] = sim_time[t] + 1000*dt;
+            sim_time[t+1] = sim_time[t] + loops_per_collision*dt;
             collide_atoms(num_atoms,
                           total_num_cells,
-                          1000*dt,
+                          loops_per_collision*dt,
                           pos,
                           vel,
                           state,
@@ -379,7 +381,7 @@ SCENARIO("[DEVICE] Execute a full ehrenfest simulation", "[d-ehrenfest]") {
                                        total_num_cells*sizeof(int),
                                        cudaMemcpyDeviceToHost));
             collision_file_pointer = fopen("collision.data", "a");
-            for (int i=0; i<total_num_cells+1; ++i) {
+            for (int i=0; i<total_num_cells; ++i) {
                 fprintf(collision_file_pointer, "%i\t", h_collision_count[i]);
             }
             fprintf(collision_file_pointer, "\n");
