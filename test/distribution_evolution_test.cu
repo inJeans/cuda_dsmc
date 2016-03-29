@@ -284,12 +284,12 @@ SCENARIO("[DEVICE] Wavfunction Update", "[d-psiev]") {
                                    num_test*sizeof(wavefunction)));
         wavefunction *test_psi;
         test_psi = reinterpret_cast<wavefunction*>(calloc(num_test,
-                                                      sizeof(wavefunction)));
+                                                   sizeof(wavefunction)));
 
         generate_aligned_spins(num_test,
                                trap_parameters,
                                d_pos,
-                               test_psi);
+                               d_psi);
 
         WHEN("The update_wavefunctions function is called with a dt=1.e-6") {
             double dt = 1.e-6;

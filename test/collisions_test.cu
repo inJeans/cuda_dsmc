@@ -406,8 +406,8 @@ SCENARIO("[DEVICE] Collide atoms", "[d-collide]") {
                                        num_cells*sizeof(double),
                                        cudaMemcpyDeviceToHost));
 
-            THEN("We should expect two simulated collisions") {
-                REQUIRE(t_collision_count[0] == 2*FN);
+            THEN("We should expect zero simulated collisions") {
+                REQUIRE(t_collision_count[0] == 0*FN);
             }
             THEN("The sig_vr_max array should not have been updated") {
                 REQUIRE(t_sig_vr_max[0] == sig_vr_max[0]);
