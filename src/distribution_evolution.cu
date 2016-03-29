@@ -326,9 +326,9 @@ __device__ wavefunction d_update_atom_wavefunction(double dt,
     cuDoubleComplex U[2][2] = {make_cuDoubleComplex(0., 0.)};
     U[0][0] = make_cuDoubleComplex(cos_delta_theta,
                                    -Bn.z*sin_delta_theta);
-    U[0][1] = make_cuDoubleComplex(Bn.y*sin_delta_theta,
+    U[0][1] = make_cuDoubleComplex(-Bn.y*sin_delta_theta,
                                    -Bn.x*sin_delta_theta);
-    U[1][0] = make_cuDoubleComplex(-Bn.y*sin_delta_theta,
+    U[1][0] = make_cuDoubleComplex(Bn.y*sin_delta_theta,
                                    -Bn.x*sin_delta_theta);
     U[1][1] = make_cuDoubleComplex(cos_delta_theta,
                                    Bn.z*sin_delta_theta);
