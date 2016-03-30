@@ -18,11 +18,11 @@ void progress_bar(int current,
     if (current == 0) printf("\n");
 
     if (current * 100 / total < 35)
-        printf("\033[31m %3d%%|", current * 100 / total + 1);
+        printf("\033[31m %3d%%|", current * 100 / total);
     else if (current * 100 / total < 70)
-        printf("\033[33m %3d%%|", current * 100 / total + 1);
+        printf("\033[33m %3d%%|", current * 100 / total);
     else
-        printf("\033[32m %3d%%|", current * 100 / total + 1);
+        printf("\033[32m %3d%%|", current * 100 / total);
     for (int i = 0; i < hashes_needed; ++i) printf("#");
     printf("|\033[m");
     for (int i = 0; i < hashes_needed+7; ++i) printf("\b");
