@@ -585,7 +585,8 @@ __device__ double d_kinetic_energy(double3 vel,
     double kinetic = 0.;
     // if (psi.isSpinUp) {
         kinetic = 0.5 * d_mass * norm(vel) * norm(vel);
-    // } return kinetic; 
+    // } 
+    return kinetic; 
 } 
 
 __host__ double inst_potential_energy(int num_atoms,
