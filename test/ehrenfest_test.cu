@@ -160,7 +160,7 @@ SCENARIO("[DEVICE] Execute a full ehrenfest simulation", "[d-ehrenfest]") {
              h_sig_vr_max[cell] = sqrt(16.*kB*20.e-6/h_pi/mass)*cross_section;
         }
         double *sig_vr_max;
-        checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&d_sig_vr_max),
+        checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&sig_vr_max),
                                    total_num_cells*sizeof(double)));
         checkCudaErrors(cudaMemcpy(sig_vr_max,
                                    h_sig_vr_max,
