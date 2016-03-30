@@ -32,8 +32,8 @@ SCENARIO("[DEVICE] Execute a full ehrenfest simulation", "[d-ehrenfest]") {
         FN = 10;
         
         double dt = 1.e-7;
-        int num_time_steps = 1000;
-        int loops_per_collision = 100;
+        int num_time_steps = 100;
+        int loops_per_collision = 1000;
         double init_temp = 20.e-6;
 
         // Initialise grid parameters
