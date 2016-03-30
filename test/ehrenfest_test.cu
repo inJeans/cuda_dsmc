@@ -583,9 +583,9 @@ __global__ void g_kinetic_energy(int num_atoms,
 __device__ double d_kinetic_energy(double3 vel,
                                    wavefunction psi) {
     double kinetic = 0.;
-    if (psi.isSpinUp) {
+    // if (psi.isSpinUp) {
         kinetic = 0.5 * d_mass * norm(vel) * norm(vel);
-    } return kinetic; 
+    // } return kinetic; 
 } 
 
 __host__ double inst_potential_energy(int num_atoms,
@@ -687,7 +687,7 @@ __device__ double d_potential_energy(double3 pos,
                                      trap_geo params,
                                      wavefunction psi) {
     cuDoubleComplex potential = make_cuDoubleComplex(0., 0.);
-    if (psi.isSpinUp) {
+    // if (psi.isSpinUp) {
         double3 local_B = B(pos,
                             params);
         cuDoubleComplex H[2][2] = {make_cuDoubleComplex(0., 0.)};
@@ -701,7 +701,7 @@ __device__ double d_potential_energy(double3 pos,
                                                         0.);
         potential = psi.up*(H[0][0]*cuConj(psi.up) + H[1][0]*cuConj(psi.dn)) +
                     psi.dn*(H[0][1]*cuConj(psi.up) + H[1][1]*cuConj(psi.dn));
-    }
+    // }
 
     return cuCreal(potential);
 }
@@ -810,7 +810,7 @@ __device__ double d_projection(double3 pos,
                                wavefunction *psi) {
     cuDoubleComplex P = make_cuDoubleComplex(0., 0.);
     wavefunction l_psi = psi[0];
-    if (l_psi.isSpinUp) {
+    // if (l_psi.isSpinUp) {
         double3 Bn = unit(B(pos,
                             params));
         P = 0.5 * (((1.-Bn.z)*l_psi.dn + Bn.x*l_psi.up)*cuConj(l_psi.dn) +
@@ -822,7 +822,7 @@ __device__ double d_projection(double3 pos,
             psi[0].isSpinUp = false;
             P = make_cuDoubleComplex(0., 0.);
         }
-    }
+    // }
 
     return cuCreal(P);
 }
