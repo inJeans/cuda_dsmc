@@ -251,11 +251,11 @@ double3 update_atom_acceleration(trap_geo params,
                                  double3 pos) {
     double3 acc = make_double3(0., 0., 0.);
 
-    acc.x = dV_dx(pos,
+    acc.x =-dV_dx(pos,
                   params) / mass;
-    acc.y = dV_dy(pos,
+    acc.y =-dV_dy(pos,
                   params) / mass;
-    acc.z = dV_dz(pos,
+    acc.z =-dV_dz(pos,
                   params) / mass;
 
     return acc;
@@ -266,13 +266,13 @@ double3 update_atom_acceleration(trap_geo params,
                                  wavefunction psi) {
     double3 acc = make_double3(0., 0., 0.);
 
-    acc.x = expectation_dV_dx(params,
+    acc.x =-expectation_dV_dx(params,
                               pos,
                               psi) / mass;
-    acc.y = expectation_dV_dy(params,
+    acc.y =-expectation_dV_dy(params,
                               pos,
                               psi) / mass;
-    acc.z = expectation_dV_dz(params,
+    acc.z =-expectation_dV_dz(params,
                               pos,
                               psi) / mass;
     return acc;

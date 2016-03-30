@@ -193,11 +193,11 @@ __device__ double3 d_update_atom_acceleration(trap_geo params,
                                               double3 pos) {
     double3 acc = make_double3(0., 0., 0.);
 
-    acc.x = d_dV_dx(pos,
+    acc.x =-d_dV_dx(pos,
                     params) / d_mass;
-    acc.y = d_dV_dy(pos,
+    acc.y =-d_dV_dy(pos,
                     params) / d_mass;
-    acc.z = d_dV_dz(pos,
+    acc.z =-d_dV_dz(pos,
                     params) / d_mass;
 
     return acc;
@@ -210,13 +210,13 @@ __device__ double3 d_update_atom_acceleration(trap_geo params,
     zomplex2 l_psi = make_zomplex2(psi.up.x, psi.up.y,
                                    psi.dn.x, psi.dn.y);
 
-    acc.x = d_expectation_dV_dx(params,
+    acc.x =-d_expectation_dV_dx(params,
                                 pos,
                                 l_psi) / d_mass;
-    acc.y = d_expectation_dV_dy(params,
+    acc.y =-d_expectation_dV_dy(params,
                                 pos,
                                 l_psi) / d_mass;
-    acc.z = d_expectation_dV_dz(params,
+    acc.z =-d_expectation_dV_dz(params,
                                 pos,
                                 l_psi) / d_mass;
     return acc;
