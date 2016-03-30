@@ -492,9 +492,7 @@ __global__ void g_collide(int num_cells,
                                        collision_remainder[cell];
         int num_collision_pairs = floor(f_num_collision_pairs);
         collision_remainder[cell] = f_num_collision_pairs - num_collision_pairs;
-        if (cell_num_atoms > 1000) {
-             printf("num_atoms[%i] = %i, num_collision_pairs=%i, collision_remainder = %g, d_FN=%f, sig_vr = %g, dt = %f, cell_volume = %g\n", cell, cell_num_atoms, num_collision_pairs, f_num_collision_pairs, d_FN, l_sig_vr_max, dt, d_cell_volume);
-        }
+        
         if (cell_num_atoms > 2) {
             double3 vel_cm, new_vel, point_on_sphere;
 
