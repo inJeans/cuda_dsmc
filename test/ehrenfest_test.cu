@@ -31,8 +31,8 @@ SCENARIO("[DEVICE] Execute a full ehrenfest simulation", "[d-ehrenfest]") {
         int num_atoms = 1e5;
         FN = 10;
         
-        double dt = 1.e-6;
-        int num_time_steps = 10;
+        double dt = 1.e-7;
+        int num_time_steps = 100;
         int loops_per_collision = 10000;
         double init_temp = 20.e-6;
 
@@ -387,8 +387,8 @@ SCENARIO("[DEVICE] Execute a full ehrenfest simulation", "[d-ehrenfest]") {
                                        total_num_cells*sizeof(int),
                                        cudaMemcpyDeviceToHost));
             collision_file_pointer = fopen("collision.data", "a");
-            for (int i=0; i<total_num_cells; ++i) {
-                fprintf(collision_file_pointer, "%i\t", h_collision_count[i]);
+            for (int cell=0; cell < total_num_cells; ++cell) {
+                fprintf(collision_file_pointer, "%i\t", h_collision_count[cell]);
             }
             fprintf(collision_file_pointer, "\n");
             fclose(collision_file_pointer);
@@ -398,35 +398,24 @@ SCENARIO("[DEVICE] Execute a full ehrenfest simulation", "[d-ehrenfest]") {
                                                   trap_parameters,
                                                   psi,
                                                   d_projection);
-
             num_spin_up[t+1] = inst_is_spin_up(num_atoms,
                                                psi,
                                                is_spin_up);
-
             avg_projection[t+1] /= num_spin_up[t+1];
-
             avg_kinetic_energy[t+1] = inst_kinetic_energy(num_atoms,
                                                           vel,
                                                           psi,
                                                           d_kinetic_energy) /
-                                      num_spin_up[t+1];
+                                       num_spin_up[t+1];
             avg_potential_energy[t+1] = inst_potential_energy(num_atoms,
                                                               pos,
                                                               trap_parameters,
                                                               psi,
                                                               d_potential_energy) /
-                                         num_spin_up[t+1];
+                                        num_spin_up[t+1];
 
             progress_bar(t,
                          num_time_steps);
-        }
-        printf("\n");
-        for (int i = 0; i < num_time_steps+1; ++i) {
-            printf("avg_kinetic_energy[%i] = %g uK\n", i,
-                               avg_kinetic_energy[i]/kB*1.e6);
-            printf("avg_potential_energy[%i] = %g uK\n", i,
-                               avg_potential_energy[i]/kB*1.e6);
-            printf("avg_projection[%i] = %g\n", i, avg_projection[i]);
         }
 
         FILE *time_file_pointer = fopen("time.data", "w");
@@ -458,6 +447,23 @@ SCENARIO("[DEVICE] Execute a full ehrenfest simulation", "[d-ehrenfest]") {
                                                             h_pos[i].z);
         }
         fclose(final_pos_file_pointer);
+
+        int total_coll = 0;
+        for (int cell = 0; cell < total_num_cells; ++cell) {
+            total_coll += h_collision_count[cell];
+        }
+
+#if defined(IP)  // Ioffe Pritchard trap
+            THEN("We should expect the collision rate to agree with Walraven") {
+                REQUIRE(total_coll < 2407 * (1+fractional_tol));
+                REQUIRE(total_coll > 2407 * (1-fractional_tol));
+            }
+#else  // Quadrupole
+            THEN("We should expect the collision rate to agree with Walraven") {
+                REQUIRE(total_coll < 1026 * (1+fractional_tol));
+                REQUIRE(total_coll > 1026 * (1-fractional_tol));
+            }
+#endif
 
 #if defined(LOGGING)
         LOGF(DEBUG, "\nDestroying the cuBLAS handle.\n");
@@ -491,6 +497,7 @@ SCENARIO("[DEVICE] Execute a full ehrenfest simulation", "[d-ehrenfest]") {
         free(num_spin_up);
         free(sim_time);
         free(h_pos);
+        free(h_collision_count);
     }
 }
 
@@ -589,9 +596,9 @@ __global__ void g_kinetic_energy(int num_atoms,
 __device__ double d_kinetic_energy(double3 vel,
                                    wavefunction psi) {
     double kinetic = 0.;
-    // if (psi.isSpinUp) {
+    if (psi.isSpinUp) {
         kinetic = 0.5 * d_mass * norm(vel) * norm(vel);
-    // } 
+    } 
     return kinetic; 
 } 
 
@@ -694,7 +701,7 @@ __device__ double d_potential_energy(double3 pos,
                                      trap_geo params,
                                      wavefunction psi) {
     cuDoubleComplex potential = make_cuDoubleComplex(0., 0.);
-    // if (psi.isSpinUp) {
+    if (psi.isSpinUp) {
         double3 local_B = B(pos,
                             params);
         cuDoubleComplex H[2][2] = {make_cuDoubleComplex(0., 0.)};
@@ -708,7 +715,7 @@ __device__ double d_potential_energy(double3 pos,
                                                         0.);
         potential = psi.up*(H[0][0]*cuConj(psi.up) + H[1][0]*cuConj(psi.dn)) +
                     psi.dn*(H[0][1]*cuConj(psi.up) + H[1][1]*cuConj(psi.dn));
-    // }
+    }
 
     return cuCreal(potential);
 }
@@ -817,7 +824,7 @@ __device__ double d_projection(double3 pos,
                                wavefunction *psi) {
     cuDoubleComplex P = make_cuDoubleComplex(0., 0.);
     wavefunction l_psi = psi[0];
-    // if (l_psi.isSpinUp) {
+    if (l_psi.isSpinUp) {
         double3 Bn = unit(B(pos,
                             params));
         P = 0.5 * (((1.-Bn.z)*l_psi.dn + Bn.x*l_psi.up)*cuConj(l_psi.dn) +
@@ -825,11 +832,10 @@ __device__ double d_projection(double3 pos,
             Bn.y*cuCimag(l_psi.up*cuConj(l_psi.dn));
 
         if (cuCreal(P)<0.) {
-            printf("An atom just flipped\n");
             psi[0].isSpinUp = false;
             P = make_cuDoubleComplex(0., 0.);
         }
-    // }
+    }
 
     return cuCreal(P);
 }
