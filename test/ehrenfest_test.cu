@@ -27,6 +27,14 @@ SCENARIO("[DEVICE] Execute a full ehrenfest simulation", "[d-ehrenfest]") {
         trap_parameters.B0 = 0.;
 #endif
 
+        int devID = gpuGetMaxGflopsDeviceId();
+        checkCudaErrors(cudaSetDevice(devID));
+
+        int device_count;
+        cudaGetDeviceCount(&device_count);
+
+        int num_batches = device_count;
+
         // Initialise computational parameters
         int num_atoms = 1e5;
         FN = 10;
@@ -35,6 +43,12 @@ SCENARIO("[DEVICE] Execute a full ehrenfest simulation", "[d-ehrenfest]") {
         int num_time_steps = 10;
         int loops_per_collision = 10000;
         double init_temp = 20.e-6;
+
+        int b_num_atoms[num_batches];
+        for (int batch=0; batch < num_batches; ++batch) {
+            b_num_atoms[batch] = num_atoms / num_batches;
+        }
+        b_num_atoms[num_batches-1] = num_atoms - (num_batches-1)*(num_atoms/num_batches);
 
         // Initialise grid parameters
         k_num_cells = make_int3(35, 35, 35);
@@ -351,20 +365,81 @@ SCENARIO("[DEVICE] Execute a full ehrenfest simulation", "[d-ehrenfest]") {
                                                         d_potential_energy) /
                                   num_atoms;
 
+        double3 *b_pos[num_batches];
+        double3 *b_vel[num_batches];
+        double3 *b_acc[num_batches];
+        wavefunction *b_psi[num_batches];
+        cublasHandle_t b_cublas_handle[num_batches];
+        for (int batch = 0; batch < num_batches; ++batch) {
+            checkCudaErrors(cudaSetDevice(batch/device_count));
+            checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&b_pos[batch]),
+                                       b_num_atoms[batch]*sizeof(double3)));
+            checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&b_vel[batch]),
+                                       b_num_atoms[batch]*sizeof(double3)));
+            checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&b_acc[batch]),
+                                       b_num_atoms[batch]*sizeof(double3)));
+            checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&b_psi[batch]),
+                                       b_num_atoms[batch]*sizeof(wavefunction)));
+            checkCudaErrors(cublasCreate(&b_cublas_handle[batch]));
+        }
+        devID = gpuGetMaxGflopsDeviceId();
+        checkCudaErrors(cudaSetDevice(devID));
+
         // Evolve many time step
 #if defined(LOGGING)
         LOGF(INFO, "\nEvolving distribution for %i time steps.", num_time_steps);
 #endif
         for (int t = 0; t < num_time_steps; ++t) {
-            for(int u=0; u<loops_per_collision; ++u) {
-                velocity_verlet_update(num_atoms,
-                                       dt,
-                                       trap_parameters,
-                                       cublas_handle,
-                                       pos,
-                                       vel,
-                                       acc,
-                                       psi);
+            for(int batch=0; batch < num_batches; ++batch) {
+                checkCudaErrors(cudaMemcpy(b_pos[batch],
+                                           &pos[batch*num_atoms/num_batches],
+                                           b_num_atoms[batch]*sizeof(double3),
+                                           cudaMemcpyDeviceToDevice));
+                checkCudaErrors(cudaMemcpy(b_vel[batch],
+                                           &vel[batch*num_atoms/num_batches],
+                                           b_num_atoms[batch]*sizeof(double3),
+                                           cudaMemcpyDeviceToDevice));
+                checkCudaErrors(cudaMemcpy(b_acc[batch],
+                                           &acc[batch*num_atoms/num_batches],
+                                           b_num_atoms[batch]*sizeof(double3),
+                                           cudaMemcpyDeviceToDevice));
+                checkCudaErrors(cudaMemcpy(b_psi[batch],
+                                           &psi[batch*num_atoms/num_batches],
+                                           b_num_atoms[batch]*sizeof(wavefunction),
+                                           cudaMemcpyDeviceToDevice));
+            }
+            for(int u=0; u < loops_per_collision; ++u) {
+                for(int batch=0; batch < num_batches; ++batch) {
+                    checkCudaErrors(cudaSetDevice(batch/device_count));
+                    velocity_verlet_update(b_num_atoms[batch],
+                                           dt,
+                                           trap_parameters,
+                                           b_cublas_handle[batch],
+                                           b_pos[batch],
+                                           b_vel[batch],
+                                           b_acc[batch],
+                                           b_psi[batch]);
+                }
+            }
+            devID = gpuGetMaxGflopsDeviceId();
+            checkCudaErrors(cudaSetDevice(devID));
+            for(int batch=0; batch < num_batches; ++batch) {
+                checkCudaErrors(cudaMemcpy(&pos[batch*num_atoms/num_batches],
+                                           b_pos[batch],
+                                           b_num_atoms[batch]*sizeof(double3),
+                                           cudaMemcpyDeviceToDevice));
+                checkCudaErrors(cudaMemcpy(&vel[batch*num_atoms/num_batches],
+                                           b_vel[batch],
+                                           b_num_atoms[batch]*sizeof(double3),
+                                           cudaMemcpyDeviceToDevice));
+                checkCudaErrors(cudaMemcpy(&acc[batch*num_atoms/num_batches],
+                                           b_acc[batch],
+                                           b_num_atoms[batch]*sizeof(double3),
+                                           cudaMemcpyDeviceToDevice));
+                checkCudaErrors(cudaMemcpy(&psi[batch*num_atoms/num_batches],
+                                           b_psi[batch],
+                                           b_num_atoms[batch]*sizeof(wavefunction),
+                                           cudaMemcpyDeviceToDevice));
             }
             sim_time[t+1] = sim_time[t] + loops_per_collision*dt;
             collide_atoms(num_atoms,
