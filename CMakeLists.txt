@@ -82,7 +82,7 @@ option(CUDA "Compile with GPU acceleration" OFF)
 
 IF(NOT WIN32)
     find_package(CUDA QUIET REQUIRED)
-    SET(CUDA_NVCC_FLAGS "--generate-code arch=compute_35,code=sm_35 -lineinfo -Xcompiler -fopenmp")
+    SET(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} --generate-code arch=compute_35,code=sm_35 -lineinfo -Xcompiler -fopenmp")
     IF(LOGGING)
         SET(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} -std=c++11")
     ENDIF()
@@ -93,7 +93,7 @@ IF(NOT WIN32)
     ENDIF()
 ENDIF()
 
-SET(CMAKE_C_FLAGS "-std=c99 ${CMAKE_C_FLAGS}")
+SET(CMAKE_C_FLAGS "-std=c99 -fopenmp ${CMAKE_C_FLAGS}")
 
 include_directories("${PROJECT_SOURCE_DIR}/include" "${PROJECT_SOURCE_DIR}/include/cuda_dsmc")
 IF(CUDA)
