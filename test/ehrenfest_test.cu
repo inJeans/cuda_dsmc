@@ -32,7 +32,7 @@ SCENARIO("[DEVICE] Execute a full ehrenfest simulation", "[d-ehrenfest]") {
         FN = 10;
         
         double dt = 1.e-7;
-        int num_time_steps = 100;
+        int num_time_steps = 10;
         int loops_per_collision = 10000;
         double init_temp = 20.e-6;
 
