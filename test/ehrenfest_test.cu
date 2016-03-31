@@ -371,7 +371,7 @@ SCENARIO("[DEVICE] Execute a full ehrenfest simulation", "[d-ehrenfest]") {
         wavefunction *b_psi[num_batches];
         cublasHandle_t b_cublas_handle[num_batches];
         for (int batch = 0; batch < num_batches; ++batch) {
-            checkCudaErrors(cudaSetDevice(batch/device_count));
+            checkCudaErrors(cudaSetDevice(batch % device_count));
             checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&b_pos[batch]),
                                        b_num_atoms[batch]*sizeof(double3)));
             checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&b_vel[batch]),
@@ -410,7 +410,7 @@ SCENARIO("[DEVICE] Execute a full ehrenfest simulation", "[d-ehrenfest]") {
             }
             for(int u=0; u < loops_per_collision; ++u) {
                 for(int batch=0; batch < num_batches; ++batch) {
-                    checkCudaErrors(cudaSetDevice(batch/device_count));
+                    checkCudaErrors(cudaSetDevice(batch % device_count));
                     velocity_verlet_update(b_num_atoms[batch],
                                            dt,
                                            trap_parameters,

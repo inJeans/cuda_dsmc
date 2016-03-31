@@ -82,7 +82,7 @@ option(CUDA "Compile with GPU acceleration" OFF)
 
 IF(NOT WIN32)
     find_package(CUDA QUIET REQUIRED)
-    SET(CUDA_NVCC_FLAGS "--generate-code arch=compute_35,code=sm_35 -Xnvlink -w")
+    SET(CUDA_NVCC_FLAGS "--generate-code arch=compute_35,code=sm_35 -lineinfo")
     IF(LOGGING)
         SET(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} -std=c++11")
     ENDIF()
