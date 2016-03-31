@@ -415,7 +415,7 @@ SCENARIO("[DEVICE] Execute a full ehrenfest simulation", "[d-ehrenfest]") {
                                         num_spin_up[t+1];
 
             progress_bar(t,
-                         num_time_steps);
+                         num_time_steps-1);
         }
 
         FILE *time_file_pointer = fopen("time.data", "w");
