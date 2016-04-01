@@ -6,6 +6,9 @@
  */
 
 #include "ehrenfest_test.cuh"
+#if defined(OMP)
+    #include <omp.h>
+#endif
 
 double fractional_tol = 0.05; 
 
@@ -390,6 +393,7 @@ SCENARIO("[DEVICE] Execute a full ehrenfest simulation", "[d-ehrenfest]") {
         LOGF(INFO, "\nEvolving distribution for %i time steps.", num_time_steps);
 #endif
         for (int t = 0; t < num_time_steps; ++t) {
+            int tid;
             #pragma omp parallel for
             for(int batch=0; batch < num_batches; ++batch) {
                 checkCudaErrors(cudaMemcpy(b_pos[batch],

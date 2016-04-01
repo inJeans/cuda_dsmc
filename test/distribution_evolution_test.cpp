@@ -218,6 +218,43 @@ SCENARIO("[HOST] Velocity Update", "[h-vel]") {
             
         }
 
+        WHEN("The update_velocities function is called 10000 times with dt=1.e-6") {
+            double dt = 1.e-6;
+            // Initialise velocities
+            double3 *test_vel;
+            test_vel = reinterpret_cast<double3*>(calloc(num_test,
+                                                  sizeof(double3)));
+
+            // Generate velocity distribution
+            generate_thermal_velocities(num_test,
+                                        init_T,
+                                        state,
+                                        test_vel);
+
+            double initial_kinetic_energy = mean_kinetic_energy(num_test,
+                                                                test_vel);
+
+            cublasHandle_t cublas_handle;
+            for (int l = 0; l < 10000; ++l) {
+                update_velocities(num_test,
+                                  dt,
+                                  cublas_handle,
+                                  acc,
+                                  test_vel);
+            }
+
+            double final_kinetic_energy = mean_kinetic_energy(num_test,
+                                                              test_vel);
+
+            THEN("The change in kinetic energy should be 0") {
+                REQUIRE(final_kinetic_energy - initial_kinetic_energy > -tol);
+                REQUIRE(final_kinetic_energy - initial_kinetic_energy < tol);
+            }
+
+            free(test_vel);
+            
+        }
+
         free(pos);
         free(psi);
         free(acc);
@@ -290,10 +327,10 @@ SCENARIO("[HOST] Wavfunction Update", "[h-psiev]") {
             free(test_psi);
         }
 
-        WHEN("The update_wavefunctions function is called 1000 times with a dt=1.e-6") {
+        WHEN("The update_wavefunctions function is called 10000 times with a dt=1.e-6") {
             double dt = 1.e-6;
             // Update wavefunctions
-            for (int l = 0; l < 1000; ++l) {
+            for (int l = 0; l < 10000; ++l) {
                 update_wavefunctions(num_test,
                                      dt,
                                      trap_parameters,

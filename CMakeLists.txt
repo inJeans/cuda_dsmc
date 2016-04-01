@@ -79,10 +79,20 @@ ENDIF() # MKL
 
 # We will optionally build with CUDA.
 option(CUDA "Compile with GPU acceleration" OFF)
+# We will optionally build with OMP.
+option(OMP "Compile with OMP acceleration" OFF)
+# Special command for compiling on my local environment
+option(MIMACHINE "Compile on my machine" OFF)
 
 IF(NOT WIN32)
     find_package(CUDA QUIET REQUIRED)
-    SET(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} --generate-code arch=compute_35,code=sm_35 -lineinfo -Xcompiler -fopenmp")
+    IF(MIMACHINE)
+        SET(CUDA_HOST_COMPILER /Users/miMacbookPro/Downloads/clang+llvm-3.5.2-x86_64-apple-darwin/bin/clang++)
+    ENDIF()
+    SET(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} --generate-code arch=compute_35,code=sm_35 -lineinfo")
+    IF(OMP)
+        SET(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} -Xcompiler -fopenmp")
+    ENDIF()
     IF(LOGGING)
         SET(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} -std=c++11")
     ENDIF()
@@ -93,7 +103,11 @@ IF(NOT WIN32)
     ENDIF()
 ENDIF()
 
-SET(CMAKE_C_FLAGS "-std=c99 -fopenmp ${CMAKE_C_FLAGS}")
+SET(CMAKE_C_FLAGS "-std=c99 ${CMAKE_C_FLAGS}")
+IF(OMP)
+    SET(CMAKE_C_FLAGS "-std=c99 -fopenmp ${CMAKE_C_FLAGS}")
+    add_definitions(-DOMP)
+ENDIF()
 
 include_directories("${PROJECT_SOURCE_DIR}/include" "${PROJECT_SOURCE_DIR}/include/cuda_dsmc")
 IF(CUDA)
@@ -136,7 +150,7 @@ IF(CUDA)
                 src/utilities.cpp
                 src/vector_math.cu src/entropy.c)
     cuda_add_executable(cuda_dsmc ${SOURCES})
-    target_link_libraries(cuda_dsmc ${BLAS} pcg_random cudart cublas g3logger)
+    target_link_libraries(cuda_dsmc ${BLAS} pcg_random cudart cublas g3logger gomp)
     target_compile_definitions(cuda_dsmc PRIVATE -DCUDA)
 ELSEIF(MKL)
     SET(SOURCES src/main.cpp 
