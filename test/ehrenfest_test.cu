@@ -36,7 +36,12 @@ SCENARIO("[DEVICE] Execute a full ehrenfest simulation", "[d-ehrenfest]") {
         int device_count;
         cudaGetDeviceCount(&device_count);
 
-        int num_batches = device_count;
+        int num_batches = 1;
+#if defined(OMP)
+        num_batches = omp_get_max_threads();
+#else
+        num_batches = device_count;
+#endif
 
         // Initialise computational parameters
         int num_atoms = 1e5;
