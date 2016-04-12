@@ -48,7 +48,7 @@ SCENARIO("[DEVICE] Execute a full ehrenfest simulation", "[d-ehrenfest]") {
         FN = 10;
         
         double dt = 1.e-7;
-        int num_time_steps = 10;
+        int num_time_steps = 100;
         int loops_per_collision = 10000;
         double init_temp = 20.e-6;
 
@@ -398,7 +398,6 @@ SCENARIO("[DEVICE] Execute a full ehrenfest simulation", "[d-ehrenfest]") {
         LOGF(INFO, "\nEvolving distribution for %i time steps.", num_time_steps);
 #endif
         for (int t = 0; t < num_time_steps; ++t) {
-            int tid;
             #pragma omp parallel for
             for(int batch=0; batch < num_batches; ++batch) {
                 checkCudaErrors(cudaMemcpy(b_pos[batch],
@@ -918,6 +917,7 @@ __device__ double d_projection(double3 pos,
             Bn.y*cuCimag(l_psi.up*cuConj(l_psi.dn));
 
         if (cuCreal(P)<0.) {
+            printf("I flipped!\n");
             psi[0].isSpinUp = false;
             P = make_cuDoubleComplex(0., 0.);
         }
