@@ -913,8 +913,9 @@ __device__ double d_projection(double3 pos,
         double3 Bn = unit(B(pos,
                             params));
         P = 0.5 * (((1.-Bn.z)*l_psi.dn + Bn.x*l_psi.up)*cuConj(l_psi.dn) +
-                   ((1.+Bn.z)*l_psi.up + Bn.x*l_psi.dn)*cuConj(l_psi.up)) -
-            Bn.y*cuCimag(l_psi.up*cuConj(l_psi.dn));
+                   ((1.+Bn.z)*l_psi.up + Bn.x*l_psi.dn)*cuConj(l_psi.up)) +
+            Bn.y*(cuCreal(l_psi.up)*cuCimag(l_psi.dn) -
+                  cuCreal(l_psi.dn)*cuCimag(l_psi.up));
 
         if (cuCreal(P)<0.) {
             psi[0].isSpinUp = false;
