@@ -918,7 +918,7 @@ __device__ double d_projection(double3 pos,
                   cuCreal(l_psi.dn)*cuCimag(l_psi.up));
 
         if (cuCreal(P)<0.) {
-            printf("I flipped!\n");
+            //printf("I flipped!\n");
             psi[0].isSpinUp = false;
             P = make_cuDoubleComplex(0., 0.);
         }
