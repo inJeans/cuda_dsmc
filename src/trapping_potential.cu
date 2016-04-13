@@ -24,7 +24,7 @@ __host__ __device__ double3 B(double3 pos,
 
 __host__ __device__ double3 dB_dx(double3 pos,
                                   trap_geo params) {
-    double3 dBdx =-make_double3(params.dB - 0.5*params.ddB*pos.z,
+    double3 dBdx =-1.*make_double3(params.dB - 0.5*params.ddB*pos.z,
                                 0.,
                                 -0.5*params.ddB*pos.x);
 
@@ -33,7 +33,7 @@ __host__ __device__ double3 dB_dx(double3 pos,
 
 __host__ __device__ double3 dB_dy(double3 pos,
                                   trap_geo params) {
-    double3 dBdy =-make_double3(0.,
+    double3 dBdy =-1.*make_double3(0.,
                                 params.dB - 0.5*params.ddB*pos.z,
                                 -0.5*params.ddB*pos.y);
 
@@ -42,7 +42,7 @@ __host__ __device__ double3 dB_dy(double3 pos,
 
 __host__ __device__ double3 dB_dz(double3 pos,
                                   trap_geo params) {
-    double3 dBdz =-make_double3(-0.5*params.ddB*pos.x,
+    double3 dBdz =-1.*make_double3(-0.5*params.ddB*pos.x,
                                 -0.5*params.ddB*pos.y,
                                 params.ddB*pos.z);
 
