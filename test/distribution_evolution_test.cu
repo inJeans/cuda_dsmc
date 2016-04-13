@@ -251,9 +251,16 @@ SCENARIO("[DEVICE] Wavfunction Update", "[d-psiev]") {
         int num_test = 5000;
 
         // Initialise trapping parameters
+#if defined(IP)  // Ioffe Pritchard trap
+        trap_geo trap_parameters;
+        trap_parameters.B0 = 0.01;
+        trap_parameters.dB = 20.;
+        trap_parameters.ddB = 40000.;
+#else  // Quadrupole trap
         trap_geo trap_parameters;
         trap_parameters.Bz = 2.0;
         trap_parameters.B0 = 0.;
+#endif
 
         // Initialise rng
         // Initialise rng
