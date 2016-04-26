@@ -110,7 +110,7 @@ ENDIF()
 
 SET(CMAKE_C_FLAGS "-std=c99 ${CMAKE_C_FLAGS}")
 IF(OMP)
-    SET(CMAKE_C_FLAGS "-std=c99 -fopenmp ${CMAKE_C_FLAGS}")
+    SET(CMAKE_C_FLAGS "-fopenmp ${CMAKE_C_FLAGS}")
     add_definitions(-DOMP)
 ENDIF()
 
@@ -266,7 +266,6 @@ IF(CUDA)
     target_link_libraries(device_collisions_test cudart cublas g3logger ${BLAS})
     target_compile_definitions(device_collisions_test PRIVATE -DCUDA)
 
-IF(SPIN)
     # DEVICE - Ehrenfest tests
     SET(TEST_SOURCES test/ehrenfest_test_main.cpp test/ehrenfest_test.cu
                      src/collisions.cpp src/collisions.cu
@@ -280,7 +279,6 @@ IF(SPIN)
     cuda_add_executable(device_ehrenfest_test ${TEST_SOURCES})
     target_link_libraries(device_ehrenfest_test cudart cublas g3logger ${BLAS})
     target_compile_definitions(device_ehrenfest_test PRIVATE -DCUDA)
-ENDIF()
 ENDIF()
 
 # HOST - Random number generation tests

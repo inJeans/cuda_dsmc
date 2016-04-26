@@ -77,7 +77,7 @@ SCENARIO("[DEVICE] Thermal velocity distribution", "[d-veldist]") {
 
 SCENARIO("[DEVICE] Thermal position distribution", "[d-posdist]") {
     GIVEN("An array of appropriate seeds") {
-        int num_test = 5000;
+        int num_test = 10000;
 
         curandState *state;
         checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&state),
@@ -115,6 +115,14 @@ SCENARIO("[DEVICE] Thermal position distribution", "[d-posdist]") {
                                        d_test_pos,
                                        num_test*sizeof(double3),
                                        cudaMemcpyDeviceToHost));
+
+            FILE *init_pos_file_pointer = fopen("initial_position.data", "w");
+            for (int i=0; i<num_test; ++i) {
+                fprintf(init_pos_file_pointer, "%g, %g, %g\n", test_pos[i].x,
+                                                               test_pos[i].y,
+                                                               test_pos[i].z);
+            }
+            fclose(init_pos_file_pointer);
 
             THEN("The result give a mean speed and standard deviation as predicted by standard kinetic gas theory") {
                 double pos_mean = mean(test_pos,
