@@ -69,8 +69,8 @@ IF(MKL)
     ENDIF()
 ELSE()
 IF(APPLE)
-    # find_library(BLAS vecLib)
-    find_library(BLAS Accelerate)
+    find_library(BLAS vecLib)
+    # find_library(BLAS Accelerate)
     MESSAGE(${BLAS})
 ELSE()
     find_library(BLAS cblas)
@@ -83,11 +83,16 @@ option(CUDA "Compile with GPU acceleration" OFF)
 option(OMP "Compile with OMP acceleration" OFF)
 # Special command for compiling on my local environment
 option(MIMACHINE "Compile on my machine" OFF)
+# Special command for compiling on my local environment
+option(MIMAC "Compile on my mac" OFF)
 
 IF(NOT WIN32)
     find_package(CUDA QUIET REQUIRED)
     IF(MIMACHINE)
         SET(CUDA_HOST_COMPILER /Users/miMacbookPro/Downloads/clang+llvm-3.5.2-x86_64-apple-darwin/bin/clang++)
+    ENDIF()
+    IF(MIMAC)
+        SET(CUDA_HOST_COMPILER /Users/miMac/Downloads/clang+llvm-3.5.2-x86_64-apple-darwin/bin/clang++)
     ENDIF()
     SET(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} --generate-code arch=compute_35,code=sm_35 -lineinfo -O3")
     IF(OMP)
@@ -105,7 +110,7 @@ ENDIF()
 
 SET(CMAKE_C_FLAGS "-std=c99 ${CMAKE_C_FLAGS}")
 IF(OMP)
-    SET(CMAKE_C_FLAGS "-std=c99 -fopenmp ${CMAKE_C_FLAGS}")
+    SET(CMAKE_C_FLAGS "-fopenmp ${CMAKE_C_FLAGS}")
     add_definitions(-DOMP)
 ENDIF()
 
@@ -150,7 +155,7 @@ IF(CUDA)
                 src/utilities.cpp
                 src/vector_math.cu src/entropy.c)
     cuda_add_executable(cuda_dsmc ${SOURCES})
-    target_link_libraries(cuda_dsmc ${BLAS} pcg_random cudart cublas g3logger gomp)
+    target_link_libraries(cuda_dsmc ${BLAS} pcg_random cudart cublas g3logger)
     target_compile_definitions(cuda_dsmc PRIVATE -DCUDA)
 ELSEIF(MKL)
     SET(SOURCES src/main.cpp 
@@ -261,7 +266,6 @@ IF(CUDA)
     target_link_libraries(device_collisions_test cudart cublas g3logger ${BLAS})
     target_compile_definitions(device_collisions_test PRIVATE -DCUDA)
 
-IF(SPIN)
     # DEVICE - Ehrenfest tests
     SET(TEST_SOURCES test/ehrenfest_test_main.cpp test/ehrenfest_test.cu
                      src/collisions.cpp src/collisions.cu
@@ -275,7 +279,6 @@ IF(SPIN)
     cuda_add_executable(device_ehrenfest_test ${TEST_SOURCES})
     target_link_libraries(device_ehrenfest_test cudart cublas g3logger ${BLAS})
     target_compile_definitions(device_ehrenfest_test PRIVATE -DCUDA)
-ENDIF()
 ENDIF()
 
 # HOST - Random number generation tests

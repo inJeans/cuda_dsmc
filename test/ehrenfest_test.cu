@@ -37,18 +37,18 @@ SCENARIO("[DEVICE] Execute a full ehrenfest simulation", "[d-ehrenfest]") {
         cudaGetDeviceCount(&device_count);
 
         int num_batches = 1;
-#if defined(OMP)
-        num_batches = omp_get_max_threads();
-#else
-        num_batches = device_count;
-#endif
+// #if defined(OMP)
+//         num_batches = omp_get_max_threads();
+// #else
+//         num_batches = device_count;
+// #endif
 
-        // Initialise computational parameters
-        int num_atoms = 1e5;
+        // Initialise computational parameters.
+        int num_atoms = 1e4;
         FN = 10;
         
         double dt = 1.e-7;
-        int num_time_steps = 10;
+        int num_time_steps = 20;
         int loops_per_collision = 10000;
         double init_temp = 20.e-6;
 
@@ -398,7 +398,7 @@ SCENARIO("[DEVICE] Execute a full ehrenfest simulation", "[d-ehrenfest]") {
         LOGF(INFO, "\nEvolving distribution for %i time steps.", num_time_steps);
 #endif
         for (int t = 0; t < num_time_steps; ++t) {
-            #pragma omp parallel for
+            // #pragma omp parallel for
             for(int batch=0; batch < num_batches; ++batch) {
                 checkCudaErrors(cudaMemcpy(b_pos[batch],
                                            &pos[batch*num_atoms/num_batches],
@@ -432,7 +432,7 @@ SCENARIO("[DEVICE] Execute a full ehrenfest simulation", "[d-ehrenfest]") {
             }
             devID = gpuGetMaxGflopsDeviceId();
             checkCudaErrors(cudaSetDevice(devID));
-            #pragma omp parallel for
+            // #pragma omp parallel for
             for(int batch=0; batch < num_batches; ++batch) {
                 checkCudaErrors(cudaMemcpy(&pos[batch*num_atoms/num_batches],
                                            b_pos[batch],
@@ -681,11 +681,11 @@ __global__ void g_kinetic_energy(int num_atoms,
 __device__ double d_kinetic_energy(double3 vel,
                                    wavefunction psi) {
     double kinetic = 0.;
-    if (psi.isSpinUp) {
+    // if (psi.isSpinUp) {
         kinetic = 0.5 * d_mass * norm(vel) * norm(vel);
-    } 
-    return kinetic; 
-} 
+    // }
+    return kinetic;
+}
 
 __host__ double inst_potential_energy(int num_atoms,
                                       double3 *pos,
@@ -786,6 +786,7 @@ __device__ double d_potential_energy(double3 pos,
                                      trap_geo params,
                                      wavefunction psi) {
     cuDoubleComplex potential = make_cuDoubleComplex(0., 0.);
+#if defined(SPIN)
     if (psi.isSpinUp) {
         double3 local_B = B(pos,
                             params);
@@ -801,6 +802,11 @@ __device__ double d_potential_energy(double3 pos,
         potential = psi.up*(H[0][0]*cuConj(psi.up) + H[1][0]*cuConj(psi.dn)) +
                     psi.dn*(H[0][1]*cuConj(psi.up) + H[1][1]*cuConj(psi.dn));
     }
+#else
+    potential = make_cuDoubleComplex(0.5*d_gs*d_muB*norm(B(pos,
+                                                           params)),
+                                     0.);
+#endif
 
     return cuCreal(potential);
 }

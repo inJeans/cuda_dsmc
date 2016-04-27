@@ -13,7 +13,7 @@ void progress_bar(int current,
     struct winsize w;
     ioctl(0, TIOCGWINSZ, &w);
 
-    int hashes_needed = current * (w.ws_col-7) / total + 1;
+    int hashes_needed = current * (w.ws_col-8) / total + 1;
 
     if (current == 0) printf("\n");
 
