@@ -9,8 +9,8 @@
 
 #include "declare_device_constants.cuh"
 
-__constant__ double d_max_grid_width = 2.e-3;
-//__constant__ double d_max_grid_width = 2.5e-5;
+// __constant__ double d_max_grid_width = 2.e-3;
+__constant__ double d_max_grid_width = 2.5e-4;
 
 /** \fn __host__ void cu_generate_aligned_spins(int num_atoms,
  *                                              trap_geo params,
