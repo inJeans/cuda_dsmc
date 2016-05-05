@@ -28,8 +28,8 @@ double fractional_tol = 0.05;
     const std::string path_to_log_file = "/tmp/";
 #endif
 
-int mainmain(int argc, 
-             char const *argv[]) { {
+int main(int argc, 
+         char const *argv[]) {
 #if defined(LOGGING)
     // Initialise logger
     auto worker = g3::LogWorker::createLogWorker();
@@ -459,6 +459,7 @@ int mainmain(int argc,
                                        cudaMemcpyDeviceToDevice));
         }
         for(int u=0; u < loops_per_collision; ++u) {
+            #pragma omp parallel for
             for(int batch=0; batch < num_batches; ++batch) {
                 checkCudaErrors(cudaSetDevice(batch % device_count));
                 velocity_verlet_update(b_num_atoms[batch],
@@ -549,7 +550,7 @@ int mainmain(int argc,
     FILE *potential_file_pointer = fopen("potential_energy.data", "w");
     FILE *projection_file_pointer = fopen("projection.data", "w");
     FILE *spin_up_file_pointer = fopen("num_spin_up.data", "w");
-    for (int i=0; i<num_time_steps+1; ++i) {
+    for (int i = 0; i < num_time_steps+1; ++i) {
         fprintf(time_file_pointer, "%g\n", sim_time[i]);
         fprintf(kinetic_file_pointer, "%g\n", avg_kinetic_energy[i]/kB*1.e6);
         fprintf(potential_file_pointer, "%g\n", avg_potential_energy[i]/kB*1.e6);
@@ -567,7 +568,7 @@ int mainmain(int argc,
                                num_atoms*sizeof(double3),
                                cudaMemcpyDeviceToHost));
     FILE *final_pos_file_pointer = fopen("final_position.data", "w");
-    for (int i=0; i<num_atoms; ++i) {
+    for (int i = 0; i < num_atoms; ++i) {
         fprintf(final_pos_file_pointer, "%g, %g, %g\n", h_pos[i].x,
                                                         h_pos[i].y,
                                                         h_pos[i].z);
