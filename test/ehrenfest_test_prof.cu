@@ -28,8 +28,8 @@ double fractional_tol = 0.05;
     const std::string path_to_log_file = "/tmp/";
 #endif
 
-int main(int argc,
-         char* const argv[]) {
+int mainmain(int argc, 
+             char const *argv[]) { {
 #if defined(LOGGING)
     // Initialise logger
     auto worker = g3::LogWorker::createLogWorker();
