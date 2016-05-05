@@ -290,9 +290,9 @@ IF(CUDA)
                      test/test_helpers.cpp test/test_helpers.cu
                      src/utilities.cpp
                      src/vector_math.cu src/entropy.c)
-    cuda_add_executable(device_ehrenfest_test ${TEST_SOURCES})
-    target_link_libraries(device_ehrenfest_test cudart cublas g3logger ${BLAS})
-    target_compile_definitions(device_ehrenfest_test PRIVATE -DCUDA)
+    cuda_add_executable(device_ehrenfest_prof ${TEST_SOURCES})
+    target_link_libraries(device_ehrenfest_prof cudart cublas g3logger ${BLAS})
+    target_compile_definitions(device_ehrenfest_prof PRIVATE -DCUDA)
 ENDIF()
 
 # HOST - Random number generation tests
