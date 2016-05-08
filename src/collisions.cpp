@@ -110,10 +110,10 @@ void collide_atoms(int num_atoms,
                    int *cell_cumulative_num_atoms,
                    double *collision_remainder,
                    int *collision_count) {
-    // // Index atoms
-    // index_atoms(num_atoms,
-    //             pos,
-    //             cell_id);
+    // Index atoms
+    index_atoms(num_atoms,
+                pos,
+                cell_id);
 
     // Sort atoms
     sort_atoms(num_atoms,
