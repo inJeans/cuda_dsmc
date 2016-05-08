@@ -600,7 +600,7 @@ SCENARIO("[DEVICE] Execute a full ehrenfest simulation", "[d-ehrenfest]") {
             cudaFree(b_acc[batch]);
             cudaFree(b_psi[batch]);
             cudaFree(b_cell_id[batch]);
-            checkCudaErrors(cublasDestory(&b_cublas_handle[batch]));
+            checkCudaErrors(cublasDestroy(b_cublas_handle[batch]));
         }
 
         free(avg_kinetic_energy);
