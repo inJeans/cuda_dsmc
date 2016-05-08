@@ -558,8 +558,7 @@ int main(int argc,
                                                           d_potential_energy) /
                                     num_spin_up[t+1];
 
-        progress_bar(t,
-                     num_time_steps-1);
+        printf("%% %i complete\n", t * 100 / num_time_steps)
     }
 
     FILE *time_file_pointer = fopen("time.data", "w");
