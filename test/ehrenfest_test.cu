@@ -377,7 +377,7 @@ SCENARIO("[DEVICE] Execute a full ehrenfest simulation", "[d-ehrenfest]") {
         double3 *b_vel[num_batches];
         double3 *b_acc[num_batches];
         wavefunction *b_psi[num_batches];
-        int     *b_cell_id[num_batches];
+        int *b_cell_id[num_batches];
         cublasHandle_t b_cublas_handle[num_batches];
         for (int batch = 0; batch < num_batches; ++batch) {
             checkCudaErrors(cudaSetDevice(batch % device_count));

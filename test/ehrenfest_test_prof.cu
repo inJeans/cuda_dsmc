@@ -418,6 +418,7 @@ int main(int argc,
     double3 *b_vel[num_batches];
     double3 *b_acc[num_batches];
     wavefunction *b_psi[num_batches];
+    int *b_cell_id[num_batches];
     cublasHandle_t b_cublas_handle[num_batches];
     for (int batch = 0; batch < num_batches; ++batch) {
         checkCudaErrors(cudaSetDevice(batch % device_count));
@@ -429,6 +430,8 @@ int main(int argc,
                                    b_num_atoms[batch]*sizeof(double3)));
         checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&b_psi[batch]),
                                    b_num_atoms[batch]*sizeof(wavefunction)));
+        checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&b_cell_id[batch]),
+                                   b_num_atoms[batch]*sizeof(int)));
         checkCudaErrors(cublasCreate(&b_cublas_handle[batch]));
     }
     devID = gpuGetMaxGflopsDeviceId();
@@ -472,6 +475,16 @@ int main(int argc,
                                        b_psi[batch]);
             }
         }
+
+        #pragma omp parallel for
+        for(int batch=0; batch < num_batches; ++batch) {
+            checkCudaErrors(cudaSetDevice(batch % device_count));
+            // Index atoms
+            index_atoms(b_num_atoms[batch],
+                        b_pos[batch],
+                        b_cell_id[batch]);
+        }
+
         devID = gpuGetMaxGflopsDeviceId();
         checkCudaErrors(cudaSetDevice(devID));
         #pragma omp parallel for
@@ -491,6 +504,10 @@ int main(int argc,
             checkCudaErrors(cudaMemcpy(&psi[batch*num_atoms/num_batches],
                                        b_psi[batch],
                                        b_num_atoms[batch]*sizeof(wavefunction),
+                                       cudaMemcpyDeviceToDevice));
+            checkCudaErrors(cudaMemcpy(&cell_id[batch*num_atoms/num_batches],
+                                       b_cell_id[batch],
+                                       b_num_atoms[batch]*sizeof(int),
                                        cudaMemcpyDeviceToDevice));
         }
         sim_time[t+1] = sim_time[t] + loops_per_collision*dt;
@@ -605,6 +622,16 @@ int main(int argc,
     cudaFree(d_potential_energy);
     cudaFree(d_projection);
     cudaFree(is_spin_up);
+
+    for (int batch = 0; batch < num_batches; ++batch) {
+        checkCudaErrors(cudaSetDevice(batch % device_count));
+        cudaFree(b_pos[batch]);
+        cudaFree(b_vel[batch]);
+        cudaFree(b_acc[batch]);
+        cudaFree(b_psi[batch]);
+        cudaFree(b_cell_id[batch]);
+        checkCudaErrors(cublasDestroy(b_cublas_handle[batch]));
+    }
 
     free(avg_kinetic_energy);
     free(avg_potential_energy);
