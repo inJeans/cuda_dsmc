@@ -421,6 +421,7 @@ SCENARIO("[DEVICE] Execute a full ehrenfest simulation", "[d-ehrenfest]") {
                                            cudaMemcpyDeviceToDevice));
             }
             for(int u=0; u < loops_per_collision; ++u) {
+                #pragma omp parallel for
                 for(int batch=0; batch < num_batches; ++batch) {
                     checkCudaErrors(cudaSetDevice(batch % device_count));
                     velocity_verlet_update(b_num_atoms[batch],
@@ -434,14 +435,14 @@ SCENARIO("[DEVICE] Execute a full ehrenfest simulation", "[d-ehrenfest]") {
                 }
             }
 
-            // #pragma omp parallel for
-            // for(int batch=0; batch < num_batches; ++batch) {
-            //     checkCudaErrors(cudaSetDevice(batch % device_count));
-            //     // Index atoms
-            //     index_atoms(b_num_atoms[batch],
-            //                 b_pos[batch],
-            //                 b_cell_id[batch]);
-            // }
+            #pragma omp parallel for
+            for(int batch=0; batch < num_batches; ++batch) {
+                checkCudaErrors(cudaSetDevice(batch % device_count));
+                // Index atoms
+                index_atoms(b_num_atoms[batch],
+                            b_pos[batch],
+                            b_cell_id[batch]);
+            }
             devID = gpuGetMaxGflopsDeviceId();
             checkCudaErrors(cudaSetDevice(devID));
 
