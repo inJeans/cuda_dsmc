@@ -262,23 +262,23 @@ __host__ void cu_sort_atoms(int num_atoms,
     void     *d_temp_storage = NULL;
     size_t   temp_storage_bytes = 0;
     CubDebug(cub::DeviceRadixSort::SortPairs(d_temp_storage,
-                                                 temp_storage_bytes,
-                                                 cell_id,
-                                                 d_cell_id_out,
-                                                 atom_id,
-                                                 d_atom_id_out,
-                                                 num_atoms));
+                                             temp_storage_bytes,
+                                             cell_id,
+                                             d_cell_id_out,
+                                             atom_id,
+                                             d_atom_id_out,
+                                             num_atoms));
     // Allocate temporary storage
     checkCudaErrors(cudaMalloc(&d_temp_storage,
                                temp_storage_bytes));
     // Run sorting operation
     CubDebug(cub::DeviceRadixSort::SortPairs(d_temp_storage,
-                                                 temp_storage_bytes,
-                                                 cell_id,
-                                                 d_cell_id_out,
-                                                 atom_id,
-                                                 d_atom_id_out,
-                                                 num_atoms));
+                                             temp_storage_bytes,
+                                             cell_id,
+                                             d_cell_id_out,
+                                             atom_id,
+                                             d_atom_id_out,
+                                             num_atoms));
     // Copy sorted arrays back to original memory
     checkCudaErrors(cudaMemcpy(atom_id,
                                d_atom_id_out,
