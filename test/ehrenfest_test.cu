@@ -711,9 +711,9 @@ __global__ void g_kinetic_energy(int num_atoms,
 __device__ double d_kinetic_energy(double3 vel,
                                    wavefunction psi) {
     double kinetic = 0.;
-    // if (psi.isSpinUp) {
+    if (psi.isSpinUp) {
         kinetic = 0.5 * d_mass * norm(vel) * norm(vel);
-    // }
+    }
     return kinetic;
 }
 
