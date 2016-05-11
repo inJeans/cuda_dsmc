@@ -10,6 +10,8 @@
 #include "collisions.cuh"
 #endif
 
+#include "distribution_generation.hpp"
+
 #include "declare_host_constants.hpp"
 #if defined(CUDA)
 #include "declare_device_constants.cuh"
