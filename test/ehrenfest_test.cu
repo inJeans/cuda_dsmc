@@ -435,14 +435,14 @@ SCENARIO("[DEVICE] Execute a full ehrenfest simulation", "[d-ehrenfest]") {
                 }
             }
 
-            #pragma omp parallel for
-            for(int batch=0; batch < num_batches; ++batch) {
-                checkCudaErrors(cudaSetDevice(batch % device_count));
-                // Index atoms
-                index_atoms(b_num_atoms[batch],
-                            b_pos[batch],
-                            b_cell_id[batch]);
-            }
+            // #pragma omp parallel for
+            // for(int batch=0; batch < num_batches; ++batch) {
+            //     checkCudaErrors(cudaSetDevice(batch % device_count));
+            //     // Index atoms
+            //     index_atoms(b_num_atoms[batch],
+            //                 b_pos[batch],
+            //                 b_cell_id[batch]);
+            // }
             devID = gpuGetMaxGflopsDeviceId();
             checkCudaErrors(cudaSetDevice(devID));
             initialise_atom_id(num_atoms,
