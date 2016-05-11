@@ -445,8 +445,6 @@ SCENARIO("[DEVICE] Execute a full ehrenfest simulation", "[d-ehrenfest]") {
             // }
             devID = gpuGetMaxGflopsDeviceId();
             checkCudaErrors(cudaSetDevice(devID));
-            initialise_atom_id(num_atoms,
-                               atom_id);
 
             #pragma omp parallel for
             for(int batch=0; batch < num_batches; ++batch) {
