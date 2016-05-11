@@ -115,6 +115,9 @@ void collide_atoms(int num_atoms,
                 pos,
                 cell_id);
 
+    initialise_atom_id(num_atoms,
+                       atom_id);
+
     // Sort atoms
     sort_atoms(num_atoms,
                cell_id,
