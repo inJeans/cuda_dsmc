@@ -535,12 +535,12 @@ __global__ void g_collide(int num_cells,
 
                     //            atomicAdd( &collisionCount[cell], d_alpha );
                     // collision_count[cell] += d_FN;
-                    collision_count[cell] = cell_num_atoms;
                 }
             }
         }
         state[cell] = l_state;
         sig_vr_max[cell] = l_sig_vr_max;
+        collision_count[cell] = cell_num_atoms;
     }
     return;
 }
