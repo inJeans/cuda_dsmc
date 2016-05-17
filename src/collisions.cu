@@ -423,7 +423,7 @@ __host__ void cu_scan(int num_cells,
                                &cell_cumulative_num_atoms[num_cells],
                                sizeof(int),
                                cudaMemcpyDeviceToHost));
-    print("Number of atoms = %i\n", num_atoms);
+    printf("Number of atoms = %i\n", num_atoms);
 
     cudaFree(d_temp_storage);
     return;
