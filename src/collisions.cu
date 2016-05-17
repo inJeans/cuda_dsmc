@@ -423,9 +423,20 @@ __host__ void cu_scan(int num_cells,
                                &cell_cumulative_num_atoms[num_cells],
                                sizeof(int),
                                cudaMemcpyDeviceToHost));
-    print("Number of atoms = %i\n", num_atoms);
-
+    print("cubDeviceScan :: Number of atoms = %i\n", num_atoms);
     cudaFree(d_temp_storage);
+
+    // Allocate storage
+    int h_num_cells[num_cells+1];
+    checkCudaErrors(cudaMemcpy(h_num_cells,
+                               cell_num_atom,
+                               (num_cells+1)*sizeof(int),
+                               cudaMemcpyDeviceToHost));
+    int total_atoms = 0;
+    for (int i = 0; i < num_cells+1; ++i) {
+      total_atoms += h_num_cells[i];
+    }
+    printf("sillyLoopScan :: Number of atoms = %i\n", total_atoms);
     return;
 }
 
