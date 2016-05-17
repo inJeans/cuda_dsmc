@@ -534,7 +534,8 @@ __global__ void g_collide(int num_cells,
                     vel[colliding_atoms.y] = vel_cm + 0.5 * new_vel;
 
                     //            atomicAdd( &collisionCount[cell], d_alpha );
-                    collision_count[cell] += d_FN;
+                    // collision_count[cell] += d_FN;
+                    collision_count[cell] = cell_num_atoms;
                 }
             }
         }
