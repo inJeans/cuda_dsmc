@@ -470,6 +470,9 @@ SCENARIO("[DEVICE] Execute a full ehrenfest simulation", "[d-ehrenfest]") {
                                            cudaMemcpyDeviceToDevice));
             }
             sim_time[t+1] = sim_time[t] + loops_per_collision*dt;
+            checkCudaErrors(cudaMemset(cell_start_end,
+                                       -1,
+                                       (total_num_cells+1)*sizeof(int2)));
             collide_atoms(num_atoms,
                           total_num_cells,
                           loops_per_collision*dt,
