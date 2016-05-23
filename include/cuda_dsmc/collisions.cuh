@@ -65,6 +65,7 @@ __host__ void cu_scan(int num_cells,
                       int *cell_cumulative_num_atoms);
 
 __host__ void cu_collide(int num_cells,
+                         int *atom_id,
                          int *cell_id,
                          int *cell_cumulative_num_atoms,
                          double dt,
@@ -75,6 +76,7 @@ __host__ void cu_collide(int num_cells,
                          double3 *vel);
 
 __global__ void g_collide(int num_cells,
+                          int *atom_id,
                           int *cell_id,
                           int *cell_cumulative_num_atoms,
                           double dt,
@@ -83,6 +85,9 @@ __global__ void g_collide(int num_cells,
                           double *collision_remainder,
                           double  *sig_vr_max,
                           double3 *vel);
+
+__device__ int2 d_convert_atom_id(int2 colliding_atoms,
+                                  int *atom_id);
 
 __device__ int2 d_choose_colliding_atoms(int cell_num_atoms,
                                          int cell_cumulative_num_atoms,

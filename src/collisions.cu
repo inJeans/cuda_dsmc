@@ -428,6 +428,7 @@ __host__ void cu_scan(int num_cells,
  ****************************************************************************/
 
 __host__ void cu_collide(int num_cells,
+                         int *atom_id,
                          int *cell_id,
                          int *cell_cumulative_num_atoms,
                          double dt,
@@ -457,6 +458,7 @@ __host__ void cu_collide(int num_cells,
     g_collide<<<grid_size,
                 block_size>>>
              (num_cells,
+              atom_id,
               cell_id,
               cell_cumulative_num_atoms,
               dt,
@@ -470,6 +472,7 @@ __host__ void cu_collide(int num_cells,
 }
 
 __global__ void g_collide(int num_cells,
+                          int *atom_id,
                           int *cell_id,
                           int *cell_cumulative_num_atoms,
                           double dt,
@@ -503,13 +506,16 @@ __global__ void g_collide(int num_cells,
                  l_collision < num_collision_pairs;
                  l_collision++ ) {
                 int2 colliding_atoms = make_int2(0, 0);
-
                 colliding_atoms = d_choose_colliding_atoms(cell_num_atoms,
                                                            cell_cumulative_num_atoms[cell],
                                                            &l_state);
 
+                int2 colliding_atom_ids = make_int2(0, 0);
+                colliding_atom_ids = d_convert_atom_id(colliding_atoms,
+                                                       atom_id);
+
                 mag_rel_vel = d_calculate_relative_velocity(vel,
-                                                            colliding_atoms);
+                                                            colliding_atom_ids);
 
                 // Check if this is the more probable than current
                 // most probable.
@@ -519,14 +525,14 @@ __global__ void g_collide(int num_cells,
 
                 if(mag_rel_vel*d_cross_section > 1.e-10) {
                   printf("velocities[%i] = {%g, %g, %g}\nvelocities[%i] = {%g, %g, %g}\n",
-                                                     colliding_atoms.x,
-                                                     vel[colliding_atoms.x].x,
-                                                     vel[colliding_atoms.x].y,
-                                                     vel[colliding_atoms.x].z,
-                                                     colliding_atoms.y,
-                                                     vel[colliding_atoms.y].x,
-                                                     vel[colliding_atoms.y].y,
-                                                     vel[colliding_atoms.y].z);
+                                                     colliding_atom_ids.x,
+                                                     vel[colliding_atom_ids.x].x,
+                                                     vel[colliding_atom_ids.x].y,
+                                                     vel[colliding_atom_ids.x].z,
+                                                     colliding_atom_ids.y,
+                                                     vel[colliding_atom_ids.y].x,
+                                                     vel[colliding_atom_ids.y].y,
+                                                     vel[colliding_atom_ids.y].z);
                 }
 
 
@@ -536,15 +542,15 @@ __global__ void g_collide(int num_cells,
                 // Collide with the collision probability.
                 if (prob_collision > curand_uniform_double(&l_state)) {
                     // Find centre of mass velocities.
-                    vel_cm = 0.5*(vel[colliding_atoms.x] +
-                                  vel[colliding_atoms.y]);
+                    vel_cm = 0.5*(vel[colliding_atom_ids.x] +
+                                  vel[colliding_atom_ids.y]);
 
                     // Generate a random velocity on the unit sphere.
                     point_on_sphere = d_random_point_on_unit_sphere(&l_state);
                     new_vel = mag_rel_vel * point_on_sphere;
 
-                    vel[colliding_atoms.x] = vel_cm - 0.5 * new_vel;
-                    vel[colliding_atoms.y] = vel_cm + 0.5 * new_vel;
+                    vel[colliding_atom_ids.x] = vel_cm - 0.5 * new_vel;
+                    vel[colliding_atom_ids.y] = vel_cm + 0.5 * new_vel;
 
                     //            atomicAdd( &collisionCount[cell], d_alpha );
                     // collision_count[cell] += d_FN;
@@ -556,6 +562,14 @@ __global__ void g_collide(int num_cells,
         collision_count[cell] = static_cast<double>(l_sig_vr_max);
     }
     return;
+}
+
+__device__ int2 d_convert_atom_id(int2 colliding_atoms,
+                                  int *atom_id) {
+    int2 colliding_atom_ids = make_int2(atom_id[colliding_atoms.x],
+                                        atom_id[colliding_atoms.y]);
+
+    return colliding_atom_ids;
 }
 
 __device__ int2 d_choose_colliding_atoms(int cell_num_atoms,

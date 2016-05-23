@@ -135,6 +135,7 @@ void collide_atoms(int num_atoms,
 
     // Collide atoms
     collide(num_cells,
+            atom_id,
             cell_id,
             cell_cumulative_num_atoms,
             dt,
