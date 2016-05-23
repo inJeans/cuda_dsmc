@@ -48,7 +48,7 @@ SCENARIO("[DEVICE] Execute a full ehrenfest simulation", "[d-ehrenfest]") {
         FN = 10;
         
         double dt = 1.e-7;
-        int num_time_steps = 5;
+        int num_time_steps = 50;
         int loops_per_collision = 10000;
         double init_temp = 20.e-6;
 
@@ -152,12 +152,12 @@ SCENARIO("[DEVICE] Execute a full ehrenfest simulation", "[d-ehrenfest]") {
         LOGF(DEBUG, "\nAllocating %i int elements on the device.",
              total_num_cells);
 #endif
-        int *collision_count;
+        double *collision_count;
         checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&collision_count),
-                                   (total_num_cells)*sizeof(int)));
+                                   (total_num_cells)*sizeof(double)));
         checkCudaErrors(cudaMemset(collision_count,
-                                   0,
-                                   (total_num_cells)*sizeof(int)));
+                                   0.,
+                                   (total_num_cells)*sizeof(double)));
 
         // Initialise collision_remainder
 #if defined(LOGGING)
@@ -338,13 +338,13 @@ SCENARIO("[DEVICE] Execute a full ehrenfest simulation", "[d-ehrenfest]") {
         }
         fclose(init_pos_file_pointer);
 
-        int *h_collision_count;
-        h_collision_count = reinterpret_cast<int*>(calloc(total_num_cells,
-                                                          sizeof(int)));
+        double *h_collision_count;
+        h_collision_count = reinterpret_cast<double*>(calloc(total_num_cells,
+                                                          sizeof(double)));
 
         FILE *collision_file_pointer = fopen("collision.data", "w");
         for (int i=0; i<total_num_cells; ++i) {
-            fprintf(collision_file_pointer, "%i\t", h_collision_count[i]);
+            fprintf(collision_file_pointer, "%g\t", h_collision_count[i]);
         }
         fprintf(collision_file_pointer, "\n");
         fclose(collision_file_pointer);
@@ -487,14 +487,14 @@ SCENARIO("[DEVICE] Execute a full ehrenfest simulation", "[d-ehrenfest]") {
                           cell_cumulative_num_atoms,
                           collision_remainder,
                           collision_count);
-
+            
             checkCudaErrors(cudaMemcpy(h_collision_count,
                                        collision_count,
-                                       total_num_cells*sizeof(int),
+                                       total_num_cells*sizeof(double),
                                        cudaMemcpyDeviceToHost));
             collision_file_pointer = fopen("collision.data", "a");
             for (int cell=0; cell < total_num_cells; ++cell) {
-                fprintf(collision_file_pointer, "%i\t", h_collision_count[cell]);
+                fprintf(collision_file_pointer, "%g\t", h_collision_count[cell]);
             }
             fprintf(collision_file_pointer, "\n");
             fclose(collision_file_pointer);
@@ -553,11 +553,6 @@ SCENARIO("[DEVICE] Execute a full ehrenfest simulation", "[d-ehrenfest]") {
                                                             h_pos[i].z);
         }
         fclose(final_pos_file_pointer);
-
-        int total_coll = 0;
-        for (int cell = 0; cell < total_num_cells; ++cell) {
-            total_coll += h_collision_count[cell];
-        }
 
 #if defined(IP)  // Ioffe Pritchard trap
             THEN("We should expect the collision rate to agree with Walraven") {

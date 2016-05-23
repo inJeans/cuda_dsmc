@@ -432,7 +432,7 @@ __host__ void cu_collide(int num_cells,
                          int *cell_cumulative_num_atoms,
                          double dt,
                          curandState *state,
-                         int *collision_count,
+                         double *collision_count,
                          double *collision_remainder,
                          double  *sig_vr_max,
                          double3 *vel) {
@@ -474,7 +474,7 @@ __global__ void g_collide(int num_cells,
                           int *cell_cumulative_num_atoms,
                           double dt,
                           curandState *state,
-                          int *collision_count,
+                          double *collision_count,
                           double *collision_remainder,
                           double  *sig_vr_max,
                           double3 *vel) {
@@ -517,6 +517,19 @@ __global__ void g_collide(int num_cells,
                     l_sig_vr_max = mag_rel_vel * d_cross_section;
                 }
 
+                if(mag_rel_vel*d_cross_section > 1.e-10) {
+                  printf("velocities[%i] = {%g, %g, %g}\nvelocities[%i] = {%g, %g, %g}\n",
+                                                     colliding_atoms.x,
+                                                     vel[colliding_atoms.x].x,
+                                                     vel[colliding_atoms.x].y,
+                                                     vel[colliding_atoms.x].z,
+                                                     colliding_atoms.y,
+                                                     vel[colliding_atoms.y].x,
+                                                     vel[colliding_atoms.y].y,
+                                                     vel[colliding_atoms.y].z);
+                }
+
+
                 prob_collision = mag_rel_vel*d_cross_section / l_sig_vr_max;
                 // printf("cell[%i]: #-col = %i, prob-coll = %f\n", cell, num_collision_pairs, prob_collision);
 
@@ -540,7 +553,7 @@ __global__ void g_collide(int num_cells,
         }
         state[cell] = l_state;
         sig_vr_max[cell] = l_sig_vr_max;
-        collision_count[cell] = cell_num_atoms;
+        collision_count[cell] = static_cast<double>(l_sig_vr_max);
     }
     return;
 }

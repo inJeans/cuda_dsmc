@@ -209,8 +209,8 @@ SCENARIO("[HOST] Collide atoms", "[h-collide]") {
                               state,
                               false);
 
-        int *t_collision_count;
-        t_collision_count = reinterpret_cast<int*>(calloc(num_cells,
+        double *t_collision_count;
+        t_collision_count = reinterpret_cast<double*>(calloc(num_cells,
                                                      sizeof(int)));
 
         double *collision_remainder;
@@ -319,7 +319,7 @@ SCENARIO("[Host] Collision rate", "[h-collrate]") {
                0,
                total_num_cells*sizeof(int));
 
-        int t_collision_count[total_num_cells];
+        double t_collision_count[total_num_cells];
         memset(t_collision_count,
                0,
                total_num_cells*sizeof(int));
