@@ -103,6 +103,7 @@ void find_cell_num_atoms(int num_cells,
                          int *cell_num_atoms);
 
 void collide(int num_cells,
+             int *atom_id,
              int *cell_id,
              int *cell_cumulative_num_atoms,
              double dt,
@@ -113,6 +114,7 @@ void collide(int num_cells,
              double3 *vel);
 
 void collide(int num_cells,
+             int *atom_id,
              int *cell_id,
              int *cell_cumulative_num_atoms,
              double dt,
