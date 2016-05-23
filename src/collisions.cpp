@@ -179,6 +179,7 @@ void collide_atoms(int num_atoms,
                 cell_cumulative_num_atoms);
     // Collide atoms
     collide(num_cells,
+            atom_id,
             cell_id,
             cell_cumulative_num_atoms,
             dt,
@@ -407,6 +408,7 @@ void find_cell_num_atoms(int num_cells,
 
 #if defined(CUDA)
 void collide(int num_cells,
+             int *atom_id,
              int *cell_id,
              int *cell_cumulative_num_atoms,
              double dt,
@@ -429,6 +431,7 @@ void collide(int num_cells,
 #endif
 
 void collide(int num_cells,
+             int *atom_id,
              int *cell_id,
              int *cell_cumulative_num_atoms,
              double dt,
