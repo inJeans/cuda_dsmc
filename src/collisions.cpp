@@ -418,6 +418,7 @@ void collide(int num_cells,
              double  *sig_vr_max,
              double3 *vel) {
     cu_collide(num_cells,
+               atom_id,
                cell_id,
                cell_cumulative_num_atoms,
                dt,
