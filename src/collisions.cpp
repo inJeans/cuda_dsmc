@@ -113,9 +113,9 @@ void collide_atoms(int num_atoms,
                    double *collision_remainder,
                    int *collision_count) {
     // Index atoms
-    index_atoms(num_atoms,
-                pos,
-                cell_id);
+    // index_atoms(num_atoms,
+    //             pos,
+    //             cell_id);
 
     initialise_atom_id(num_atoms,
                        atom_id);
