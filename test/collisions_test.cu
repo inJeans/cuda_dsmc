@@ -341,6 +341,15 @@ SCENARIO("[DEVICE] Collide atoms", "[d-collide]") {
                                    num_atoms*sizeof(int),
                                    cudaMemcpyHostToDevice));
 
+        int atom_id[10] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+        int *d_atom_id;
+        checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&d_atom_id),
+                                   num_atoms*sizeof(int)));
+        checkCudaErrors(cudaMemcpy(d_atom_id,
+                                   atom_id,
+                                   num_atoms*sizeof(int),
+                                   cudaMemcpyHostToDevice));
+
         int cell_cumulative_num_atoms[2] = {0, 10};
         int *d_cell_cumulative_num_atoms;
         checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&d_cell_cumulative_num_atoms),
@@ -385,6 +394,7 @@ SCENARIO("[DEVICE] Collide atoms", "[d-collide]") {
         WHEN("The cu_collide function is called once") {
 
             cu_collide(num_cells,
+                       d_atom_id,
                        d_cell_id,
                        d_cell_cumulative_num_atoms,
                        dt,
@@ -415,6 +425,7 @@ SCENARIO("[DEVICE] Collide atoms", "[d-collide]") {
         }
 
         cudaFree(d_vel);
+        cudaFree(d_atom_id);
         cudaFree(d_cell_id);
         cudaFree(d_cell_cumulative_num_atoms);
         cudaFree(state);
