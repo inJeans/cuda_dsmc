@@ -339,7 +339,7 @@ SCENARIO("[DEVICE] Execute a full ehrenfest simulation", "[d-ehrenfest]") {
         fclose(init_pos_file_pointer);
 
         int *h_collision_count;
-        h_collision_count = reinterpret_cast<double*>(calloc(total_num_cells,
+        h_collision_count = reinterpret_cast<int*>(calloc(total_num_cells,
                                                           sizeof(int)));
 
         FILE *collision_file_pointer = fopen("collision.data", "w");

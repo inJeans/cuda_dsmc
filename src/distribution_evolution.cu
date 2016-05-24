@@ -82,7 +82,7 @@ __global__ void g_update_atom_velocity(int num_atoms,
         vel[atom] = d_update_atom_velocity(dt,
                                            vel[atom],
                                            acc[atom]);
-        if(vel[atom].x > 1.) printf("atom %i has a large velocity?\n");
+        if(vel[atom].x > 1.) printf("atom %i has a large velocity?\n", atom);
     }
 
     return;

@@ -211,7 +211,7 @@ SCENARIO("[HOST] Collide atoms", "[h-collide]") {
                               false);
 
         int *t_collision_count;
-        t_collision_count = reinterpret_cast<double*>(calloc(num_cells,
+        t_collision_count = reinterpret_cast<int*>(calloc(num_cells,
                                                      sizeof(int)));
 
         double *collision_remainder;
