@@ -490,7 +490,7 @@ SCENARIO("[DEVICE] Execute a full ehrenfest simulation", "[d-ehrenfest]") {
             
             checkCudaErrors(cudaMemcpy(h_collision_count,
                                        collision_count,
-                                       total_num_cells*sizeof(double),
+                                       total_num_cells*sizeof(int),
                                        cudaMemcpyDeviceToHost));
             collision_file_pointer = fopen("collision.data", "a");
             for (int cell=0; cell < total_num_cells; ++cell) {
