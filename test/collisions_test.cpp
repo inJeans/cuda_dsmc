@@ -200,6 +200,7 @@ SCENARIO("[HOST] Collide atoms", "[h-collide]") {
         vel[9] = make_double3( 0.066, 0.022, 0.075);
 
         int cell_id[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+        int atom_id[10] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
         int cell_cumulative_num_atoms[2] = {0, 10};
 
         pcg32_random_t *state;
@@ -230,6 +231,7 @@ SCENARIO("[HOST] Collide atoms", "[h-collide]") {
 
             collide(num_cells,
                     cell_id,
+                    atom_id,
                     cell_cumulative_num_atoms,
                     dt,
                     state,
