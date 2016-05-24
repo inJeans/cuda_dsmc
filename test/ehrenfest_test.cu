@@ -152,12 +152,12 @@ SCENARIO("[DEVICE] Execute a full ehrenfest simulation", "[d-ehrenfest]") {
         LOGF(DEBUG, "\nAllocating %i int elements on the device.",
              total_num_cells);
 #endif
-        double *collision_count;
+        int *collision_count;
         checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&collision_count),
-                                   (total_num_cells)*sizeof(double)));
+                                   (total_num_cells)*sizeof(int)));
         checkCudaErrors(cudaMemset(collision_count,
                                    0.,
-                                   (total_num_cells)*sizeof(double)));
+                                   (total_num_cells)*sizeof(int)));
 
         // Initialise collision_remainder
 #if defined(LOGGING)
@@ -338,13 +338,13 @@ SCENARIO("[DEVICE] Execute a full ehrenfest simulation", "[d-ehrenfest]") {
         }
         fclose(init_pos_file_pointer);
 
-        double *h_collision_count;
+        int *h_collision_count;
         h_collision_count = reinterpret_cast<double*>(calloc(total_num_cells,
-                                                          sizeof(double)));
+                                                          sizeof(int)));
 
         FILE *collision_file_pointer = fopen("collision.data", "w");
         for (int i=0; i<total_num_cells; ++i) {
-            fprintf(collision_file_pointer, "%g\t", h_collision_count[i]);
+            fprintf(collision_file_pointer, "%i\t", h_collision_count[i]);
         }
         fprintf(collision_file_pointer, "\n");
         fclose(collision_file_pointer);
@@ -494,7 +494,7 @@ SCENARIO("[DEVICE] Execute a full ehrenfest simulation", "[d-ehrenfest]") {
                                        cudaMemcpyDeviceToHost));
             collision_file_pointer = fopen("collision.data", "a");
             for (int cell=0; cell < total_num_cells; ++cell) {
-                fprintf(collision_file_pointer, "%g\t", h_collision_count[cell]);
+                fprintf(collision_file_pointer, "%i\t", h_collision_count[cell]);
             }
             fprintf(collision_file_pointer, "\n");
             fclose(collision_file_pointer);

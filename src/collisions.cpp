@@ -111,7 +111,7 @@ void collide_atoms(int num_atoms,
                    int *cell_num_atoms,
                    int *cell_cumulative_num_atoms,
                    double *collision_remainder,
-                   double *collision_count) {
+                   int *collision_count) {
     // Index atoms
     index_atoms(num_atoms,
                 pos,
@@ -161,7 +161,7 @@ void collide_atoms(int num_atoms,
                    int *cell_num_atoms,
                    int *cell_cumulative_num_atoms,
                    double *collision_remainder,
-                   double *collision_count) {
+                   int *collision_count) {
     // Index atoms
     index_atoms(num_atoms,
                 pos,
@@ -413,7 +413,7 @@ void collide(int num_cells,
              int *cell_cumulative_num_atoms,
              double dt,
              curandState *state,
-             double *collision_count,
+             int *collision_count,
              double *collision_remainder,
              double  *sig_vr_max,
              double3 *vel) {
@@ -437,7 +437,7 @@ void collide(int num_cells,
              int *cell_cumulative_num_atoms,
              double dt,
              pcg32_random_t *state,
-             double *collision_count,
+             int *collision_count,
              double *collision_remainder,
              double  *sig_vr_max,
              double3 *vel) {

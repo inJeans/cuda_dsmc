@@ -433,7 +433,7 @@ __host__ void cu_collide(int num_cells,
                          int *cell_cumulative_num_atoms,
                          double dt,
                          curandState *state,
-                         double *collision_count,
+                         int *collision_count,
                          double *collision_remainder,
                          double  *sig_vr_max,
                          double3 *vel) {
@@ -477,7 +477,7 @@ __global__ void g_collide(int num_cells,
                           int *cell_cumulative_num_atoms,
                           double dt,
                           curandState *state,
-                          double *collision_count,
+                          int *collision_count,
                           double *collision_remainder,
                           double  *sig_vr_max,
                           double3 *vel) {
@@ -553,13 +553,11 @@ __global__ void g_collide(int num_cells,
                     vel[colliding_atom_ids.y] = vel_cm + 0.5 * new_vel;
 
                     //            atomicAdd( &collisionCount[cell], d_alpha );
-                    // collision_count[cell] += d_FN;
+                    collision_count[cell] += d_FN;
                 }
             }
         }
         state[cell] = l_state;
-        sig_vr_max[cell] = l_sig_vr_max;
-        collision_count[cell] = static_cast<double>(l_sig_vr_max);
     }
     return;
 }

@@ -241,7 +241,7 @@ int main(int argc, char const *argv[]) {
 #if defined(LOGGING)
     LOGF(INFO, "\nInitialising the collision_count array.");
 #endif
-    double *collision_count;
+    int *collision_count;
 #if defined(CUDA)
 #if defined(LOGGING)
     LOGF(DEBUG, "\nAllocating %i int elements on the device.",

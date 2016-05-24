@@ -365,7 +365,7 @@ SCENARIO("[DEVICE] Collide atoms", "[d-collide]") {
         initialise_rng_states(num_cells,
                               state);
 
-        double *d_collision_count;
+        int *d_collision_count;
         checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&d_collision_count),
                                    num_cells*sizeof(int)));
         checkCudaErrors(cudaMemset(d_collision_count,
@@ -404,7 +404,7 @@ SCENARIO("[DEVICE] Collide atoms", "[d-collide]") {
                        d_sig_vr_max,
                        d_vel);
 
-            double t_collision_count[num_cells];
+            int t_collision_count[num_cells];
             double t_sig_vr_max[num_cells];
 
             checkCudaErrors(cudaMemcpy(t_collision_count,
@@ -518,7 +518,7 @@ SCENARIO("[DEVICE] Collision rate", "[d-collrate]") {
                                    0,
                                    (total_num_cells+1)*sizeof(int)));
 
-        double *d_collision_count;
+        int *d_collision_count;
         checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&d_collision_count),
                                    total_num_cells*sizeof(int)));
         checkCudaErrors(cudaMemset(d_collision_count,
@@ -572,7 +572,7 @@ SCENARIO("[DEVICE] Collision rate", "[d-collrate]") {
                              100);
             }
 
-            double t_collision_count[total_num_cells];
+            int t_collision_count[total_num_cells];
             checkCudaErrors(cudaMemcpy(t_collision_count,
                                        d_collision_count,
                                        total_num_cells*sizeof(int),
