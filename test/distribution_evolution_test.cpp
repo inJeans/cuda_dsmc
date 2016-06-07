@@ -15,7 +15,7 @@ SCENARIO("[HOST] Acceleration Update", "[h-acc]") {
         int num_test = 5000;
 
         // Initialise trapping parameters
-#if defined(IP)  // Ioffe Pritchard trap
+#if defined(IOFFE)  // Ioffe Pritchard trap
         trap_geo trap_parameters;
         trap_parameters.B0 = 0.01;
         trap_parameters.dB = 20.;
@@ -96,7 +96,7 @@ SCENARIO("[HOST] Acceleration Update", "[h-acc]") {
                 REQUIRE(mean_acc_z >= 0. - std_acc_z / sqrt(num_test));
             }
 
-#if defined(IP)  // Ioffe Pritchard trap
+#if defined(IOFFE)  // Ioffe Pritchard trap
 #else  // Quadrupole trap
             double expected_std_x_y = sqrt(trap_parameters.Bz*trap_parameters.Bz * gs*gs * muB*muB / 
                                            (48. * mass*mass));
@@ -126,7 +126,7 @@ SCENARIO("[HOST] Velocity Update", "[h-vel]") {
         int num_test = 5000;
 
         // Initialise trapping parameters
-#if defined(IP)  // Ioffe Pritchard trap
+#if defined(IOFFE)  // Ioffe Pritchard trap
         trap_geo trap_parameters;
         trap_parameters.B0 = 0.01;
         trap_parameters.dB = 20.;
@@ -267,7 +267,7 @@ SCENARIO("[HOST] Wavfunction Update", "[h-psiev]") {
         int num_test = 5000;
 
         // Initialise trapping parameters
-#if defined(IP)  // Ioffe Pritchard trap
+#if defined(IOFFE)  // Ioffe Pritchard trap
         trap_geo trap_parameters;
         trap_parameters.B0 = 0.01;
         trap_parameters.dB = 20.;

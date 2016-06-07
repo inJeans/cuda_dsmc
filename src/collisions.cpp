@@ -117,8 +117,10 @@ void collide_atoms(int num_atoms,
                 pos,
                 cell_id);
 
-    initialise_atom_id(num_atoms,
-                       atom_id);
+    reset_arrays(num_atoms,
+                 num_cells,
+                 atom_id,
+                 cell_start_end);
 
     // Sort atoms
     sort_atoms(num_atoms,
@@ -166,6 +168,10 @@ void collide_atoms(int num_atoms,
     index_atoms(num_atoms,
                 pos,
                 cell_id);
+    reset_arrays(num_atoms,
+                 num_cells,
+                 atom_id,
+                 cell_start_end);
     // Sort atoms
     sort_atoms(num_atoms,
                cell_id,
@@ -212,7 +218,7 @@ void collide_atoms(int num_atoms,
 void index_atoms(int num_atoms,
                  double3 *pos,
                  int *cell_id) {
-#ifdef CUDA
+#if defined(CUDA)
     cu_index_atoms(num_atoms,
                    pos,
                    cell_id);
@@ -220,6 +226,26 @@ void index_atoms(int num_atoms,
     for (int atom = 0; atom < num_atoms; ++atom) {
         cell_id[atom] = update_atom_cell_id(pos[atom]);
     }
+#endif
+
+    return;
+}
+
+void reset_arrays(int num_atoms,
+                  int num_cells,
+                  int *atom_id,
+                  int2 *cell_start_end) {
+    initialise_atom_id(num_atoms,
+                       atom_id);
+
+#if defined(CUDA)
+    checkCudaErrors(cudaMemset(cell_start_end,
+                               -1,
+                               (total_num_cells+1)*sizeof(int2)));
+#else
+    memset(cell_start_end,
+           -1,
+           (total_num_cells+1)*sizeof(int2));
 #endif
 
     return;
@@ -464,10 +490,12 @@ void collide(int num_cells,
                  l_collision < num_collision_pairs;
                  l_collision++ ) {
                 int2 colliding_atoms = make_int2(0, 0);
-
                 colliding_atoms = choose_colliding_atoms(cell_num_atoms,
                                                          cell_cumulative_num_atoms[cell],
                                                          &l_state);
+                int2 colliding_atom_ids = make_int2(0, 0);
+                colliding_atom_ids = convert_atom_id(colliding_atoms,
+                                                     atom_id);
 
                 mag_rel_vel = calculate_relative_velocity(vel,
                                                           colliding_atoms);
@@ -502,6 +530,14 @@ void collide(int num_cells,
     }
 
     return;
+}
+
+int2 convert_atom_id(int2 colliding_atoms,
+                     int *atom_id) {
+    int2 colliding_atom_ids = make_int2(atom_id[colliding_atoms.x],
+                                        atom_id[colliding_atoms.y]);
+
+    return colliding_atom_ids;
 }
 
 int2 choose_colliding_atoms(int cell_num_atoms,

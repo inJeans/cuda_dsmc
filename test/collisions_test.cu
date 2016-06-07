@@ -460,7 +460,7 @@ SCENARIO("[DEVICE] Collision rate", "[d-collrate]") {
                                     state,
                                     d_vel);
 
-#if defined(IP)  // Ioffe Pritchard trap
+#if defined(IOFFE)  // Ioffe Pritchard trap
         trap_geo trap_parameters;
         trap_parameters.B0 = 0.01;
         trap_parameters.dB = 20.;
@@ -583,7 +583,7 @@ SCENARIO("[DEVICE] Collision rate", "[d-collrate]") {
                 total_coll += t_collision_count[cell];
             }
 
-#if defined(IP)  // Ioffe Pritchard trap
+#if defined(IOFFE)  // Ioffe Pritchard trap
             THEN("We should expect the collision rate to agree with Walraven") {
                 REQUIRE(total_coll < 2407 * (1+fractional_tol));
                 REQUIRE(total_coll > 2407 * (1-fractional_tol));

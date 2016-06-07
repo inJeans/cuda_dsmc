@@ -278,7 +278,7 @@ SCENARIO("[Host] Collision rate", "[h-collrate]") {
                                     state,
                                     vel);
 
-#if defined(IP)  // Ioffe Pritchard trap
+#if defined(IOFFE)  // Ioffe Pritchard trap
         trap_geo trap_parameters;
         trap_parameters.B0 = 0.01;
         trap_parameters.dB = 20.;
@@ -367,10 +367,17 @@ SCENARIO("[Host] Collision rate", "[h-collrate]") {
                 total_coll += t_collision_count[cell];
             }
 
+#if defined(IOFFE)  // Ioffe Pritchard trap
+            THEN("We should expect the collision rate to agree with Walraven") {
+                REQUIRE(total_coll < 120 * (1+fractional_tol));
+                REQUIRE(total_coll > 120 * (1-fractional_tol));
+            }
+#else  // Quadrupole
             THEN("We should expect the collision rate to agree with Walraven") {
                 REQUIRE(total_coll < 1026 * (1+fractional_tol));
                 REQUIRE(total_coll > 1026 * (1-fractional_tol));
             }
+#endif
         }
     }
 }

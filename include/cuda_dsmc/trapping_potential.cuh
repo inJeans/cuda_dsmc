@@ -11,7 +11,7 @@
 // #endif
 #include "vector_math.cuh"
 
-#if defined(IP) // Ioffe Pritchard trap
+#if defined(IOFFE) // Ioffe Pritchard trap
 typedef struct trap_geo{
     double B0;
     double dB;
