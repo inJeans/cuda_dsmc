@@ -1,0 +1,9 @@
+before_script:
+  - mkdir build
+  - cd build
+  - cmake -DCUDA=OFF -DQUAD=ON -DIOFFE=OFF ..
+  - make
+
+make_test:
+  - cd build
+  - make test
