@@ -315,9 +315,11 @@ ENDIF()
 # SIMULATIONS
 
 # DEVICE - Collision rate
-cuda_add_executable(device_collision_rate simulations/collision_rate.cpp)
-target_link_libraries(device_collision_rate cudsmc cudart cublas g3logger ${BLAS})
-target_compile_definitions(device_collision_rate PRIVATE -DCUDA)
+IF(CUDA)
+    cuda_add_executable(device_collision_rate simulations/collision_rate.cpp)
+    target_link_libraries(device_collision_rate cudsmc cudart cublas g3logger ${BLAS})
+    target_compile_definitions(device_collision_rate PRIVATE -DCUDA)
+ENDIF()
 # HOST - Collision rate
 cuda_add_executable(host_collision_rate simulations/collision_rate.cpp)
 target_link_libraries(host_collision_rate cudsmc cudart cublas g3logger ${BLAS})
