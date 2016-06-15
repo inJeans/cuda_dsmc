@@ -312,6 +312,16 @@ IF(CUDA)
     add_test(device_collisions device_collisions_test -s -o d_collisions_test.out)
 ENDIF()
 
+# SIMULATIONS
+
+# DEVICE - Collision rate
+cuda_add_executable(device_collision_rate simulations/collision_rate.cpp)
+target_link_libraries(device_collision_rate cudsmc cudart cublas g3logger ${BLAS})
+target_compile_definitions(device_collision_rate PRIVATE -DCUDA)
+# HOST - Collision rate
+cuda_add_executable(host_collision_rate simulations/collision_rate.cpp)
+target_link_libraries(host_collision_rate cudsmc cudart cublas g3logger ${BLAS})
+
 # does it have the correct output
 # add_test (hello_world_test hello)
 # set_tests_properties( hello_world_test

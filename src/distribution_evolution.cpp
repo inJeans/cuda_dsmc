@@ -12,6 +12,28 @@
 
 #include "declare_host_constants.hpp"
 
+void velocity_verlet_evolution(int num_atoms,
+                               double dt,
+                               int loops_per_collision,
+                               trap_geo params,
+                               cublasHandle_t cublas_handle,
+                               double3 *pos,
+                               double3 *vel,
+                               double3 *acc,
+                               wavefunction *psi) {
+  for (int l = 0; l < loops_per_collision; ++l)
+      velocity_verlet_update(num_atoms,
+                             dt,
+                             params,
+                             cublas_handle,
+                             pos,
+                             vel,
+                             acc,
+                             psi);
+
+  return;
+}
+
 void velocity_verlet_update(int num_atoms,
                             double dt,
                             trap_geo params,
@@ -20,6 +42,7 @@ void velocity_verlet_update(int num_atoms,
                             double3 *vel,
                             double3 *acc,
                             wavefunction *psi) {
+
     update_velocities(num_atoms,
                       0.5*dt,
                       cublas_handle,
@@ -63,6 +86,28 @@ void velocity_verlet_update(int num_atoms,
                       acc,
                       vel);
     return;
+}
+
+void sympletic_euler_evolution(int num_atoms,
+                               double dt,
+                               int loops_per_collision,
+                               trap_geo params,
+                               cublasHandle_t cublas_handle,
+                               double3 *pos,
+                               double3 *vel,
+                               double3 *acc,
+                               wavefunction *psi) {
+  for (int l = 0; l < loops_per_collision; ++l)
+      sympletic_euler_update(num_atoms,
+                             dt,
+                             params,
+                             cublas_handle,
+                             pos,
+                             vel,
+                             acc,
+                             psi);
+
+  return;
 }
 
 void sympletic_euler_update(int num_atoms,

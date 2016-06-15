@@ -31,6 +31,16 @@ extern "C"
 #include "trapping_potential.hpp"
 #include "vector_math.cuh"
 
+void velocity_verlet_evolution(int num_atoms,
+                               double dt,
+                               int loops_per_collision,
+                               trap_geo params,
+                               cublasHandle_t cublas_handle,
+                               double3 *pos,
+                               double3 *vel,
+                               double3 *acc,
+                               wavefunction *psi = NULL);
+
 void velocity_verlet_update(int num_atoms,
                             double dt,
                             trap_geo params,
@@ -39,6 +49,16 @@ void velocity_verlet_update(int num_atoms,
                             double3 *vel,
                             double3 *acc,
                             wavefunction *psi = NULL);
+
+void sympletic_euler_evolution(int num_atoms,
+                               double dt,
+                               int loops_per_collision,
+                               trap_geo params,
+                               cublasHandle_t cublas_handle,
+                               double3 *pos,
+                               double3 *vel,
+                               double3 *acc,
+                               wavefunction *psi = NULL);
 
 void sympletic_euler_update(int num_atoms,
                             double dt,
