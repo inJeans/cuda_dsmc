@@ -525,7 +525,7 @@ int main(int argc, char const *argv[]) {
             total_num_collisions += h_collision_count[cell];
         double total_time = time_steps_per_collision * num_collision_steps * dt;
         double collision_rate = (double) total_num_collisions / NUM_ATOMS / total_time;
-        printf("Collision rate estimate = %f /s", collision_rate );
+        printf("Collision rate estimate = %f /s\n", collision_rate );
 #endif
 
 #if defined(CUDA)
