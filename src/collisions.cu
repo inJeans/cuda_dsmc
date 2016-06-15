@@ -509,7 +509,6 @@ __global__ void g_collide(int num_cells,
                 colliding_atoms = d_choose_colliding_atoms(cell_num_atoms,
                                                            cell_cumulative_num_atoms[cell],
                                                            &l_state);
-
                 int2 colliding_atom_ids = make_int2(0, 0);
                 colliding_atom_ids = d_convert_atom_id(colliding_atoms,
                                                        atom_id);

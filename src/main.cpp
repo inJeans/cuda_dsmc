@@ -70,7 +70,7 @@ int main(int argc, char const *argv[]) {
 #if defined(LOGGING)
     LOGF(INFO, "\nInitialising the trapping parameters.");
 #endif
-#if defined(IP)  // Ioffe Pritchard trap
+#if defined(IOFFE)  // Ioffe Pritchard trap
     trap_geo trap_parameters;
     trap_parameters.B0 = 0.01;
     trap_parameters.dB = 20.;

@@ -87,7 +87,7 @@ SCENARIO("[DEVICE] Thermal position distribution", "[d-posdist]") {
 
         WHEN("We generate 5,000 thermal positions with an initial temperature of 20uK") {
             double init_temp = 20.e-6;
-#if defined(IP)  // Ioffe Pritchard trap
+#if defined(IOFFE)  // Ioffe Pritchard trap
           trap_geo trap_parameters;
           trap_parameters.B0 = 0.01;
           trap_parameters.dB = 20.;
@@ -129,7 +129,7 @@ SCENARIO("[DEVICE] Thermal position distribution", "[d-posdist]") {
                                       num_test);
                 double pos_std  = std_dev(test_pos,
                                           num_test);
-#if defined(IP)  // Ioffe Pritchard trap
+#if defined(IOFFE)  // Ioffe Pritchard trap
                 double radius_squared_mean = mean_norm_squared(test_pos,
                                                                num_test);
 
@@ -184,7 +184,7 @@ SCENARIO("[DEVICE] Wavefunction generation", "[d-psigen]") {
                               state);
 
         double init_temp = 20.e-6;
-#if defined(IP)  // Ioffe Pritchard trap
+#if defined(IOFFE)  // Ioffe Pritchard trap
         trap_geo trap_parameters;
         trap_parameters.B0 = 0.01;
         trap_parameters.dB = 20.;

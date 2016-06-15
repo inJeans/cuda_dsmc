@@ -77,6 +77,11 @@ void index_atoms(int num_atoms,
                  double3 *pos,
                  int *cell_id);
 
+void reset_arrays(int num_atoms,
+                  int num_cells,
+                  int *atom_id,
+                  int2 *cell_start_end);
+
 int update_atom_cell_id(double3 pos);
 
 int3 atom_cell_index(double3 pos);
@@ -123,6 +128,9 @@ void collide(int num_cells,
              double *collision_remainder,
              double  *sig_vr_max,
              double3 *vel);
+
+int2 convert_atom_id(int2 colliding_atoms,
+                     int *atom_id);
 
 int2 choose_colliding_atoms(int cell_num_atoms,
                             int cell_cumulative_num_atoms,

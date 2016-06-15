@@ -19,7 +19,7 @@ SCENARIO("[DEVICE] Execute a full ehrenfest simulation", "[d-ehrenfest]") {
 #if defined(LOGGING)
         LOGF(INFO, "\nInitialising the trapping parameters.");
 #endif
-#if defined(IP)  // Ioffe Pritchard trap
+#if defined(IOFFE)  // Ioffe Pritchard trap
         trap_geo trap_parameters;
         trap_parameters.B0 = 0.01;
         trap_parameters.dB = 20.;
@@ -434,15 +434,6 @@ SCENARIO("[DEVICE] Execute a full ehrenfest simulation", "[d-ehrenfest]") {
                                            b_psi[batch]);
                 }
             }
-
-            // #pragma omp parallel for
-            // for(int batch=0; batch < num_batches; ++batch) {
-            //     checkCudaErrors(cudaSetDevice(batch % device_count));
-            //     // Index atoms
-            //     index_atoms(b_num_atoms[batch],
-            //                 b_pos[batch],
-            //                 b_cell_id[batch]);
-            // }
             devID = gpuGetMaxGflopsDeviceId();
             checkCudaErrors(cudaSetDevice(devID));
 
@@ -456,18 +447,6 @@ SCENARIO("[DEVICE] Execute a full ehrenfest simulation", "[d-ehrenfest]") {
                                            b_vel[batch],
                                            b_num_atoms[batch]*sizeof(double3),
                                            cudaMemcpyDeviceToDevice));
-                // checkCudaErrors(cudaMemcpy(&acc[batch*num_atoms/num_batches],
-                //                            b_acc[batch],
-                //                            b_num_atoms[batch]*sizeof(double3),
-                //                            cudaMemcpyDeviceToDevice));
-                // checkCudaErrors(cudaMemcpy(&psi[batch*num_atoms/num_batches],
-                //                            b_psi[batch],
-                //                            b_num_atoms[batch]*sizeof(wavefunction),
-                //                            cudaMemcpyDeviceToDevice));
-                // checkCudaErrors(cudaMemcpy(&cell_id[batch*num_atoms/num_batches],
-                //                            b_cell_id[batch],
-                //                            b_num_atoms[batch]*sizeof(int),
-                //                            cudaMemcpyDeviceToDevice));
             }
             sim_time[t+1] = sim_time[t] + loops_per_collision*dt;
             checkCudaErrors(cudaMemset(cell_start_end,
@@ -554,7 +533,7 @@ SCENARIO("[DEVICE] Execute a full ehrenfest simulation", "[d-ehrenfest]") {
         }
         fclose(final_pos_file_pointer);
 
-#if defined(IP)  // Ioffe Pritchard trap
+#if defined(IOFFE)  // Ioffe Pritchard trap
             THEN("We should expect the collision rate to agree with Walraven") {
                 // REQUIRE(total_coll < 2407 * (1+fractional_tol));
                 // REQUIRE(total_coll > 2407 * (1-fractional_tol));
