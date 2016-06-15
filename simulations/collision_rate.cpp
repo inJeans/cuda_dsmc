@@ -512,6 +512,8 @@ int main(int argc, char const *argv[]) {
         fprintf(collision_file_pointer, "\n");
         fclose(collision_file_pointer);
 #endif
+        progress_bar(i,
+                     num_collision_steps-1);
     }
 #if defined(CUDA)
         checkCudaErrors(cudaMemcpy(h_collision_count,
