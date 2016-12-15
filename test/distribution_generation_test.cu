@@ -92,10 +92,16 @@ SCENARIO("[DEVICE] Thermal position distribution", "[d-posdist]") {
           trap_parameters.B0 = 0.01;
           trap_parameters.dB = 20.;
           trap_parameters.ddB = 40000.;
-#else  // Quadrupole trap
+#elif defined(QUAD)  // Quadrupole trap
           trap_geo trap_parameters;
           trap_parameters.Bz = 2.0;
           trap_parameters.B0 = 0.;
+#else  // Harmonic trap
+          trap_geo trap_parameters;
+          trap_parameters.B0 = 0.;
+          trap_parameters.wx = 450.;
+          trap_parameters.wy = 450.;
+          trap_parameters.wz = 450.;
 #endif
 
             double3 *d_test_pos;
@@ -141,7 +147,7 @@ SCENARIO("[DEVICE] Thermal position distribution", "[d-posdist]") {
 
                 REQUIRE(radius_squared_mean >= expected_radius_squared_mean - radius_squared_mean / sqrt(num_test));
                 REQUIRE(radius_squared_mean <= expected_radius_squared_mean + radius_squared_mean / sqrt(num_test));
-#else  // Quadrupole trap
+#elif defined(QUAD)  // Quadrupole trap
                 double modified_radius_mean = mean_modified_radius(test_pos,
                                                                    num_test);
                 double modified_radius_std = std_modified_radius(test_pos,
@@ -154,6 +160,19 @@ SCENARIO("[DEVICE] Thermal position distribution", "[d-posdist]") {
                 REQUIRE(modified_radius_mean <= expected_radius_mean + modified_radius_mean / sqrt(num_test));
                 REQUIRE(modified_radius_std >= expected_radius_std - modified_radius_std / sqrt(num_test));
                 REQUIRE(modified_radius_std <= expected_radius_std + modified_radius_std / sqrt(num_test));
+#else  // Harmonic trap
+                double radius_mean = mean_norm(test_pos,
+                                                 num_test);
+                double radius_std = std_norm(test_pos,
+                                               num_test);
+
+                double expected_radius_mean = 2.*sqrt(2.*kB*init_temp/mass/h_pi)/trap_parameters.wx;
+                double expected_radius_std = sqrt(3. - 8./h_pi) * sqrt(kB*init_temp / (mass*trap_parameters.wx*trap_parameters.wx));
+
+                REQUIRE(radius_mean >= expected_radius_mean - expected_radius_std / sqrt(num_test));
+                REQUIRE(radius_mean <= expected_radius_mean + expected_radius_std / sqrt(num_test));
+                // REQUIRE(modified_radius_std >= expected_radius_std - modified_radius_std / sqrt(num_test));
+                // REQUIRE(modified_radius_std <= expected_radius_std + modified_radius_std / sqrt(num_test));
 #endif
                 double expected_pos_mean = 0.;
                 // double expected_pos_std = sqrt(kB * init_temp / mass);
@@ -189,10 +208,16 @@ SCENARIO("[DEVICE] Wavefunction generation", "[d-psigen]") {
         trap_parameters.B0 = 0.01;
         trap_parameters.dB = 20.;
         trap_parameters.ddB = 40000.;
-#else  // Quadrupole trap
+#elif defined(QUAD)  // Quadrupole trap
         trap_geo trap_parameters;
         trap_parameters.Bz = 2.0;
         trap_parameters.B0 = 0.;
+#else  // Harmonic trap
+        trap_geo trap_parameters;
+        trap_parameters.B0 = 0.;
+        trap_parameters.wx = 450.;
+        trap_parameters.wy = 450.;
+        trap_parameters.wz = 450.;
 #endif
 
         double3 *d_pos;

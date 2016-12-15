@@ -13,6 +13,8 @@
 
 #include "vector_math.cuh"
 
+#include "random_numbers.cuh"
+
 __host__ void uniform_prng_launcher(int num_elements,
                                     curandState *state,
                                     double *h_r);
@@ -28,6 +30,18 @@ __host__ void gaussian_prng(int num_elements,
 __global__ void g_gaussian_prng(int num_elements,
                                 curandState *state,
                                 double *r);
+
+__host__ void gaussian_point(int num_elements,
+                             double mean,
+                             double std,
+                             curandState *state,
+                             double3 *h_p);
+
+__global__ void g_gaussian_point(int num_elements,
+                                 double mean,
+                                 double std,
+                                 curandState *state,
+                                 double3 *p);
 
 __global__ void zero_elements(int num_elements,
                                double *array);

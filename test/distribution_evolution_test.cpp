@@ -20,10 +20,16 @@ SCENARIO("[HOST] Acceleration Update", "[h-acc]") {
         trap_parameters.B0 = 0.01;
         trap_parameters.dB = 20.;
         trap_parameters.ddB = 40000.;
-#else  // Quadrupole trap
+#elif defined(QUAD)  // Quadrupole trap
         trap_geo trap_parameters;
         trap_parameters.Bz = 2.0;
         trap_parameters.B0 = 0.;
+#else  // Harmonic trap
+        trap_geo trap_parameters;
+        trap_parameters.B0 = 0.;
+        trap_parameters.wx = 450.;
+        trap_parameters.wy = 450.;
+        trap_parameters.wz = 450.;
 #endif
 
         // Initialise rng
@@ -97,7 +103,7 @@ SCENARIO("[HOST] Acceleration Update", "[h-acc]") {
             }
 
 #if defined(IOFFE)  // Ioffe Pritchard trap
-#else  // Quadrupole trap
+#elif defined(QUAD)  // Quadrupole trap
             double expected_std_x_y = sqrt(trap_parameters.Bz*trap_parameters.Bz * gs*gs * muB*muB / 
                                            (48. * mass*mass));
             double expected_std_z = sqrt(trap_parameters.Bz*trap_parameters.Bz * gs*gs * muB*muB / 
@@ -131,10 +137,16 @@ SCENARIO("[HOST] Velocity Update", "[h-vel]") {
         trap_parameters.B0 = 0.01;
         trap_parameters.dB = 20.;
         trap_parameters.ddB = 40000.;
-#else  // Quadrupole trap
+#elif defined(QUAD)  // Quadrupole trap
         trap_geo trap_parameters;
         trap_parameters.Bz = 2.0;
         trap_parameters.B0 = 0.;
+#else  // Harmonic trap
+        trap_geo trap_parameters;
+        trap_parameters.B0 = 0.;
+        trap_parameters.wx = 450.;
+        trap_parameters.wy = 450.;
+        trap_parameters.wz = 450.;
 #endif
 
         // Initialise rng
@@ -272,10 +284,16 @@ SCENARIO("[HOST] Wavfunction Update", "[h-psiev]") {
         trap_parameters.B0 = 0.01;
         trap_parameters.dB = 20.;
         trap_parameters.ddB = 40000.;
-#else  // Quadrupole trap
+#elif defined(QUAD)  // Quadrupole trap
         trap_geo trap_parameters;
         trap_parameters.Bz = 2.0;
         trap_parameters.B0 = 0.;
+#else  // Harmonic trap
+        trap_geo trap_parameters;
+        trap_parameters.B0 = 0.;
+        trap_parameters.wx = 450.;
+        trap_parameters.wy = 450.;
+        trap_parameters.wz = 450.;
 #endif
 
         // Initialise rng

@@ -75,10 +75,16 @@ int main(int argc, char const *argv[]) {
     trap_parameters.B0 = 0.01;
     trap_parameters.dB = 20.;
     trap_parameters.ddB = 40000.;
-#else  // Quadrupole trap
+#elif defined(QUAD)  // Quadrupole trap
     trap_geo trap_parameters;
     trap_parameters.Bz = 2.0;
     trap_parameters.B0 = 0.;
+#else  // Harmonic trap
+    trap_geo trap_parameters;
+    trap_parameters.B0 = 0.;
+    trap_parameters.wx = 450.;
+    trap_parameters.wy = 450.;
+    trap_parameters.wz = 450.;
 #endif
 
     // Initialise computational parameters

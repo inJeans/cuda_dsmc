@@ -11,7 +11,7 @@ double tol = 1.e-6;
 
 SCENARIO("[DEVICE] Acceleration Update", "[d-acc]") {
     GIVEN("A thermal distribution of 5000 positions, help in a quadrupole trap with a Bz = 2.0") {
-        int num_test = 5000;
+        int num_test = 10000;
 
         // Initialise trapping parameters
 #if defined(IOFFE)  // Ioffe Pritchard trap
@@ -19,10 +19,16 @@ SCENARIO("[DEVICE] Acceleration Update", "[d-acc]") {
         trap_parameters.B0 = 0.01;
         trap_parameters.dB = 20.;
         trap_parameters.ddB = 40000.;
-#else  // Quadrupole trap
+#elif defined(QUAD)  // Quadrupole trap
         trap_geo trap_parameters;
         trap_parameters.Bz = 2.0;
         trap_parameters.B0 = 0.;
+#else  // Harmonic trap
+        trap_geo trap_parameters;
+        trap_parameters.B0 = 0.;
+        trap_parameters.wx = 450.;
+        trap_parameters.wy = 450.;
+        trap_parameters.wz = 450.;
 #endif
 
         // Initialise rng
@@ -103,7 +109,7 @@ SCENARIO("[DEVICE] Acceleration Update", "[d-acc]") {
             }
 
 #if defined(IOFFE)  // Ioffe Pritchard trap
-#else  // Quadrupole trap
+#elif defined(QUAD)  // Quadrupole trap
             double expected_std_x_y = sqrt(trap_parameters.Bz*trap_parameters.Bz * gs*gs * muB*muB / 
                                            (48. * mass*mass));
             double expected_std_z = sqrt(trap_parameters.Bz*trap_parameters.Bz * gs*gs * muB*muB / 
@@ -138,10 +144,16 @@ SCENARIO("[DEVICE] Velocity Update", "[d-vel]") {
         trap_parameters.B0 = 0.01;
         trap_parameters.dB = 20.;
         trap_parameters.ddB = 40000.;
-#else  // Quadrupole trap
+#elif defined(QUAD)  // Quadrupole trap
         trap_geo trap_parameters;
         trap_parameters.Bz = 2.0;
         trap_parameters.B0 = 0.;
+#else  // Harmonic trap
+        trap_geo trap_parameters;
+        trap_parameters.B0 = 0.;
+        trap_parameters.wx = 450.;
+        trap_parameters.wy = 450.;
+        trap_parameters.wz = 450.;
 #endif
 
         // Initialise rng
@@ -256,10 +268,16 @@ SCENARIO("[DEVICE] Wavfunction Update", "[d-psiev]") {
         trap_parameters.B0 = 0.01;
         trap_parameters.dB = 20.;
         trap_parameters.ddB = 40000.;
-#else  // Quadrupole trap
+#elif defined(QUAD)  // Quadrupole trap
         trap_geo trap_parameters;
         trap_parameters.Bz = 2.0;
         trap_parameters.B0 = 0.;
+#else  // Harmonic trap
+        trap_geo trap_parameters;
+        trap_parameters.B0 = 0.;
+        trap_parameters.wx = 450.;
+        trap_parameters.wy = 450.;
+        trap_parameters.wz = 450.;
 #endif
 
         // Initialise rng

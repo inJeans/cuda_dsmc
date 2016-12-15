@@ -1,4 +1,5 @@
 #include "test_helpers.cuh"
+#include <stdio.h>
 
 __host__ void uniform_prng_launcher(int num_elements,
                                     curandState *state,
@@ -6,6 +7,7 @@ __host__ void uniform_prng_launcher(int num_elements,
     double *d_r;
     checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&d_r),
                                num_elements*sizeof(double)));
+    printf("Num elements = %i\n", num_elements);
 
     g_uniform_prng<<<1,1>>>(num_elements,
                             state,
@@ -15,6 +17,12 @@ __host__ void uniform_prng_launcher(int num_elements,
                                d_r,
                                num_elements*sizeof(double),
                                cudaMemcpyDeviceToHost));
+    for (int i = 0;
+         i < num_elements;
+         i += 1) {
+        printf("h_r[%i] = %f\n", i, h_r[i]);
+    }
+    cudaFree(d_r);
 
     return;
 }
@@ -47,6 +55,8 @@ __host__ void gaussian_prng(int num_elements,
                                num_elements*sizeof(double),
                                cudaMemcpyDeviceToHost));
 
+    cudaFree(d_r);
+
     return;
 }
 
@@ -60,6 +70,59 @@ __global__ void g_gaussian_prng(int num_elements,
     }
 
     return;
+}
+
+__host__ void gaussian_point(int num_elements,
+                             double mean,
+                             double std,
+                             curandState *state,
+                             double3 *h_p) {
+    double3 *d_p;
+    checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&d_p),
+                               num_elements*sizeof(double3)));
+
+    g_gaussian_point<<<num_elements,1>>>(num_elements,
+                                         mean,
+                                         std,
+                                         state,
+                                         d_p);
+
+    checkCudaErrors(cudaMemcpy(h_p,
+                               d_p,
+                               num_elements*sizeof(double3),
+                               cudaMemcpyDeviceToHost));
+
+    return;
+}
+
+/** \fn __global__ void g_gaussian_point(int num_elements,
+ *                                       double mean,
+ *                                       double std,
+ *                                       curandState *state,
+ *                                       double3 *p) 
+ *  \brief Fills a `double3` array where each element is a three dimensional
+ *  normally distributed point in cartesian space, with 
+ *  mean and std as the mean and standard deviation respectively.
+ *  \param mean Gaussian mean of the components of the output double3.
+ *  \param std Standard deviation of the components of the output double3.
+ *  \param *state Array of state vectors for the rng.
+ *  \param *p Output array of normally distributed points.
+ *  \exception not yet.
+ *  \return A gaussian distributed `double3` point in cartesian space.
+*/
+
+__global__ void g_gaussian_point(int num_elements,
+                                    double mean,
+                                    double std,
+                                    curandState *state,
+                                    double3 *p) {
+    for (int i = blockIdx.x * blockDim.x + threadIdx.x;
+         i < num_elements;
+         i += blockDim.x * gridDim.x) {
+        p[i] = d_gaussian_point(mean,
+                                std,
+                                &state[i]);
+    }
 }
 
 __global__ void zero_elements(int num_elements,

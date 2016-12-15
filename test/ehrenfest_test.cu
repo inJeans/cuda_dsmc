@@ -24,10 +24,16 @@ SCENARIO("[DEVICE] Execute a full ehrenfest simulation", "[d-ehrenfest]") {
         trap_parameters.B0 = 0.01;
         trap_parameters.dB = 20.;
         trap_parameters.ddB = 40000.;
-#else  // Quadrupole trap
+#elif defined(QUAD)  // Quadrupole trap
         trap_geo trap_parameters;
         trap_parameters.Bz = 2.0;
         trap_parameters.B0 = 0.;
+#else  // Harmonic trap
+        trap_geo trap_parameters;
+        trap_parameters.B0 = 0.;
+        trap_parameters.wx = 450.;
+        trap_parameters.wy = 450.;
+        trap_parameters.wz = 450.;
 #endif
 
         int devID = gpuGetMaxGflopsDeviceId();
@@ -538,7 +544,7 @@ SCENARIO("[DEVICE] Execute a full ehrenfest simulation", "[d-ehrenfest]") {
                 // REQUIRE(total_coll < 2407 * (1+fractional_tol));
                 // REQUIRE(total_coll > 2407 * (1-fractional_tol));
             }
-#else  // Quadrupole
+#elif defined(QUAD)  // Quadrupole
             THEN("We should expect the collision rate to agree with Walraven") {
                 // REQUIRE(total_coll < 1026 * (1+fractional_tol));
                 // REQUIRE(total_coll > 1026 * (1-fractional_tol));

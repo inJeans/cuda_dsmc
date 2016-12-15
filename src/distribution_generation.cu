@@ -9,8 +9,13 @@
 
 #include "declare_device_constants.cuh"
 
-// __constant__ double d_max_grid_width = 2.e-3;
+#if defined(IOFFE)  //Ioffe Pritchard trap
+__constant__ double d_max_grid_width = 2.e-3;
+#elif defined(QUAD)  // Quadrupole trap
 __constant__ double d_max_grid_width = 2.5e-4;
+#else // Harmonic trap
+__constant__ double d_max_grid_width = 4.5e-4;
+#endif
 
 /** \fn __host__ void cu_generate_aligned_spins(int num_atoms,
  *                                              trap_geo params,
@@ -327,9 +332,8 @@ __device__ double3 thermal_pos(double temp,
 
     while (no_atom_selected) {
         double3 r = d_gaussian_point(0.,
-                                     1.,
+                                     d_max_grid_width,
                                      state);
-        r = r * d_max_grid_width;
 
         double magB = norm(B(r,
                              params));

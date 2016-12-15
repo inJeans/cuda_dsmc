@@ -7,7 +7,7 @@
 
 #include "define_device_constants.cuh"
 #include "trapping_potential.cuh"
- #include "stdio.h"
+#include "stdio.h"
 
 #if defined(IOFFE)  // Ioffe pritchard trap
 __host__ __device__ double3 B(double3 pos,
@@ -48,7 +48,7 @@ __host__ __device__ double3 dB_dz(double3 pos,
 
     return dBdz;
 }
-#else  // Quadrupole trap
+#elif defined(QUAD)  // Quadrupole trap
 __host__ __device__ double3 B(double3 pos,
                                trap_geo params) {
     double3 mag_field = make_double3(0., 0., 0.);
@@ -83,6 +83,44 @@ __host__ __device__ double3 dB_dz(double3 pos,
     double3 dBdz = make_double3(0.,
                                 0.,
                                 -1.0 * params.Bz);
+
+    return dBdz;
+}
+#else  // Harmonic trap
+__host__ __device__ double3 B(double3 pos,
+                               trap_geo params) {
+    double3 mag_field = make_double3(0., 0., 0.);
+
+    mag_field.x = d_mass * params.wx * params.wx * pos.x * pos.x / d_muB / d_gs;
+    mag_field.y = d_mass * params.wy * params.wy * pos.y * pos.y / d_muB / d_gs;
+    mag_field.z = d_mass * params.wz * params.wz * pos.z * pos.z / d_muB / d_gs;
+
+    return mag_field;
+}
+
+__host__ __device__ double3 dB_dx(double3 pos,
+                                  trap_geo params) {
+    double3 dBdx = make_double3(2. * d_mass * params.wx * params.wx * pos.x / d_muB / d_gs,
+                                0.,
+                                0.);
+
+    return dBdx;
+}
+
+__host__ __device__ double3 dB_dy(double3 pos,
+                                  trap_geo params) {
+    double3 dBdy = make_double3(0.,
+                                2. * d_mass * params.wy * params.wy * pos.y / d_muB / d_gs,
+                                0.);
+
+    return dBdy;
+}
+
+__host__ __device__ double3 dB_dz(double3 pos,
+                                  trap_geo params) {
+    double3 dBdz = make_double3(0.,
+                                0.,
+                                2. * d_mass * params.wz * params.wz * pos.z / d_muB / d_gs);
 
     return dBdz;
 }

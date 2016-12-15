@@ -91,12 +91,13 @@ option(MIMAC "Compile on my mac" OFF)
 IF(NOT WIN32)
     find_package(CUDA QUIET REQUIRED)
     IF(MIMACHINE)
-        SET(CUDA_HOST_COMPILER /Users/miMacbookPro/Downloads/clang+llvm-3.5.2-x86_64-apple-darwin/bin/clang++)
+        message("Compiling on MIMACHINE")
+        SET(CUDA_HOST_COMPILER /Users/chris/Downloads/clang+llvm-3.5.2-x86_64-apple-darwin/bin/clang++)
     ENDIF()
     IF(MIMAC)
         SET(CUDA_HOST_COMPILER /Users/miMac/Downloads/clang+llvm-3.5.2-x86_64-apple-darwin/bin/clang++)
     ENDIF()
-    SET(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} --generate-code arch=compute_35,code=sm_35 -lineinfo -O3")
+    SET(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} --generate-code arch=compute_30,code=sm_30 -lineinfo -O3 -Wno-deprecated-gpu-targets")
     IF(OMP)
         SET(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} -Xcompiler -fopenmp")
     ENDIF()
@@ -141,6 +142,11 @@ IF(QUAD)
     message("Compiling with the quadrupole trapping configuration")
     add_definitions(-DQUAD)
 ENDIF()
+option(HARM "Use the harmonic trapping configuration" ON)
+IF(HARM)
+    message("Compiling with the harmonic trapping configuration")
+    add_definitions(-DHARM)
+ENDIF()
 
 option(SPIN "Add spin tracking" OFF)
 IF(SPIN)
@@ -158,7 +164,7 @@ IF(CUDA)
                 src/vector_math.cu src/entropy.c)
     cuda_add_library(cudsmc ${SOURCES})
     target_compile_definitions(cudsmc PRIVATE -DCUDA)
-    target_link_libraries(cudsmc ${BLAS} pcg_random cudart cublas g3logger)
+    target_link_libraries(cudsmc ${BLAS} cudart cublas g3logger)
 ELSEIF(MKL)
     SET(SOURCES src/distribution_generation.cpp 
                 src/distribution_evolution.cpp 
@@ -166,7 +172,7 @@ ELSEIF(MKL)
                 src/random_numbers.cpp 
                 src/vector_math.cu src/entropy.c)
     cuda_add_library(cudsmc ${SOURCES})
-    target_link_libraries(cudsmc gomp mkl_intel_lp64 mkl_core mkl_gnu_thread dl pthread m pcg_random g3logger)
+    target_link_libraries(cudsmc gomp mkl_intel_lp64 mkl_core mkl_gnu_thread dl pthread m g3logger)
 ELSE()
     SET(SOURCES src/distribution_generation.cpp 
                 src/distribution_evolution.cpp 
@@ -176,12 +182,12 @@ ELSE()
                 src/utilities.cpp
                 src/vector_math.cu src/entropy.c)
     cuda_add_library(cudsmc ${SOURCES})
-    target_link_libraries(cudsmc ${BLAS} pcg_random g3logger)
+    target_link_libraries(cudsmc ${BLAS} g3logger)
 ENDIF()
 
 # Create DSMC main executable
 cuda_add_executable(cuda_dsmc src/main.cpp)
-target_link_libraries(cuda_dsmc cudsmc ${BLAS} pcg_random cudart cublas g3logger)
+target_link_libraries(cuda_dsmc cudsmc ${BLAS} cudart cublas g3logger)
 IF(CUDA)
     target_compile_definitions(cuda_dsmc PRIVATE -DCUDA)
 ENDIF()
@@ -231,21 +237,21 @@ IF(CUDA)
     SET(TEST_SOURCES test/random_number_generation_test.cu
                      test/test_helpers.cpp test/test_helpers.cu)
     cuda_add_executable(device_random_number_generation_test ${TEST_SOURCES})
-    target_link_libraries(device_random_number_generation_test cudsmc pcg_random cudart g3logger)
+    target_link_libraries(device_random_number_generation_test cudsmc cudart g3logger)
     target_compile_definitions(device_random_number_generation_test PRIVATE -DCUDA)
 
     # DEVICE - Distribution generation tests
     SET(TEST_SOURCES test/distribution_generation_test.cu 
                      test/test_helpers.cpp test/test_helpers.cu)
     cuda_add_executable(device_distribution_generation_test ${TEST_SOURCES})
-    target_link_libraries(device_distribution_generation_test cudsmc pcg_random cudart g3logger)
+    target_link_libraries(device_distribution_generation_test cudsmc cudart g3logger)
     target_compile_definitions(device_distribution_generation_test PRIVATE -DCUDA)
 
     # DEVICE - Distribution evolution tests
     SET(TEST_SOURCES test/distribution_evolution_test.cu 
                      test/test_helpers.cpp test/test_helpers.cu)
     cuda_add_executable(device_distribution_evolution_test ${TEST_SOURCES})
-    target_link_libraries(device_distribution_evolution_test cudsmc pcg_random cudart cublas g3logger)
+    target_link_libraries(device_distribution_evolution_test cudsmc cudart cublas g3logger)
     target_compile_definitions(device_distribution_evolution_test PRIVATE -DCUDA)
     
     # DEVICE - Collision tests
@@ -281,19 +287,19 @@ ENDIF()
 SET(TEST_SOURCES test/random_number_generation_test.cpp 
                  test/test_helpers.cpp)
 cuda_add_executable(host_random_number_generation_test ${TEST_SOURCES})
-target_link_libraries(host_random_number_generation_test cudsmc pcg_random cudart g3logger testu01 mylib probdist)
+target_link_libraries(host_random_number_generation_test cudsmc cudart g3logger testu01 mylib probdist)
 
 # HOST - Distribution generation tests
 SET(TEST_SOURCES test/distribution_generation_test.cpp 
                  test/test_helpers.cpp)
 cuda_add_executable(host_distribution_generation_test ${TEST_SOURCES})
-target_link_libraries(host_distribution_generation_test cudsmc pcg_random cudart g3logger)
+target_link_libraries(host_distribution_generation_test cudsmc cudart g3logger)
 
 # HOST - Distribution evolution tests
 SET(TEST_SOURCES test/distribution_evolution_test.cpp 
                  test/test_helpers.cpp)
 cuda_add_executable(host_distribution_evolution_test ${TEST_SOURCES})
-target_link_libraries(host_distribution_evolution_test cudsmc pcg_random cudart cublas g3logger ${BLAS})
+target_link_libraries(host_distribution_evolution_test cudsmc cudart cublas g3logger ${BLAS})
 
 # HOST - Collision tests
 SET(TEST_SOURCES test/collisions_test.cpp)

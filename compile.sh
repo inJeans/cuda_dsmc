@@ -1,0 +1,28 @@
+#!/bin/bash
+export MI_ROOT=/Users/chris/Documents
+export G3LOG_INCLUDE_PATH=$MI_ROOT/g3log/src/
+export G3LOG_LIBRARY_PATH=$MI_ROOT/g3log/build/
+export PCG_INCLUDE_PATH=$MI_ROOT/pcg-cpp/include/
+export TESTU01_INCLUDE_PATH=$MI_ROOT/TestU01/include/
+export TESTU01_LIBRARY_PATH=$MI_ROOT/TestU01/lib/
+
+echo $G3LOG_INCLUDE_PATH
+echo $G3LOG_LIBRARY_PATH
+echo $PCG_INCLUDE_PATH
+echo $TESTU01_INCLUDE_PATH
+echo $TESTU01_LIBRARY_PATH
+
+cd build
+# make clean-cmake
+cmake -DG3LOG_INCLUDE_PATH=$G3LOG_INCLUDE_PATH \
+      -DG3LOG_LIBRARY_PATH=$G3LOG_LIBRARY_PATH \
+      -DPCG_INCLUDE_PATH=$PCG_INCLUDE_PATH \
+      -DTESTU01_INCLUDE_PATH=$TESTU01_INCLUDE_PATH \
+      -DTESTU01_LIBRARY_PATH=$TESTU01_LIBRARY_PATH \
+      -DMIMACHINE=ON \
+      -DLOGGING=ON \
+      -DCUDA=ON \
+      -DHARM=ON \
+      ..
+
+make -j 4

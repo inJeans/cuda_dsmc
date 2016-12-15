@@ -17,10 +17,17 @@ typedef struct trap_geo{
     double dB;
     double ddB;
 } trap_geo;
-#else // Quadrupole trap
+#elif defined(QUAD) // Quadrupole trap
 typedef struct trap_geo{
     double Bz;
     double B0;
+} trap_geo;
+#else  // Harmonic trap
+typedef struct trap_geo{
+    double B0;
+    double wx;
+    double wy;
+    double wz;
 } trap_geo;
 #endif
 
