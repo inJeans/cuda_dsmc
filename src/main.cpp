@@ -14,5 +14,7 @@ int main(int argc, char const *argv[]) {
     printf("*                          *\n");
     printf("****************************\n");
 
+    printf("PASSED\n");
+
     return 0;
 }
