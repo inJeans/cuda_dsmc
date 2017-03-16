@@ -13,15 +13,18 @@ RUN apt-get update && apt-get install -y \
     libatlas-base-dev
 
 # Download and install g3log
-RUN wget https://github.com/KjellKod/g3log/archive/v1.1.tar.gz && \
-    tar xvfz v1.1.tar.gz && \
-    cd g3log-1.1 && \
+RUN wget https://codeload.github.com/KjellKod/g3log/tar.gz/1.2 && \
+    tar xvfz 1.2 && \
+    cd g3log-1.2 && \
     mkdir build && \
     cd ./build && \
     cmake -DCMAKE_BUILD_TYPE=Release -DUSE_DYNAMIC_LOGGING_LEVELS=ON .. && \
     make && \
     cp -r ../src/g3log /usr/local/include && \
-    cp ./lib* /usr/local/lib
+    cp ./lib* /usr/local/lib && \
+    cd ../../ && \
+    rm -rf g3log-1.2 && \
+    rm -f 1.2
 
 # Download and install pcg_rand
 RUN git clone https://github.com/imneme/pcg-c.git && \
@@ -29,7 +32,9 @@ RUN git clone https://github.com/imneme/pcg-c.git && \
     make && \
     make test && \
     cp src/libpcg_random.a /usr/local/lib/ && \
-    cp include/pcg_variants.h /usr/local/include/
+    cp include/pcg_variants.h /usr/local/include/ && \
+    cd ../ && \
+    rm -rf pcg-c
 
 
 # Download and install testu01
@@ -38,7 +43,21 @@ RUN wget http://www.iro.umontreal.ca/~simardr/testu01/TestU01.zip && \
     cd TestU01* && \
     ./configure && \
     make && \
-    make install
+    make install && \
+    cd ../ && \
+    rm -rf TestU01*
+
+RUN git clone https://github.com/inJeans/cuda_dsmc.git && \
+    cd cuda_dsmc && \
+    git checkout develop-2.0 && \
+    mkdir build && \
+    cd build && \
+    cmake .. && \
+    make
+    
+CMD cd cuda_dsmc/build && \
+    make test
+
 
 # Add the testu01 installation to the environment paths
 ENV LD_LIBRARY_PATH /usr/local/lib:$LD_LIBRARY_PATH
