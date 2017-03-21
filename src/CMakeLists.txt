@@ -13,6 +13,8 @@ ELSE()
     target_link_libraries(cuda_dsmc)
 ENDIF()
 
+target_link_libraries(cuda_dsmc g3logger)
+
 # make run
 add_custom_target(run
     COMMAND cuda_dsmc
