@@ -38,7 +38,7 @@ IF(NOT WIN32)
     SET(CUDA_PROPAGATE_HOST_FLAGS OFF)
 ENDIF()
 
-SET(CMAKE_C_FLAGS "-std=c99 ${CMAKE_C_FLAGS}")
+SET(CMAKE_C_FLAGS "-std=c99 ${CMAKE_C_FLAGSw11}")
 SET(CMAKE_CXX_FLAGS "-std=gnu++11 ${CMAKE_CXX_FLAGS}")
 
 include_directories("${PROJECT_SOURCE_DIR}/include" "${PROJECT_SOURCE_DIR}/include/cuda_dsmc")
@@ -89,12 +89,3 @@ ENDIF()
 add_subdirectory(src)
 # Compile tests
 add_subdirectory(test)
-# Add Tests
-# does the application run
-enable_testing()
-
-# does it have the correct output
-add_test (hello_world_test src/cuda_dsmc)
-set_tests_properties(hello_world_test PROPERTIES 
-                     PASS_REGULAR_EXPRESSION "PASSED")
-
