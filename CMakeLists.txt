@@ -58,16 +58,16 @@ ENDIF()
 # We probably don't want this to run on every build.
 option(COVERALLS "Generate coveralls data" OFF)
 
-IF(COVERALLS)
-    include(cmake/Coveralls.cmake)
-    coveralls_turn_on_coverage()
-    SET(COVERAGE_SRCS "${SOURCES}")
+# IF(COVERALLS)
+#     include(cmake/Coveralls.cmake)
+#     coveralls_turn_on_coverage()
+#     SET(COVERAGE_SRCS "${SOURCES}")
 
-    # Create the coveralls target.
-    coveralls_setup(
-        "${COVERAGE_SRCS}" # The source files.
-        ON)                # If we should upload.
-ENDIF()
+#     # Create the coveralls target.
+#     coveralls_setup(
+#         "${COVERAGE_SRCS}" # The source files.
+#         ON)                # If we should upload.
+# ENDIF()
 
 # ============================================================================
 # cmake clean command
