@@ -9,8 +9,8 @@ env:
     - COVERALLS_SERVICE_NAME=travis-ci COVERALLS_REPO_TOKEN=DyDqgIext3FRE6wXaymSOndUnxxNqXExA
 
 before_install:
-    - docker pull injeans/cuda_dsmc:latest
+    - docker pull -t cuda_dsmc injeans/cuda_dsmc:dev
 
 script:
-    - docker build --file Dockerfile-nix -t cuda_dsmc .
+    # - docker build --file Dockerfile-nix -t cuda_dsmc .
     - docker run -t cuda_dsmc
