@@ -85,6 +85,7 @@ IF(NOT MSVC)
    )
 ENDIF()
 
+enable_testing()
 # Compile source
 add_subdirectory(src)
 # Compile tests

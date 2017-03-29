@@ -33,5 +33,4 @@ ELSE()
     target_link_libraries(main_test gtest gtest_main g3logger -lpthread -lm)
 ENDIF()
 
-enable_testing()
 add_test(main_execution main_test)
