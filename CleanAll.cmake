@@ -19,3 +19,4 @@ foreach(file ${cmake_generated})
      file(REMOVE_RECURSE ${file})
   endif()
 endforeach(file)
+scaling
