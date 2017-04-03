@@ -18,6 +18,7 @@
 #
 import os
 import sys
+import subprocess
 sys.path.insert(0, os.path.abspath('.'))
 sys.path.append( "./ext/breathe/" )
 
@@ -26,7 +27,6 @@ sys.path.append( "./ext/breathe/" )
 read_the_docs_build = os.environ.get('READTHEDOCS', None) == 'True'
 
 if read_the_docs_build:
-
     subprocess.call('doxygen', shell=True)
 
 # -- General configuration ------------------------------------------------
