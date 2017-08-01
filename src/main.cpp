@@ -1,5 +1,5 @@
 /** \file
- *  \brief Main code
+ *  \brief Main code Test
  *
  *  More detailed description
  *  Copyright 2017 Christopher Watkins
@@ -43,7 +43,7 @@ const std::string kLogfilename = "cuda_dsmc";
  *  \param *zomplex2 Pointer to a `zomplex2` host or device array of length `num_atoms`.
  *  \exception not yet.
  *  \return void
-*/
+ */
 int main(int argc, char const *argv[]) {
     auto worker = g3::LogWorker::createLogWorker();
     auto logfileHandle = worker->addDefaultLogger(kLogfilename,

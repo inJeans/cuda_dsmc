@@ -21,8 +21,18 @@ IF(TESTU01_INCLUDE_PATH)
     include_directories("${TESTU01_INCLUDE_PATH}")
 ENDIF()
 
+# User defined testu01 library destintation
+IF(PCG_LIBRARY_PATH)
+    link_directories("${PCG_LIBRARY_PATH}")
+ENDIF()
+
+# User defined testu01 header destintation
+IF(PCG_INCLUDE_PATH)
+    include_directories("${PCG_INCLUDE_PATH}")
+ENDIF()
+
+# MAIN TESTS
 IF(CUDA)
-    # add_definitions(-DCUDA)
     SET(SOURCES main_execution_test.cpp )
     cuda_add_executable(main_test ${SOURCES})
     target_link_libraries(main_test gtest gtest_main g3logger -lpthread -lm)
@@ -34,3 +44,17 @@ ELSE()
 ENDIF()
 
 add_test(main_execution main_test)
+
+# RNG TESTS
+IF(CUDA)
+    SET(SOURCES random_numbers_test.cpp ../src/random_numbers.cpp)
+    cuda_add_executable(rng_test ${SOURCES})
+    target_link_libraries(rng_test gtest gtest_main g3logger -lpthread -lm pcg_random)
+    target_compile_definitions(rng_test PRIVATE -DCUDA)
+ELSE()
+    SET(SOURCES random_numbers_test.cpp ../src/random_numbers.cpp)
+    cuda_add_executable(rng_test ${SOURCES})
+    target_link_libraries(rng_test gtest gtest_main g3logger -lpthread -lm pcg_random)
+ENDIF()
+
+add_test(random_number_generation rng_test)
