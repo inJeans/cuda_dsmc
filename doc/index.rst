@@ -12,8 +12,13 @@ Contents:
    :maxdepth: 2
 
 main.cpp
-========
+==============
 .. doxygenfile:: main.cpp
+    :project: cuda_dsmc
+
+random_numbers.cpp
+==================
+.. doxygenfile:: random_numbers.cpp
     :project: cuda_dsmc
 
 Indices and tables

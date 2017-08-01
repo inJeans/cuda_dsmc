@@ -353,6 +353,6 @@ texinfo_documents = [
 # texinfo_no_detailmenu = False
 
 # -- Options for Breathe ------------------------------------------------
-breathe_projects = {"cuda_dsmc": "./doxyxml/"}
+breathe_projects = {"cuda_dsmc": "../build/doxyxml/"}
 breathe_default_project = "cuda_dsmc"
 
