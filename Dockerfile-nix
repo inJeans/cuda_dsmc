@@ -33,6 +33,7 @@ RUN git clone https://github.com/imneme/pcg-c.git && \
     make test && \
     cp src/libpcg_random.a /usr/local/lib/ && \
     cp include/pcg_variants.h /usr/local/include/ && \
+    cp -r extras /usr/local/include/ && \
     cd ../ && \
     rm -rf pcg-c
 
