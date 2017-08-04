@@ -47,9 +47,12 @@ ENDIF()
 SET(CMAKE_C_FLAGS "-std=c99 ${CMAKE_C_FLAGSw11}")
 SET(CMAKE_CXX_FLAGS "-std=gnu++11 ${CMAKE_CXX_FLAGS}")
 
-include_directories("${PROJECT_SOURCE_DIR}/include" "${PROJECT_SOURCE_DIR}/include/cuda_dsmc")
+include_directories("${PROJECT_SOURCE_DIR}/include"
+                    "${PROJECT_SOURCE_DIR}/include/cuda_dsmc"
+                    "/usr/local/include"
+                    "/usr/local/")
 IF(CUDA)
-    include_directories("${CUDA_INCLUDE_DIRS}" "/usr/local/include")
+    include_directories("${CUDA_INCLUDE_DIRS}")
 ENDIF()
 
 IF(UNIX)
