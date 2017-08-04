@@ -21,6 +21,8 @@ typedef struct {
     pcg32_random_t gen[2];
 } pcg32x2_random_t;
 
+double3 guassian_vector(pcg32x2_random_t* rng);
+
 double2 box_muller(pcg32x2_random_t* rng);
 
 double uniform_random(pcg32x2_random_t* rng);

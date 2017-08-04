@@ -168,6 +168,53 @@ TEST_F(RNGTest, GaussianBackOfTheEnvelope) {
     }
 }
 
+/////////////////////
+// VECTOR TESTS    //
+/////////////////////
+
+TEST_F(RNGTest, GaussianVector3Mean) {
+    double3 test_rand = make_double3(0., 0., 0.);
+    double test_sum = 0.;
+    for (int test = 0; test < kNumberOfTests; ++test) {
+        test_rand = guassian_vector(&rng);
+        test_sum += test_rand.x + test_rand.y + test_rand.z;
+    }
+
+    double test_mean = test_sum / (3*kNumberOfTests);
+    ASSERT_LT(test_mean, kTolerance);
+    ASSERT_GT(test_mean, -1. * kTolerance);
+}
+
+TEST_F(RNGTest, GaussianVector3StdDev) {
+    double3 random_number = make_double3(0., 0., 0.);
+    double sum_of_squared_differences = 0.;
+    for (int test = 0; test < kNumberOfTests; ++test) {
+        random_number = guassian_vector(&rng);
+        sum_of_squared_differences += (random_number.x - 0.0) *
+                                      (random_number.x - 0.0);
+        sum_of_squared_differences += (random_number.y - 0.0) *
+                                      (random_number.y - 0.0);
+        sum_of_squared_differences += (random_number.z - 0.0) *
+                                      (random_number.z - 0.0);
+    }
+
+    double test_std_dev = sqrt(sum_of_squared_differences /
+                              (3*kNumberOfTests-1));
+    ASSERT_LT(test_std_dev, 1. * (1. + kTolerance));
+    ASSERT_GT(test_std_dev, 1. * (1. - kTolerance));
+}
+
+TEST_F(RNGTest, GaussianVector3Distinct) {
+    double3 test_rand = make_double3(0., 0., 0.);
+
+    for (int test = 0; test < kNumberOfTests; ++test) {
+        test_rand = guassian_vector(&rng);
+        ASSERT_NE(test_rand.x, test_rand.y);
+        ASSERT_NE(test_rand.x, test_rand.z);
+        ASSERT_NE(test_rand.y, test_rand.z);
+    }
+}
+
 int main(int argc, char **argv) {
     auto worker = g3::LogWorker::createLogWorker();
     auto logfileHandle = worker->addDefaultLogger(kLogfilename,
@@ -180,8 +227,8 @@ int main(int argc, char **argv) {
                                         &CustomSink::ReceiveLogMessage);
 
     LOGF(INFO, "Testing random number generators.");
-    
+
     ::testing::InitGoogleTest(&argc, argv);
-    
+
     return RUN_ALL_TESTS();
 }

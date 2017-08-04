@@ -10,8 +10,29 @@
 
 #include "cuda_dsmc/random_numbers.hpp"
 
+/** \fn double3 guassian_vector(pcg32x2_random_t* rng)
+ *  \brief Generates three gaussian distributed random numbers between [0, 1)
+ *
+ *  \param rng A pointer to our custom random number generator type that contains
+ *  two distinct rng streams.
+ *  \exception not yet.
+ *  \return Three Gaussian distributed numbers
+ */
+double3 guassian_vector(pcg32x2_random_t* rng) {
+    double3 z = make_double3(0., 0., 0.);
+
+    double2 r1 = box_muller(rng);
+    double2 r2 = box_muller(rng);
+
+    z.x = r1.x;
+    z.y = r1.y;
+    z.z = r2.x;
+
+    return z;
+}
+
 /** \fn double2 box_muller(pcg32x2_random_t* rng)
- *  \brief Generates a two gaussian distributed random numbers between [0, 1)
+ *  \brief Generates two gaussian distributed random numbers between [0, 1)
  *
  *  This function uses the Box-Muller transformation to convert two uniformly
  *  distributed numbers into two Gaussian distributed numbers, with a standard
