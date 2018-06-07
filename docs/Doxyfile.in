@@ -1,0 +1,22 @@
+PROJECT_NAME           = "@CMAKE_PROJECT_NAME@"
+PROJECT_NUMBER         = @VERSION_MAJOR@.@VERSION_MINOR@.@VERSION_PATCH@
+STRIP_FROM_PATH        = @PROJECT_SOURCE_DIR@ \
+                         @PROJECT_BINARY_DIR@
+INPUT                  = @PROJECT_SOURCE_DIR@/src/ \
+                         @PROJECT_SOURCE_DIR@/docs
+OUTPUT_DIRECTORY       = @PROJECT_SOURCE_DIR@/docs/doxygen/
+FILE_PATTERNS          = *.h \
+                         *.cc \ 
+                         *.cpp \
+                         *.hpp \
+                         *.cu \
+                         *.cuh
+EXTENSION_MAPPING      = cu=C++ cuh=C++
+OPTIMIZE_OUTPUT_FOR_C  = YES
+RECURSIVE              = YES
+GENERATE_XML           = YES
+EXTRACT_ALL            = YES 
+WARNINGS               = YES
+WARN_IF_DOC_ERROR      = YES
+WARN_NO_PARAMDOC       = YES
+USE_MDFILE_AS_MAINPAGE = @doxy_main_page@

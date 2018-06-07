@@ -1,5 +1,5 @@
 /** \file
- *  \brief Main code Test
+ *  \brief Main code
  *
  *  More detailed description
  *  Copyright 2017 Christopher Watkins
@@ -23,7 +23,7 @@
 
 #include <string>
 
-#include "CustomSink.hpp"
+#include "cuda_dsmc/CustomSink.hpp"
 
 #if (defined(WIN32) || defined(_WIN32) || defined(__WIN32__))
     mkdir("./tmp", 0700);
@@ -34,15 +34,12 @@
 const std::string kLogfilename = "cuda_dsmc";
 
 
-/** \fn int main(int argc, char const *argv[])
- *  \brief Calls the function to fill a `zomplex2` array of aligned spins 
- *  on the host or device with a mean projection of 1.
- *  \param num_atoms Number of atoms in the thermal gas.
- *  \param params (TODO).
- *  \param *pos Pointer to a `double3` host or device array of length `num_atoms`.
- *  \param *zomplex2 Pointer to a `zomplex2` host or device array of length `num_atoms`.
+/** \brief Main process for the DSMC code.
+ *
+ *  \param argc testing words
+ *  \param argv 
  *  \exception not yet.
- *  \return void
+ *  \return int
  */
 int main(int argc, char const *argv[]) {
     auto worker = g3::LogWorker::createLogWorker();

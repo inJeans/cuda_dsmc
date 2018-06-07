@@ -15,17 +15,20 @@
 #include "include/pcg_variants.h"
 #include "extras/entropy.h"  // Wrapper around /dev/random
 
-#include "declare_physical_constants.hpp"
+#include "cuda_dsmc/declare_physical_constants.hpp"
+#include "cuda_dsmc/vector_math.cuh"
 
 typedef struct {
     pcg32_random_t gen[2];
 } pcg32x2_random_t;
 
-double3 guassian_vector(pcg32x2_random_t* rng);
+double3 gaussianVector(double mean,
+                       double std,
+                       pcg32x2_random_t* rng);
 
-double2 box_muller(pcg32x2_random_t* rng);
+double2 boxMuller(pcg32x2_random_t* rng);
 
-double uniform_random(pcg32x2_random_t* rng);
+double uniformRandom(pcg32x2_random_t* rng);
 
 void pcg32x2_srandom_r(pcg32x2_random_t* rng,
                        uint64_t seed1,

@@ -2,7 +2,6 @@ cmake_minimum_required (VERSION 2.8 FATAL_ERROR)
 project (cuda_dsmc_exec)
 
 IF(CUDA)
-    # add_definitions(-DCUDA)
     SET(SOURCES main.cpp)
     cuda_add_executable(cuda_dsmc ${SOURCES})
     target_link_libraries(cuda_dsmc g3logger -lpthread -lm)

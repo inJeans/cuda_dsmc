@@ -34,11 +34,13 @@ IF(PCG_INCLUDE_PATH)
     include_directories("${PCG_INCLUDE_PATH}")
 ENDIF()
 
+SET(PARALLELISATION_OPTIONS CACHE INTERNAL "Variable for holding parallelisation options")
+
 # We will optionally build with CUDA.
 option(CUDA "Compile with GPU acceleration" OFF)
 
 IF(NOT WIN32)
-    find_package(CUDA QUIET REQUIRED)
+    find_package(CUDA REQUIRED)
     SET(CUDA_NVCC_FLAGS "-std=c++11")
     SET(CUDA_SEPARABLE_COMPILATION ON)
     SET(CUDA_PROPAGATE_HOST_FLAGS OFF)
@@ -64,8 +66,16 @@ IF(UNIX)
     ENDIF()
 ENDIF()
 
+# We will optionally build with MPI.
+option(MPI "Compile with MPI distribution" OFF)
+
+IF(MPI)
+  find_package(MPI REQUIRED)
+  SET(PARALLELISATION_OPTIONS "${PARALLELISATION_OPTIONS} MPI")
+ENDIF()
+
 # We probably don't want this to run on every build.
-option(COVERALLS "Generate coveralls data" OFF)
+# option(COVERALLS "Generate coveralls data" OFF)
 
 # IF(COVERALLS)
 #     include(cmake/Coveralls.cmake)
@@ -100,4 +110,4 @@ add_subdirectory(src)
 # Compile tests
 add_subdirectory(test)
 # Compile docs
-add_subdirectory(doc)
+add_subdirectory(docs)

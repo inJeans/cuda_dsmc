@@ -27,7 +27,7 @@
 #else
     const std::string kPathToLogFile = "/tmp/";
 #endif
-const std::string kLogfilename = "test_cuda_dsmc_random";
+const std::string kLogfilename = "test_dsmc_random_numbers";
 
 int kNumberOfTests = 10000;
 double kTolerance = 1. / sqrt(kNumberOfTests);
@@ -56,7 +56,7 @@ class RNGTest : public ::testing::Test {
 TEST_F(RNGTest, UniformBetweenZeroAndOne) {
     double test_number = 0.;
     for (int test = 0; test < kNumberOfTests; ++test) {
-        test_number = uniform_random(&rng);
+        test_number = uniformRandom(&rng);
         ASSERT_LT(test_number, 1.);
         ASSERT_GE(test_number, 0.);
     }
@@ -65,7 +65,7 @@ TEST_F(RNGTest, UniformBetweenZeroAndOne) {
 TEST_F(RNGTest, UniformMean) {
     double test_sum = 0.;
     for (int test = 0; test < kNumberOfTests; ++test) {
-        test_sum += uniform_random(&rng);
+        test_sum += uniformRandom(&rng);
     }
 
     double test_mean = test_sum / kNumberOfTests;
@@ -77,7 +77,7 @@ TEST_F(RNGTest, UniformStdDev) {
     double random_number = 0.;
     double sum_of_squared_differences = 0.;
     for (int test = 0; test < kNumberOfTests; ++test) {
-        random_number = uniform_random(&rng);
+        random_number = uniformRandom(&rng);
         sum_of_squared_differences += (random_number - 0.5) *
                                       (random_number - 0.5);
     }
@@ -95,7 +95,7 @@ TEST_F(RNGTest, GaussianMean) {
     double2 test_rand = make_double2(0., 0.);
     double test_sum = 0.;
     for (int test = 0; test < kNumberOfTests; ++test) {
-        test_rand = box_muller(&rng);
+        test_rand = boxMuller(&rng);
         test_sum += test_rand.x + test_rand.y;
     }
 
@@ -108,7 +108,7 @@ TEST_F(RNGTest, GaussianStdDev) {
     double2 random_number = make_double2(0., 0.);
     double sum_of_squared_differences = 0.;
     for (int test = 0; test < kNumberOfTests; ++test) {
-        random_number = box_muller(&rng);
+        random_number = boxMuller(&rng);
         sum_of_squared_differences += (random_number.x - 0.0) *
                                       (random_number.x - 0.0);
         sum_of_squared_differences += (random_number.y - 0.0) *
@@ -126,7 +126,7 @@ TEST_F(RNGTest, GaussianBackOfTheEnvelope) {
     double2 test_extremum = make_double2(0., 0.);
     double test_numbers[2*kNumberOfTests];
     for (int test = 0; test < kNumberOfTests; ++test) {
-        random_number = box_muller(&rng);
+        random_number = boxMuller(&rng);
         test_numbers[2*test] = random_number.x;
         test_numbers[2*test+1] = random_number.y;
 
@@ -176,7 +176,9 @@ TEST_F(RNGTest, GaussianVector3Mean) {
     double3 test_rand = make_double3(0., 0., 0.);
     double test_sum = 0.;
     for (int test = 0; test < kNumberOfTests; ++test) {
-        test_rand = guassian_vector(&rng);
+        test_rand = gaussianVector(0.0,
+                                   1.0,
+                                   &rng);
         test_sum += test_rand.x + test_rand.y + test_rand.z;
     }
 
@@ -189,7 +191,9 @@ TEST_F(RNGTest, GaussianVector3StdDev) {
     double3 random_number = make_double3(0., 0., 0.);
     double sum_of_squared_differences = 0.;
     for (int test = 0; test < kNumberOfTests; ++test) {
-        random_number = guassian_vector(&rng);
+        random_number = gaussianVector(0.0,
+                                       1.0,
+                                       &rng);
         sum_of_squared_differences += (random_number.x - 0.0) *
                                       (random_number.x - 0.0);
         sum_of_squared_differences += (random_number.y - 0.0) *
@@ -208,7 +212,9 @@ TEST_F(RNGTest, GaussianVector3Distinct) {
     double3 test_rand = make_double3(0., 0., 0.);
 
     for (int test = 0; test < kNumberOfTests; ++test) {
-        test_rand = guassian_vector(&rng);
+        test_rand = gaussianVector(0.0,
+                                   1.0,
+                                   &rng);
         ASSERT_NE(test_rand.x, test_rand.y);
         ASSERT_NE(test_rand.x, test_rand.z);
         ASSERT_NE(test_rand.y, test_rand.z);

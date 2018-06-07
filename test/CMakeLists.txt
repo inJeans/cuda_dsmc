@@ -47,9 +47,10 @@ add_test(main_execution main_test)
 
 # RNG TESTS
 IF(CUDA)
-    SET(SOURCES random_numbers_test.cpp ../src/random_numbers.cpp)
+    MESSAGE(WARNING "Compiling device rng tests")
+    SET(SOURCES random_numbers_test.cu ../src/random_numbers.cpp ../src/random_numbers.cu)
     cuda_add_executable(rng_test ${SOURCES})
-    target_link_libraries(rng_test gtest gtest_main g3logger -lpthread -lm pcg_random)
+    target_link_libraries(rng_test gtest gtest_main g3logger -lpthread -lm -lcurand_static  -lculibos pcg_random)
     target_compile_definitions(rng_test PRIVATE -DCUDA)
 ELSE()
     SET(SOURCES random_numbers_test.cpp ../src/random_numbers.cpp)
@@ -58,3 +59,26 @@ ELSE()
 ENDIF()
 
 add_test(random_number_generation rng_test)
+
+# DISTRIBUTION GENERATION TESTS
+IF(CUDA)
+    MESSAGE(WARNING "Compiling device distribution generation tests")
+    SET(SOURCES ../src/random_numbers.cu
+                ../src/magnetic_field.cu
+                ../src/distribution_generation.cu
+                distribution_generation_test.cu)
+    cuda_add_executable(distribution_generation_test ${SOURCES}
+                        OPTIONS -DCUDA)
+    target_compile_definitions(distribution_generation_test PRIVATE ${PARALLELISATION_OPTIONS})
+    target_link_libraries(distribution_generation_test gtest gtest_main g3logger -lpthread -lm -lcurand_static  -lculibos pcg_random)
+ELSE()
+    SET(SOURCES ../src/random_numbers.cpp
+                ../src/magnetic_field.cpp
+                ../src/distribution_generation.cpp
+                distribution_generation_test.cpp)
+    cuda_add_executable(distribution_generation_test ${SOURCES})
+    target_compile_definitions(distribution_generation_test PRIVATE ${PARALLELISATION_OPTIONS})
+    target_link_libraries(distribution_generation_test gtest gtest_main g3logger -lpthread -lm -lmpi pcg_random)
+ENDIF()
+
+add_test(distribution_generation distribution_generation_test)

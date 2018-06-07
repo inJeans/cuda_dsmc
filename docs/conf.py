@@ -21,6 +21,8 @@ import sys
 import subprocess
 sys.path.insert(0, os.path.abspath('.'))
 sys.path.append( "./ext/breathe/" )
+import solar_theme
+from sphinx.domains import cpp
 
 # -- RTD Build ------------------------------------------------------------
 
@@ -134,7 +136,10 @@ todo_include_todos = True
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = 'sphinx_rtd_theme'
+# html_theme = 'sphinx_rtd_theme'
+html_theme = 'solar_theme'
+
+html_theme_path = [solar_theme.theme_path]
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
@@ -353,6 +358,17 @@ texinfo_documents = [
 # texinfo_no_detailmenu = False
 
 # -- Options for Breathe ------------------------------------------------
-breathe_projects = {"cuda_dsmc": "../build/doxyxml/"}
+breathe_projects = {"cuda_dsmc": "./doxygen/xml/"}
 breathe_default_project = "cuda_dsmc"
+breathe_projects_source = {
+     "cuda_dsmc" : ( "../src", ["main.cpp",
+                                "distribution_generation.cpp",
+                                "distribution_generation.cu",
+                                "magnetic_field.cpp",
+                                "magnetic_field.cu",
+                                "random_numbers.cpp",
+                                "random_numbers.cu",
+                               ] )
+     }
 
+cpp_id_attributes = ["__host__", "__device__", "__global__", "__constant__"]
