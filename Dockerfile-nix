@@ -10,7 +10,14 @@ RUN apt-get update && apt-get install -y \
     cmake \
     unzip \
     git \
-    libatlas-base-dev
+    libatlas-base-dev \
+    openmpi-bin \
+    openmpi-common \
+    openssh-client \
+    openssh-server \
+    libopenmpi1.3 \
+    libopenmpi-dbg \
+    libopenmpi-dev
 
 # Download and install g3log
 RUN wget https://codeload.github.com/KjellKod/g3log/tar.gz/1.2 && \
