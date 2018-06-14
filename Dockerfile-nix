@@ -15,8 +15,8 @@ RUN apt-get update && apt-get install -y \
     openmpi-common \
     openssh-client \
     openssh-server \
-    libopenmpi1.3 \
-    libopenmpi-dbg \
+    openmpi-bin \
+    openmpi-doc \
     libopenmpi-dev
 
 # Download and install g3log
