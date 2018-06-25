@@ -12,7 +12,7 @@
 #include <math.h>
 #include <cuda_runtime.h>
 
-#include "utils.cuh"
+#include "dsmc_utils.cuh"
 #include "cuda_dsmc/declare_physical_constants.hpp"
 
 extern __constant__ double kMaxDistributionWidth;

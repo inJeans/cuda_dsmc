@@ -23,30 +23,45 @@
 __host__ void generateThermalPositionDistribution(int num_positions,
                                                   FieldParams params,
                                                   double temp,
-                                                  curandState *states,
-                                                  double3 **pos) {
+                                                  cudaStream_t *streams,
+                                                  curandState **states,
+                                                  double3 ***pos) {
 #if defined(MPI)
     // Get the number of processes
     int world_size;
     MPI_Comm_size(MPI_COMM_WORLD, &world_size);
-    num_positions /= world_size;
 
     // Get the rank of the process
     int world_rank;
     MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
-    if (world_rank == world_size-1) {
-        num_positions += num_positions % world_size;
-    }
+
+    // Calculate rank local number of positions
+    numberElementsPerParallelUnit(world_rank,
+                                  world_size,
+                                  &num_positions);
 #endif
+    /* Get device count */
+    int num_devices;
+    CUDA_CALL(cudaGetDeviceCount(&num_devices));
 
-    /* Allocate num_positions double3s on device */
-    CUDA_CALL(cudaMalloc((void **)pos, num_positions*sizeof(double3)));
+    *pos = reinterpret_cast<double3 **>(calloc(num_devices, sizeof(double3 *)));
 
-    cuGenerateThermalPositionDistribution(num_positions,
-                                          params,
-                                          temp,
-                                          states,
-                                          *pos);
+    for (int d = 0; d < num_devices; ++d) {
+        CUDA_CALL(cudaSetDevice(d));
+        
+        /* Allocate num_positions double3s on device */
+        numberElementsPerParallelUnit(d,
+                                      num_devices,
+                                      &num_positions);
+        CUDA_CALL(cudaMalloc((void **)&(*pos)[d], num_positions*sizeof(double3)));
+
+        cuGenerateThermalPositionDistribution(num_positions,
+                                              params,
+                                              temp,
+                                              streams[d],
+                                              states[d],
+                                              (*pos)[d]);
+    }
 
     return;
 }
@@ -55,7 +70,8 @@ __host__ void generateThermalPositionDistribution(int num_positions,
  *
  *  \param num_positions Number of positions to be generated (equal to the length of pos).
  *  \param temp Temperature of the thermal distribution.
- *  \param rng A pointer to our custom random number generator type that contains
+ *  \param stream A CUDA stream in which to perform calculations.
+ *  \param states A pointer to our custom random number generator type that contains
  *  two distinct rng streams.
  *  \param pos A pointer to an array of double3 elements that contain the positions.
  *  \exception not yet.
@@ -64,6 +80,7 @@ __host__ void generateThermalPositionDistribution(int num_positions,
 __host__ void cuGenerateThermalPositionDistribution(int num_positions,
                                                     FieldParams params,
                                                     double temp,
+                                                    cudaStream_t stream,
                                                     curandState *states,
                                                     double3 *pos) {
     int block_size = 0;
@@ -77,7 +94,9 @@ __host__ void cuGenerateThermalPositionDistribution(int num_positions,
     grid_size = (num_positions + block_size - 1) / block_size;
     
     gGenerateThermalPosition<<<grid_size,
-                               block_size>>>
+                               block_size,
+                               0,
+                               stream>>>
                             (num_positions,
                              params,
                              temp,
@@ -157,29 +176,45 @@ __device__ double3 dGenerateThermalPosition(FieldParams params,
  */
 __host__ void generateThermalVelocityDistribution(int num_velocities,
                                                   double temp,
-                                                  curandState* states,
-                                                  double3 **vel) {
+                                                  cudaStream_t *streams,
+                                                  curandState **states,
+                                                  double3 ***vel) {
 #if defined(MPI)
     // Get the number of processes
     int world_size;
     MPI_Comm_size(MPI_COMM_WORLD, &world_size);
-    num_velocities /= world_size;
 
     // Get the rank of the process
     int world_rank;
     MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
-    if (world_rank == world_size-1) {
-        num_velocities += num_velocities % world_size;
-    }
+
+    // Calculate rank local number of positions
+    numberElementsPerParallelUnit(world_rank,
+                                  world_size,
+                                  &num_velocities);
 #endif
+    /* Get device count */
+    int num_devices;
+    CUDA_CALL(cudaGetDeviceCount(&num_devices));
 
-    /* Allocate num_velocities double3s on device */
-    CUDA_CALL(cudaMalloc((void **)vel, num_velocities*sizeof(double3)));
+    *vel = reinterpret_cast<double3 **>(calloc(num_devices, sizeof(double3 *)));
 
-    cuGenerateThermalVelocityDistribution(num_velocities,
-                                          temp,
-                                          states,
-                                          *vel);
+    for (int d = 0; d < num_devices; ++d) {
+        CUDA_CALL(cudaSetDevice(d));
+
+        /* Allocate num_velocities double3s on device */
+        numberElementsPerParallelUnit(d,
+                                      num_devices,
+                                      &num_velocities);
+
+        CUDA_CALL(cudaMalloc((void **)&(*vel)[d], num_velocities*sizeof(double3)));
+
+        cuGenerateThermalVelocityDistribution(num_velocities,
+                                              temp,
+                                              streams[d],
+                                              states[d],
+                                              (*vel)[d]);
+    }
 
     return;
 }
@@ -193,6 +228,7 @@ __host__ void generateThermalVelocityDistribution(int num_velocities,
  */
 __host__ void cuGenerateThermalVelocityDistribution(int num_velocities,
                                                     double temp,
+                                                    cudaStream_t stream,
                                                     curandState* states,
                                                     double3 *vel) {
     int block_size = 0;
@@ -206,7 +242,9 @@ __host__ void cuGenerateThermalVelocityDistribution(int num_velocities,
     grid_size = (num_velocities + block_size - 1) / block_size;
     
     gGenerateThermalVelocityDistribution<<<grid_size,
-                                           block_size>>>
+                                           block_size,
+                                           0,
+                                           stream>>>
                                         (num_velocities,
                                          temp,
                                          states,

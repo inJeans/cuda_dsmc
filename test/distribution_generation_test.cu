@@ -55,7 +55,7 @@ double3 kTestPosStdDev = make_double3(0.539, 0.539, 0.539);
 double kTestPosGlobalStdDev = sqrt(3.)*0.539;
 #endif
 
-class DeviceDistributionTest : public ::testing::Test {
+class DeviceVelocityDistributionTest : public ::testing::Test {
  protected:
     virtual void SetUp() {
 #if defined(MPI)
@@ -63,39 +63,50 @@ class DeviceDistributionTest : public ::testing::Test {
         printf("Initialising MPI\n");
         MPI_Init(NULL, NULL);
 #endif
-        /* Allocate space for rng states on device */
-        CUDA_CALL(cudaMalloc((void **)&d_states,
-                             kNumBlocks * kNumThreads * sizeof(curandState)));
+        /* Get device count */
+        CUDA_CALL(cudaGetDeviceCount(&num_devices));
+
+        d_streams = reinterpret_cast<cudaStream_t *>(calloc(num_devices, sizeof(cudaStream_t)));
+        d_states = reinterpret_cast<curandState **>(calloc(num_devices, sizeof(curandState*)));
+
+        for (int d = 0; d < num_devices; ++d) {
+            CUDA_CALL(cudaSetDevice(d));
+            CUDA_CALL(cudaStreamCreate(&d_streams[d]));
+            /* Allocate space for rng states on device */
+            CUDA_CALL(cudaMalloc((void **)&d_states[d],
+                                 kNumBlocks * kNumThreads * sizeof(curandState)));
+        }
+
         /* Initialise rng states on device */
         initRNG(kNumBlocks*kNumThreads,
                 kRNGSeed,
+                d_streams,
                 d_states);
 
         /* Allocate kNumAtoms double3s on host */
-        h_pos = reinterpret_cast<double3 *>(calloc(kNumAtoms, sizeof(double3)));
         h_vel = reinterpret_cast<double3 *>(calloc(kNumAtoms, sizeof(double3)));
 
         // Initialise distributions
-        generateThermalPositionDistribution(kNumAtoms,
-                                            kTestParams,
-                                            kTestTemp,
-                                            d_states,
-                                            &d_pos);
         generateThermalVelocityDistribution(kNumAtoms,
                                             kTestTemp,
+                                            d_streams,
                                             d_states,
                                             &d_vel);
 
         /* Copy device memory to host */ 
-        CUDA_CALL(cudaMemcpy(h_pos, d_pos, kNumAtoms * sizeof(double3), cudaMemcpyDeviceToHost)); 
-        CUDA_CALL(cudaMemcpy(h_vel, d_vel, kNumAtoms * sizeof(double3), cudaMemcpyDeviceToHost)); 
+        combineDeviceArrays(num_devices,
+                            kNumAtoms,
+                            d_vel,
+                            h_vel);
     }
 
     virtual void TearDown() {
-        cudaFree(d_states);
-        cudaFree(d_pos);
-        cudaFree(d_vel);
-        free(h_pos);
+        for (int d=0; d < num_devices; ++d) {
+            cudaFree(d_vel[d]);
+        }
+        free(d_vel);
+        free(d_streams);
+        free(d_states);
         free(h_vel);
 
 #if defined(MPI)
@@ -104,13 +115,16 @@ class DeviceDistributionTest : public ::testing::Test {
 #endif
     }
 
-    curandState *d_states;
+    cudaStream_t *d_streams;
+    curandState **d_states;
 
-    double3 *h_pos, *h_vel;
-    double3 *d_pos, *d_vel;
+    int num_devices;
+
+    double3 *h_vel;
+    double3 **d_vel;
 };
 
-TEST_F(DeviceDistributionTest, VelocityMean) {
+TEST_F(DeviceVelocityDistributionTest, VelocityMean) {
     double3 test_sum = make_double3(0., 0., 0.);
     for (int test = 0; test < kNumAtoms; ++test) {
         test_sum.x += h_vel[test].x;
@@ -131,7 +145,7 @@ TEST_F(DeviceDistributionTest, VelocityMean) {
     ASSERT_GT(global_mean, -1. * kTolerance);
 }
 
-TEST_F(DeviceDistributionTest, VelocityStdDev) {
+TEST_F(DeviceVelocityDistributionTest, VelocityStdDev) {
     double3 test_sum = make_double3(0., 0., 0.);
     for (int test = 0; test < kNumAtoms; ++test) {
         test_sum.x += h_vel[test].x;
@@ -168,7 +182,77 @@ TEST_F(DeviceDistributionTest, VelocityStdDev) {
     ASSERT_GT(global_std_dev, kTestV * (1. - kTolerance));
 }
 
-TEST_F(DeviceDistributionTest, PositionMean) {
+class DevicePositionDistributionTest : public ::testing::Test {
+ protected:
+    virtual void SetUp() {
+#if defined(MPI)
+        // Initialize the MPI environment
+        printf("Initialising MPI\n");
+        MPI_Init(NULL, NULL);
+#endif
+        /* Get device count */
+        CUDA_CALL(cudaGetDeviceCount(&num_devices));
+
+        d_streams = reinterpret_cast<cudaStream_t *>(calloc(num_devices, sizeof(cudaStream_t)));
+        d_states = reinterpret_cast<curandState **>(calloc(num_devices, sizeof(curandState*)));
+
+        for (int d = 0; d < num_devices; ++d) {
+            CUDA_CALL(cudaSetDevice(d));
+            CUDA_CALL(cudaStreamCreate(&d_streams[d]));
+            /* Allocate space for rng states on device */
+            CUDA_CALL(cudaMalloc((void **)&d_states[d],
+                                 kNumBlocks * kNumThreads * sizeof(curandState)));
+        }
+
+        /* Initialise rng states on device */
+        initRNG(kNumBlocks*kNumThreads,
+                kRNGSeed,
+                d_streams,
+                d_states);
+
+        /* Allocate kNumAtoms double3s on host */
+        h_pos = reinterpret_cast<double3 *>(calloc(kNumAtoms, sizeof(double3)));
+
+        // Initialise distributions
+        generateThermalPositionDistribution(kNumAtoms,
+                                            kTestParams,
+                                            kTestTemp,
+                                            d_streams,
+                                            d_states,
+                                            &d_pos);
+
+        /* Copy device memory to host */ 
+        combineDeviceArrays(num_devices,
+                            kNumAtoms,
+                            d_pos,
+                            h_pos); 
+    }
+
+    virtual void TearDown() {
+        for (int d = 0; d < num_devices; ++d) {
+            cudaFree(d_pos[d]);
+        }
+        free(d_pos);
+        free(d_streams);
+        free(d_states);
+        free(h_pos);
+
+#if defined(MPI)
+        // Finalize the MPI environment.
+        MPI_Finalize();
+#endif
+    }
+
+    cudaStream_t *d_streams;
+    curandState **d_states;
+
+    int num_devices;
+
+    double3 *h_pos;
+    double3 **d_pos;
+};
+
+TEST_F(DevicePositionDistributionTest, PositionMean) {
     double3 test_sum = make_double3(0., 0., 0.);
     for (int test = 0; test < kNumAtoms; ++test) {
         test_sum.x += h_pos[test].x;
@@ -189,7 +273,7 @@ TEST_F(DeviceDistributionTest, PositionMean) {
     ASSERT_GT(global_mean, -1. * kTolerance);
 }
 
-TEST_F(DeviceDistributionTest, PositionStdDev) {
+TEST_F(DevicePositionDistributionTest, PositionStdDev) {
     double3 test_sum = make_double3(0., 0., 0.);
     for (int test = 0; test < kNumAtoms; ++test) {
         test_sum.x += h_pos[test].x;

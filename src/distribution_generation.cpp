@@ -10,6 +10,7 @@
  */
 
 #include "distribution_generation.hpp"
+#include <omp.h>
 
 /** \brief Generates a sample of thermally distributed positions
  *
@@ -30,18 +31,16 @@ void generateThermalPositionDistribution(int num_positions,
     // Get the number of processes
     int world_size;
     MPI_Comm_size(MPI_COMM_WORLD, &world_size);
-    num_positions /= world_size;
 
     // Get the rank of the process
     int world_rank;
     MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
-    if (world_rank == world_size-1) {
-        num_positions += num_positions % world_size;
-    }
-    printf("process %i/%i\n", world_rank, world_size);
-#endif
-    printf("In the function\n");
 
+    // Calculate rank local number of positions
+    numberElementsPerRank(world_rank,
+                          world_size,
+                          &num_positions);
+#endif
     /* Allocate num_positions double3s on host */
     *pos = reinterpret_cast<double3 *>(calloc(num_positions, sizeof(double3)));
 
@@ -69,6 +68,9 @@ void hGenerateThermalPositionDistribution(int num_positions,
                                           double temp,
                                           pcg32x2_random_t* rng,
                                           double3 *pos) {
+    int nthreads = omp_get_num_threads();
+    printf("Number of threads = %d\n", nthreads);
+    #pragma omp parallel for
     for (int p = 0; p < num_positions; ++p) {
         pos[p] = hGenerateThermalPosition(params,
                                           temp,
@@ -126,14 +128,15 @@ void generateThermalVelocityDistribution(int num_velocities,
     // Get the number of processes
     int world_size;
     MPI_Comm_size(MPI_COMM_WORLD, &world_size);
-    num_velocities /= world_size;
 
     // Get the rank of the process
     int world_rank;
     MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
-    if (world_rank == world_size-1) {
-        num_velocities += num_velocities % world_size;
-    }
+
+    // Calculate rank local number of positions
+    numberElementsPerRank(world_rank,
+                          world_size,
+                          &num_velocities);
 #endif
 
     /* Allocate num_velocities double3s on host */

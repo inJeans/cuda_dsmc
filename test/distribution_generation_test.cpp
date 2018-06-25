@@ -30,7 +30,7 @@
 #endif
 const std::string kLogfilename = "test_dsmc_distribution_generation";
 
-double kNumAtoms = 1.e4;
+double kNumAtoms = 1.e1;
 double kTestTemp = 100.e-9;
 double kTestV = sqrt(kKB * kTestTemp / kMass);
 

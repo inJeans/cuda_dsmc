@@ -63,22 +63,29 @@ add_test(random_number_generation rng_test)
 # DISTRIBUTION GENERATION TESTS
 IF(CUDA)
     MESSAGE(WARNING "Compiling device distribution generation tests")
-    SET(SOURCES ../src/random_numbers.cu
+    SET(SOURCES ../src/dsmc_utils.cu
+                ../src/random_numbers.cu
                 ../src/magnetic_field.cu
                 ../src/distribution_generation.cu
                 distribution_generation_test.cu)
     cuda_add_executable(distribution_generation_test ${SOURCES}
                         OPTIONS -DCUDA)
-    target_compile_definitions(distribution_generation_test PRIVATE ${PARALLELISATION_OPTIONS})
-    target_link_libraries(distribution_generation_test gtest gtest_main g3logger -lpthread -lm -lcurand_static  -lculibos pcg_random)
+    FOREACH(defintion ${PARALLELISATION_DEFINITIONS})
+        target_compile_definitions(distribution_generation_test PRIVATE ${defintion})
+    ENDFOREACH(loop_var)
+    target_link_libraries(distribution_generation_test gtest gtest_main g3logger -lpthread -lm -lcurand_static  -lculibos pcg_random ${PARALLELISATION_FLAGS})
 ELSE()
     SET(SOURCES ../src/random_numbers.cpp
                 ../src/magnetic_field.cpp
                 ../src/distribution_generation.cpp
                 distribution_generation_test.cpp)
     cuda_add_executable(distribution_generation_test ${SOURCES})
-    target_compile_definitions(distribution_generation_test PRIVATE ${PARALLELISATION_OPTIONS})
-    target_link_libraries(distribution_generation_test gtest gtest_main g3logger -lpthread -lm -lmpi pcg_random)
+    FOREACH(defintion ${PARALLELISATION_DEFINITIONS})
+        target_compile_definitions(distribution_generation_test PRIVATE ${defintion})
+    ENDFOREACH(loop_var)
+    message("complie definitions: ${PARALLELISATION_DEFINITIONS}")
+    message("link flags: ${PARALLELISATION_FLAGS}")
+    target_link_libraries(distribution_generation_test gtest gtest_main g3logger -lpthread -lm pcg_random ${PARALLELISATION_FLAGS})
 ENDIF()
 
 add_test(distribution_generation distribution_generation_test)

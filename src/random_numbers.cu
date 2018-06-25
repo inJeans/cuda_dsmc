@@ -29,6 +29,39 @@ __device__ double3 dGaussianVector(double mean,
     return mean + std * z;
 }
 
+/** \brief Generates a sample of thermally distributed positions
+ *
+ *  \param num_positions Number of positions to be generated (equal to the length of pos).
+ *  \param temp Temperature of the thermal distribution.
+ *  \param rng A pointer to our custom random number generator type that contains
+ *  two distinct rng streams.
+ *  \param pos A pointer to an array of double3 elements that contain the positions.
+ *  \exception not yet.
+ *  \return An array of thermally distributed positions
+ */
+__host__ void initRNG(int num_states,
+                      int seed,
+                      cudaStream_t *streams,
+                      curandState **states) {
+    /* Get device count */
+    int num_devices;
+    CUDA_CALL(cudaGetDeviceCount(&num_devices));
+
+    for (int d = 0; d < num_devices; ++d) {
+        CUDA_CALL(cudaSetDevice(d));
+        /* Allocate num_positions double3s on device */
+        // MODIFY FOR RNG STATE ALLOCATION
+        // CUDA_CALL(cudaMalloc((void **)*pos, num_positions*sizeof(double3)));
+
+        cuInitRNG(num_states,
+                  seed,
+                  streams[d],
+                  states[d]);
+    }
+
+    return;
+}
+
 /** \brief Generates a sample of thermally distributed velocities
  *
  *  \param rng A pointer to our custom random number generator type that contains
@@ -36,9 +69,10 @@ __device__ double3 dGaussianVector(double mean,
  *  \exception not yet.
  *  \return Three Gaussian distributed numbers
  */
-__host__ void initRNG(int num_states,
-                      int seed,
-                      curandState *states) {
+__host__ void cuInitRNG(int num_states,
+                        int seed,
+                        cudaStream_t stream,
+                        curandState *states) {
     int block_size = 0;
     int min_grid_size = 0;
     int grid_size = 0;
@@ -50,7 +84,9 @@ __host__ void initRNG(int num_states,
     grid_size = (num_states + block_size - 1) / block_size;
     
     gInitRNG<<<grid_size,
-               block_size>>>
+               block_size,
+               0,
+               stream>>>
             (num_states,
              seed,
              states);

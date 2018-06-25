@@ -135,13 +135,17 @@ __global__ void generate_uniform_kernel(curandState *state,
 class DeviceAPIUniformRNGTest : public ::testing::Test {
  protected:
     virtual void SetUp() {
+        /* Initialise CUDA stream */
+        CUDA_CALL(cudaStreamCreate(&d_stream));
+
         /* Allocate space for rng states on device */
         CUDA_CALL(cudaMalloc((void **)&d_states,
                              kNumBlocks * kNumThreads * sizeof(curandState)));
         /* Initialise rng states on device */
-        initRNG(kNumBlocks*kNumThreads,
-                kRNGSeed,
-                d_states);
+        cuInitRNG(kNumBlocks*kNumThreads,
+                  kRNGSeed,
+                  d_stream,
+                  d_states);
 
         /* Allocate n floats on host */ 
         h_data = (double *)calloc(kNumBlocks * kNumThreads, sizeof(double)); 
@@ -164,6 +168,7 @@ class DeviceAPIUniformRNGTest : public ::testing::Test {
         free(h_data);
     }
 
+    cudaStream_t d_stream;
     curandState *d_states;
 
     double *d_data, *h_data;
@@ -347,13 +352,17 @@ __global__ void generate_gaussian_kernel(curandState *state,
 class DeviceAPIGaussianRNGTest : public ::testing::Test {
  protected:
     virtual void SetUp() {
+        /* Initialise CUDA stream */
+        CUDA_CALL(cudaStreamCreate(&d_stream));
+
         /* Allocate space for rng states on device */
         CUDA_CALL(cudaMalloc((void **)&d_states,
                              kNumBlocks * kNumThreads * sizeof(curandState)));
         /* Initialise rng states on device */
-        initRNG(kNumBlocks*kNumThreads,
-                kRNGSeed,
-                d_states);
+        cuInitRNG(kNumBlocks*kNumThreads,
+                  kRNGSeed,
+                  d_stream,
+                  d_states);
 
         /* Allocate n floats on host */ 
         h_data = (double *)calloc(kNumBlocks * kNumThreads, sizeof(double)); 
@@ -376,6 +385,7 @@ class DeviceAPIGaussianRNGTest : public ::testing::Test {
         free(h_data);
     }
 
+    cudaStream_t d_stream;
     curandState *d_states;
 
     double *d_data, *h_data;
@@ -561,13 +571,17 @@ __global__ void generate_gaussian_kernel(curandState *state,
 class DeviceAPIVectorRNGTest : public ::testing::Test {
  protected:
     virtual void SetUp() {
+        /* Initialise CUDA stream */
+        CUDA_CALL(cudaStreamCreate(&d_stream));
+        
         /* Allocate space for rng states on device */
         CUDA_CALL(cudaMalloc((void **)&d_states,
                              kNumBlocks * kNumThreads * sizeof(curandState)));
         /* Initialise rng states on device */
-        initRNG(kNumBlocks*kNumThreads,
-                kRNGSeed,
-                d_states);
+        cuInitRNG(kNumBlocks*kNumThreads,
+                  kRNGSeed,
+                  d_stream,
+                  d_states);
 
         /* Allocate n floats on host */ 
         h_data = (double3 *)calloc(kNumBlocks * kNumThreads, sizeof(double3)); 
@@ -590,6 +604,7 @@ class DeviceAPIVectorRNGTest : public ::testing::Test {
         free(h_data);
     }
 
+    cudaStream_t d_stream;
     curandState *d_states;
 
     double3 *d_data, *h_data;

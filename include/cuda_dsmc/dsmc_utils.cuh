@@ -25,4 +25,13 @@
     }                                                \
 } while(0)
 
+void numberElementsPerParallelUnit(int unit_id,
+                                   int num_units,
+                                   int *num_elements);
+
+void combineDeviceArrays(int num_devices,
+                         int num_elements,
+                         double3** device_arrays,
+                         double3* host_array);
+
 #endif  // UTILS_CUH_INCLUDED

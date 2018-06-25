@@ -15,7 +15,7 @@ if(BUILD_DOCUMENTATION)
     configure_file(${DOXYGEN_IN} ${DOXYGEN_OUT} @ONLY)
     message("Doxygen build started")
 
-    add_custom_target(docs_doxygen ALL
+    add_custom_target(docs_doxygen
         COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYGEN_OUT}
         COMMAND sphinx-build -b html ${PROJECT_SOURCE_DIR}/docs/ ${PROJECT_SOURCE_DIR}/docs/html
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
