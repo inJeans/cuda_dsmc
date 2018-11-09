@@ -12,26 +12,6 @@
 
 /** \brief Evenly divide elements amongst parallel unit
  *
- *  \param unit_id MPI world rank.
- *  \param num_units Number of ranks in the MPI world.
- *  \param num_elements Pointer to the global number of elements.
- *  \exception not yet.
- *  \return The rank local number of elements
- */
-void numberElementsPerParallelUnit(int unit_id,
-                                   int num_units,
-                                   int *num_elements) {
-    *num_elements /= num_units;
-
-    if (unit_id == num_units-1) {
-        *num_elements += *num_elements % num_units;
-    }
-
-    return;
-}
-
-/** \brief Evenly divide elements amongst parallel unit
- *
  *  \param num_arrays Number of ranks in the MPI world.
  *  \param num_elements Pointer to the global number of elements.
  *  \exception not yet.

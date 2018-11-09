@@ -20,6 +20,7 @@
 #endif
 
 #include "cuda_dsmc/declare_physical_constants.hpp"
+#include "cuda_dsmc/dsmc_utils.hpp"
 #include "cuda_dsmc/magnetic_field.hpp"
 #include "cuda_dsmc/random_numbers.hpp"
 

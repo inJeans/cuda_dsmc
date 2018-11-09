@@ -5,8 +5,8 @@
  *  Copyright 2017 Christopher Watkins
  */
 
-#ifndef MAGNETIC_FIELD_HPP_INCLUDED
-#define MAGNETIC_FIELD_HPP_INCLUDED 1
+#ifndef MAGNETIC_FIELD_CUH_INCLUDED
+#define MAGNETIC_FIELD_CUH_INCLUDED 1
 
 #include <stdio.h>
 #include <math.h>
@@ -15,8 +15,7 @@
 #include "dsmc_utils.cuh"
 #include "cuda_dsmc/declare_physical_constants.hpp"
 
-extern __constant__ double kMaxDistributionWidth;
-
+#ifndef MAGNETIC_FIELD_HPP_INCLUDED
 #if defined(HARMONIC)
 typedef struct FieldParameters {
     double3 omega;
@@ -25,10 +24,15 @@ typedef struct FieldParameters {
 #else
 typedef struct FieldParameters {
     double B0;
+    double max_distribution_width;
 }FieldParams;
 #endif
+#endif  // MAGNETIC_FIELD_HPP_INCLUDED
 
 __device__ double3 dMagneticField(FieldParams params,
                                   double3 pos);
 
-#endif  // MAGNETIC_FIELD_HPP_INCLUDED
+__device__ double3 dMagneticFieldGradient(FieldParams params,
+                                          double3 pos);
+
+#endif  // MAGNETIC_FIELD_CUH_INCLUDED

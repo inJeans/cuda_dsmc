@@ -15,7 +15,7 @@
 #include <mpi.h>
 #endif
 
-#include "dsmc_utils.cuh"
+#include "cuda_dsmc/dsmc_utils.cuh"
 #include "cuda_dsmc/declare_physical_constants.cuh"
 #include "cuda_dsmc/magnetic_field.cuh"
 #include "cuda_dsmc/random_numbers.cuh"

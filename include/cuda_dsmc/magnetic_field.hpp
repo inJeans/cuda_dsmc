@@ -14,8 +14,6 @@
 
 #include "cuda_dsmc/declare_physical_constants.hpp"
 
-extern const double kMaxDistributionWidth;
-
 #if defined(HARMONIC)
 typedef struct FieldParameters {
     double3 omega;
@@ -24,10 +22,14 @@ typedef struct FieldParameters {
 #else
 typedef struct FieldParameters {
     double B0;
+    double max_distribution_width;
 }FieldParams;
 #endif
 
 double3 magneticField(FieldParams params,
                       double3 pos);
+
+double3 magneticFieldGradient(FieldParams params,
+                              double3 pos);
 
 #endif  // MAGNETIC_FIELD_HPP_INCLUDED

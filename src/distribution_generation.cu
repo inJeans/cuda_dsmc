@@ -126,8 +126,8 @@ __global__ void gGenerateThermalPosition(int num_positions,
          p < num_positions;
          p += blockDim.x * gridDim.x) {
         pos[p] = dGenerateThermalPosition(params,
-                                             temp,
-                                             &l_state);
+                                          temp,
+                                          &l_state);
     }
     states[id] = l_state;
 
@@ -150,7 +150,7 @@ __device__ double3 dGenerateThermalPosition(FieldParams params,
 
     while (no_atom_selected) {
         double3 r = dGaussianVector(0.,
-                                    kMaxDistributionWidth,
+                                    params.max_distribution_width,
                                     state);
 
         double mag_B = norm(dMagneticField(params,

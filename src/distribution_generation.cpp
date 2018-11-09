@@ -10,7 +10,9 @@
  */
 
 #include "distribution_generation.hpp"
+#if defined(OPENMP)
 #include <omp.h>
+#endif
 
 /** \brief Generates a sample of thermally distributed positions
  *
@@ -37,9 +39,9 @@ void generateThermalPositionDistribution(int num_positions,
     MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
 
     // Calculate rank local number of positions
-    numberElementsPerRank(world_rank,
-                          world_size,
-                          &num_positions);
+    numberElementsPerParallelUnit(world_rank,
+                                  world_size,
+                                  &num_positions);
 #endif
     /* Allocate num_positions double3s on host */
     *pos = reinterpret_cast<double3 *>(calloc(num_positions, sizeof(double3)));
@@ -68,8 +70,6 @@ void hGenerateThermalPositionDistribution(int num_positions,
                                           double temp,
                                           pcg32x2_random_t* rng,
                                           double3 *pos) {
-    int nthreads = omp_get_num_threads();
-    printf("Number of threads = %d\n", nthreads);
     #pragma omp parallel for
     for (int p = 0; p < num_positions; ++p) {
         pos[p] = hGenerateThermalPosition(params,
@@ -134,9 +134,9 @@ void generateThermalVelocityDistribution(int num_velocities,
     MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
 
     // Calculate rank local number of positions
-    numberElementsPerRank(world_rank,
-                          world_size,
-                          &num_velocities);
+    numberElementsPerParallelUnit(world_rank,
+                                  world_size,
+                                  &num_velocities);
 #endif
 
     /* Allocate num_velocities double3s on host */

@@ -34,7 +34,7 @@
 const std::string kLogfilename = "test_cuda_dsmc_distribution_generation";
 
 int kRNGSeed = 1234;
-double kNumAtoms = 1.e4;
+int kNumAtoms = 1e4;
 double kTestTemp = 100.e-9;
 double kTestV = sqrt(kKB * kTestTemp / kMass);
 
@@ -50,7 +50,8 @@ FieldParams kTestParams = {.omega = make_double3(1., 1., 1.),
 double3 kTestPosStdDev = make_double3(1., 1., 1.);
 double kTestPosGlobalStdDev = sqrt(3.);
 #else  // No magnetic field
-FieldParams kTestParams = {.B0 = 0.};
+FieldParams kTestParams = {.B0 = 0.,
+                           .max_distribution_width = 1.};
 double3 kTestPosStdDev = make_double3(0.539, 0.539, 0.539);
 double kTestPosGlobalStdDev = sqrt(3.)*0.539;
 #endif
@@ -125,61 +126,37 @@ class DeviceVelocityDistributionTest : public ::testing::Test {
 };
 
 TEST_F(DeviceVelocityDistributionTest, VelocityMean) {
-    double3 test_sum = make_double3(0., 0., 0.);
-    for (int test = 0; test < kNumAtoms; ++test) {
-        test_sum.x += h_vel[test].x;
-        test_sum.y += h_vel[test].y;
-        test_sum.z += h_vel[test].z;
-    }
-    double3 test_mean = test_sum / kNumAtoms;
-    double global_mean = (test_mean.x + test_mean.y + test_mean.x) / 3.;
+    double3 directional_mean;
+    double global_mean = mean(h_vel,
+                              kNumAtoms,
+                              &directional_mean);
 
-    ASSERT_LT(test_mean.x, kTolerance);
-    ASSERT_LT(test_mean.y, kTolerance);
-    ASSERT_LT(test_mean.z, kTolerance);
+    ASSERT_LT(directional_mean.x, kTolerance);
+    ASSERT_LT(directional_mean.y, kTolerance);
+    ASSERT_LT(directional_mean.z, kTolerance);
     ASSERT_LT(global_mean, kTolerance);
 
-    ASSERT_GT(test_mean.x, -1. * kTolerance);
-    ASSERT_GT(test_mean.y, -1. * kTolerance);
-    ASSERT_GT(test_mean.z, -1. * kTolerance);
+    ASSERT_GT(directional_mean.x, -1. * kTolerance);
+    ASSERT_GT(directional_mean.y, -1. * kTolerance);
+    ASSERT_GT(directional_mean.z, -1. * kTolerance);
     ASSERT_GT(global_mean, -1. * kTolerance);
 }
 
 TEST_F(DeviceVelocityDistributionTest, VelocityStdDev) {
-    double3 test_sum = make_double3(0., 0., 0.);
-    for (int test = 0; test < kNumAtoms; ++test) {
-        test_sum.x += h_vel[test].x;
-        test_sum.y += h_vel[test].y;
-        test_sum.z += h_vel[test].z;
-    }
-    double3 test_mean = test_sum / kNumAtoms;
+    double3 directional_stddev;
+    double global_stddev = stddev(h_vel,
+                                  kNumAtoms,
+                                  &directional_stddev);
 
-    double3 sum_of_squared_differences = make_double3(0., 0., 0.);
-    for (int test = 0; test < kNumAtoms; ++test) {
-        sum_of_squared_differences.x += (h_vel[test].x - test_mean.x) *
-                                        (h_vel[test].x - test_mean.x);
-        sum_of_squared_differences.y += (h_vel[test].y - test_mean.y) *
-                                        (h_vel[test].y - test_mean.y);
-        sum_of_squared_differences.z += (h_vel[test].z - test_mean.z) *
-                                        (h_vel[test].z - test_mean.z);
-    }
-    double3 test_std_dev = make_double3(0., 0., 0.);
-    test_std_dev.x = sqrt(sum_of_squared_differences.x / (kNumAtoms-1));
-    test_std_dev.y = sqrt(sum_of_squared_differences.y / (kNumAtoms-1));
-    test_std_dev.z = sqrt(sum_of_squared_differences.z / (kNumAtoms-1));
-    double global_std_dev = (test_std_dev.x +
-                             test_std_dev.y +
-                             test_std_dev.z) / 3.;
+    ASSERT_LT(directional_stddev.x, kTestV * (1. + kTolerance));
+    ASSERT_LT(directional_stddev.y, kTestV * (1. + kTolerance));
+    ASSERT_LT(directional_stddev.z, kTestV * (1. + kTolerance));
+    ASSERT_LT(global_stddev, kTestV * (1. + kTolerance));
 
-    ASSERT_LT(test_std_dev.x, kTestV * (1. + kTolerance));
-    ASSERT_LT(test_std_dev.y, kTestV * (1. + kTolerance));
-    ASSERT_LT(test_std_dev.z, kTestV * (1. + kTolerance));
-    ASSERT_LT(global_std_dev, kTestV * (1. + kTolerance));
-
-    ASSERT_GT(test_std_dev.x, kTestV * (1. - kTolerance));
-    ASSERT_GT(test_std_dev.y, kTestV * (1. - kTolerance));
-    ASSERT_GT(test_std_dev.z, kTestV * (1. - kTolerance));
-    ASSERT_GT(global_std_dev, kTestV * (1. - kTolerance));
+    ASSERT_GT(directional_stddev.x, kTestV * (1. - kTolerance));
+    ASSERT_GT(directional_stddev.y, kTestV * (1. - kTolerance));
+    ASSERT_GT(directional_stddev.z, kTestV * (1. - kTolerance));
+    ASSERT_GT(global_stddev, kTestV * (1. - kTolerance));
 }
 
 class DevicePositionDistributionTest : public ::testing::Test {

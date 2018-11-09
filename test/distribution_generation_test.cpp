@@ -17,6 +17,7 @@
 #include "cuda_dsmc/declare_physical_constants.hpp"
 #include "cuda_dsmc/define_physical_constants.hpp"
 #include "cuda_dsmc/vector_math.cuh"
+#include "cuda_dsmc/dsmc_utils.hpp"
 
 #include "cuda_dsmc/magnetic_field.hpp"
 #include "cuda_dsmc/distribution_generation.hpp"
@@ -30,7 +31,7 @@
 #endif
 const std::string kLogfilename = "test_dsmc_distribution_generation";
 
-double kNumAtoms = 1.e1;
+int kNumAtoms = 1e3;
 double kTestTemp = 100.e-9;
 double kTestV = sqrt(kKB * kTestTemp / kMass);
 
@@ -42,13 +43,19 @@ FieldParams kTestParams = {.omega = make_double3(1., 1., 1.),
                           };
 double3 kTestPosStdDev = make_double3(1., 1., 1.);
 #else  // No magnetic field
-FieldParams kTestParams = {.B0 = 0.};
+FieldParams kTestParams = {.B0 = 0.,
+                           .max_distribution_width = 1.};
 double3 kTestPosStdDev = make_double3(0.539, 0.539, 0.539);
 #endif
 
 class DistributionTest : public ::testing::Test {
  protected:
     virtual void SetUp() {
+        // If using MPI get the world rank information
+#if defined(MPI)
+    MPI_Comm_size(MPI_COMM_WORLD, &world_size);
+    MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
+#endif
         // Initialise detreministic seed
         pcg32x2_srandom_r(&rng,
                           42u,
@@ -77,172 +84,77 @@ class DistributionTest : public ::testing::Test {
     pcg32x2_random_t rng;
 
     double3 *pos, *vel;
+#if defined(MPI)
+    int world_size, world_rank;
+#endif
 };
 
 TEST_F(DistributionTest, VelocityMean) {
-    double3 test_sum = make_double3(0., 0., 0.);
-    for (int test = 0; test < kNumAtoms; ++test) {
-        test_sum.x += vel[test].x;
-        test_sum.y += vel[test].y;
-        test_sum.z += vel[test].z;
-    }
-#if defined(MPI)
-    MPI_Allreduce(MPI_IN_PLACE,
-                  &test_sum,
-                  3,
-                  MPI_DOUBLE,
-                  MPI_SUM,
-                  MPI_COMM_WORLD);
-#endif
-    double3 test_mean = test_sum / kNumAtoms;
-    double global_mean = (test_mean.x + test_mean.y + test_mean.x) / 3.;
+    double3 directional_mean;
+    double global_mean = mean(vel,
+                              kNumAtoms,
+                              &directional_mean);
 
-    ASSERT_LT(test_mean.x, kTolerance);
-    ASSERT_LT(test_mean.y, kTolerance);
-    ASSERT_LT(test_mean.z, kTolerance);
+    ASSERT_LT(directional_mean.x, kTolerance);
+    ASSERT_LT(directional_mean.y, kTolerance);
+    ASSERT_LT(directional_mean.z, kTolerance);
     ASSERT_LT(global_mean, kTolerance);
 
-    ASSERT_GT(test_mean.x, -1. * kTolerance);
-    ASSERT_GT(test_mean.y, -1. * kTolerance);
-    ASSERT_GT(test_mean.z, -1. * kTolerance);
+    ASSERT_GT(directional_mean.x, -1. * kTolerance);
+    ASSERT_GT(directional_mean.y, -1. * kTolerance);
+    ASSERT_GT(directional_mean.z, -1. * kTolerance);
     ASSERT_GT(global_mean, -1. * kTolerance);
 }
 
 TEST_F(DistributionTest, VelocityStdDev) {
-    double3 test_sum = make_double3(0., 0., 0.);
-    for (int test = 0; test < kNumAtoms; ++test) {
-        test_sum.x += vel[test].x;
-        test_sum.y += vel[test].y;
-        test_sum.z += vel[test].z;
-    }
-#if defined(MPI)
-    MPI_Allreduce(MPI_IN_PLACE,
-                  &test_sum,
-                  3,
-                  MPI_DOUBLE,
-                  MPI_SUM,
-                  MPI_COMM_WORLD);
-#endif
-    double3 test_mean = test_sum / kNumAtoms;
-    double global_mean = (test_mean.x + test_mean.y + test_mean.x) / 3.;
+    double3 directional_stddev;
+    double global_stddev = stddev(vel,
+                                  kNumAtoms,
+                                  &directional_stddev);
 
-    double3 sum_of_squared_differences = make_double3(0., 0., 0.);
-    for (int test = 0; test < kNumAtoms; ++test) {
-        sum_of_squared_differences.x += (vel[test].x - test_mean.x) *
-                                        (vel[test].x - test_mean.x);
-        sum_of_squared_differences.y += (vel[test].y - test_mean.y) *
-                                        (vel[test].y - test_mean.y);
-        sum_of_squared_differences.z += (vel[test].z - test_mean.z) *
-                                        (vel[test].z - test_mean.z);
-    }
-#if defined(MPI)
-    MPI_Allreduce(MPI_IN_PLACE,
-                  &sum_of_squared_differences,
-                  3,
-                  MPI_DOUBLE,
-                  MPI_SUM,
-                  MPI_COMM_WORLD);
-#endif
-    double3 test_std_dev = make_double3(0., 0., 0.);
-    test_std_dev.x = sqrt(sum_of_squared_differences.x / (kNumAtoms-1));
-    test_std_dev.y = sqrt(sum_of_squared_differences.y / (kNumAtoms-1));
-    test_std_dev.z = sqrt(sum_of_squared_differences.z / (kNumAtoms-1));
-    double global_std_dev = (test_std_dev.x +
-                             test_std_dev.y +
-                             test_std_dev.z) / 3.;
+    ASSERT_LT(directional_stddev.x, kTestV * (1. + kTolerance));
+    ASSERT_LT(directional_stddev.y, kTestV * (1. + kTolerance));
+    ASSERT_LT(directional_stddev.z, kTestV * (1. + kTolerance));
+    // ASSERT_LT(global_stddev, kTestV * (1. + kTolerance));
 
-    ASSERT_LT(test_std_dev.x, kTestV * (1. + kTolerance));
-    ASSERT_LT(test_std_dev.y, kTestV * (1. + kTolerance));
-    ASSERT_LT(test_std_dev.z, kTestV * (1. + kTolerance));
-    ASSERT_LT(global_std_dev, kTestV * (1. + kTolerance));
-
-    ASSERT_GT(test_std_dev.x, kTestV * (1. - kTolerance));
-    ASSERT_GT(test_std_dev.y, kTestV * (1. - kTolerance));
-    ASSERT_GT(test_std_dev.z, kTestV * (1. - kTolerance));
-    ASSERT_GT(global_std_dev, kTestV * (1. - kTolerance));
+    ASSERT_GT(directional_stddev.x, kTestV * (1. - kTolerance));
+    ASSERT_GT(directional_stddev.y, kTestV * (1. - kTolerance));
+    ASSERT_GT(directional_stddev.z, kTestV * (1. - kTolerance));
+    // ASSERT_GT(global_stddev, kTestV * (1. - kTolerance));
 }
 
 TEST_F(DistributionTest, PositionMean) {
-    double3 test_sum = make_double3(0., 0., 0.);
-    for (int test = 0; test < kNumAtoms; ++test) {
-        test_sum.x += pos[test].x;
-        test_sum.y += pos[test].y;
-        test_sum.z += pos[test].z;
-    }
-#if defined(MPI)
-    MPI_Allreduce(MPI_IN_PLACE,
-                  &test_sum,
-                  3,
-                  MPI_DOUBLE,
-                  MPI_SUM,
-                  MPI_COMM_WORLD);
-#endif
-    double3 test_mean = test_sum / kNumAtoms;
-    double global_mean = (test_mean.x + test_mean.y + test_mean.x) / 3.;
+    double3 directional_mean;
+    double global_mean = mean(pos,
+                              kNumAtoms,
+                              &directional_mean);
 
-    ASSERT_LT(test_mean.x, kTolerance);
-    ASSERT_LT(test_mean.y, kTolerance);
-    ASSERT_LT(test_mean.z, kTolerance);
+    ASSERT_LT(directional_mean.x, kTolerance);
+    ASSERT_LT(directional_mean.y, kTolerance);
+    ASSERT_LT(directional_mean.z, kTolerance);
     ASSERT_LT(global_mean, kTolerance);
 
-    ASSERT_GT(test_mean.x, -1. * kTolerance);
-    ASSERT_GT(test_mean.y, -1. * kTolerance);
-    ASSERT_GT(test_mean.z, -1. * kTolerance);
+    ASSERT_GT(directional_mean.x, -1. * kTolerance);
+    ASSERT_GT(directional_mean.y, -1. * kTolerance);
+    ASSERT_GT(directional_mean.z, -1. * kTolerance);
     ASSERT_GT(global_mean, -1. * kTolerance);
 }
 
 TEST_F(DistributionTest, PositionStdDev) {
-    double3 test_sum = make_double3(0., 0., 0.);
-    for (int test = 0; test < kNumAtoms; ++test) {
-        test_sum.x += pos[test].x;
-        test_sum.y += pos[test].y;
-        test_sum.z += pos[test].z;
-    }
-#if defined(MPI)
-    MPI_Allreduce(MPI_IN_PLACE,
-                  &test_sum,
-                  3,
-                  MPI_DOUBLE,
-                  MPI_SUM,
-                  MPI_COMM_WORLD);
-#endif
-    double3 test_mean = test_sum / kNumAtoms;
-    double global_mean = (test_mean.x + test_mean.y + test_mean.x) / 3.;
+    double3 directional_stddev;
+    double global_stddev = stddev(pos,
+                                  kNumAtoms,
+                                  &directional_stddev);
 
-    double3 sum_of_squared_differences = make_double3(0., 0., 0.);
-    for (int test = 0; test < kNumAtoms; ++test) {
-        sum_of_squared_differences.x += (pos[test].x - test_mean.x) *
-                                        (pos[test].x - test_mean.x);
-        sum_of_squared_differences.y += (pos[test].y - test_mean.y) *
-                                        (pos[test].y - test_mean.y);
-        sum_of_squared_differences.z += (pos[test].z - test_mean.z) *
-                                        (pos[test].z - test_mean.z);
-    }
-#if defined(MPI)
-    MPI_Allreduce(MPI_IN_PLACE,
-                  &sum_of_squared_differences,
-                  3,
-                  MPI_DOUBLE,
-                  MPI_SUM,
-                  MPI_COMM_WORLD);
-#endif
-    double3 test_std_dev = make_double3(0., 0., 0.);
-    test_std_dev.x = sqrt(sum_of_squared_differences.x / (kNumAtoms-1));
-    test_std_dev.y = sqrt(sum_of_squared_differences.y / (kNumAtoms-1));
-    test_std_dev.z = sqrt(sum_of_squared_differences.z / (kNumAtoms-1));
-    double global_std_dev = (test_std_dev.x +
-                             test_std_dev.y +
-                             test_std_dev.z) / 3.;
+    ASSERT_LT(directional_stddev.x, kTestPosStdDev.x * (1. + kTolerance));
+    ASSERT_LT(directional_stddev.y, kTestPosStdDev.y * (1. + kTolerance));
+    ASSERT_LT(directional_stddev.z, kTestPosStdDev.z * (1. + kTolerance));
+    // ASSERT_LT(global_stddev, kTestPosStdDev * (1. + kTolerance));
 
-    ASSERT_LT(test_std_dev.x, kTestPosStdDev.x * (1. + kTolerance));
-    ASSERT_LT(test_std_dev.y, kTestPosStdDev.y * (1. + kTolerance));
-    ASSERT_LT(test_std_dev.z, kTestPosStdDev.z * (1. + kTolerance));
-    // ASSERT_LT(global_std_dev, kTestPosStdDev * (1. + kTolerance));
-
-    ASSERT_GT(test_std_dev.x, kTestPosStdDev.x * (1. - kTolerance));
-    ASSERT_GT(test_std_dev.y, kTestPosStdDev.y * (1. - kTolerance));
-    ASSERT_GT(test_std_dev.z, kTestPosStdDev.z * (1. - kTolerance));
-    // ASSERT_GT(global_std_dev, kTestPosStdDev * (1. - kTolerance));
+    ASSERT_GT(directional_stddev.x, kTestPosStdDev.x * (1. - kTolerance));
+    ASSERT_GT(directional_stddev.y, kTestPosStdDev.y * (1. - kTolerance));
+    ASSERT_GT(directional_stddev.z, kTestPosStdDev.z * (1. - kTolerance));
+    // ASSERT_GT(global_stddev, kTestPosStdDev * (1. - kTolerance));
 }
 
 int main(int argc, char **argv) {
