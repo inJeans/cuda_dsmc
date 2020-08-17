@@ -16,13 +16,17 @@
 #include "cuda_dsmc/vector_math.cuh"
 #include "cuda_dsmc/magnetic_field.hpp"
 
-#if defined(MPI)
+#if defined(DSMC_MPI)
 #include <mpi.h>
+#define MPI_CHECK(cmd) do {                         \
+  int e = cmd;                                      \
+  if(e != MPI_SUCCESS) {                            \
+    printf("Failed: MPI error %s:%d '%d'\n",        \
+        __FILE__,__LINE__, e);                      \
+    exit(EXIT_FAILURE);                             \
+  }                                                 \
+} while(0)
 #endif
-
-void numberElementsPerParallelUnit(int unit_id,
-                                   int num_units,
-                                   int *num_elements);
 
 double mean(double3 *array,
             int num_elements,

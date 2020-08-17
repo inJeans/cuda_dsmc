@@ -34,7 +34,7 @@
 const std::string kLogfilename = "test_cuda_dsmc_distribution_generation";
 
 int kRNGSeed = 1234;
-int kNumAtoms = 1e4;
+int kNumAtoms = 1e7;
 double kTestTemp = 100.e-9;
 double kTestV = sqrt(kKB * kTestTemp / kMass);
 
@@ -52,36 +52,25 @@ double kTestPosGlobalStdDev = sqrt(3.);
 #else  // No magnetic field
 FieldParams kTestParams = {.B0 = 0.,
                            .max_distribution_width = 1.};
-double3 kTestPosStdDev = make_double3(0.539, 0.539, 0.539);
-double kTestPosGlobalStdDev = sqrt(3.)*0.539;
+double3 kTestPosStdDev = make_double3(0.577, 0.577, 0.577);
+double kTestPosGlobalStdDev = sqrt(3.)*0.577;
+#endif
+
+#if defined(DSMC_MPI)
+ncclComm_t kcomm;
 #endif
 
 class DeviceVelocityDistributionTest : public ::testing::Test {
  protected:
     virtual void SetUp() {
-#if defined(MPI)
-        // Initialize the MPI environment
-        printf("Initialising MPI\n");
-        MPI_Init(NULL, NULL);
-#endif
-        /* Get device count */
-        CUDA_CALL(cudaGetDeviceCount(&num_devices));
+        // CUDA_CHECK(cudaStreamCreate(&s));
 
-        d_streams = reinterpret_cast<cudaStream_t *>(calloc(num_devices, sizeof(cudaStream_t)));
-        d_states = reinterpret_cast<curandState **>(calloc(num_devices, sizeof(curandState*)));
-
-        for (int d = 0; d < num_devices; ++d) {
-            CUDA_CALL(cudaSetDevice(d));
-            CUDA_CALL(cudaStreamCreate(&d_streams[d]));
-            /* Allocate space for rng states on device */
-            CUDA_CALL(cudaMalloc((void **)&d_states[d],
-                                 kNumBlocks * kNumThreads * sizeof(curandState)));
-        }
+        CUDA_CHECK(cudaMalloc((void **)&d_states,
+                              kNumBlocks * kNumThreads * sizeof(curandState)));
 
         /* Initialise rng states on device */
         initRNG(kNumBlocks*kNumThreads,
                 kRNGSeed,
-                d_streams,
                 d_states);
 
         /* Allocate kNumAtoms double3s on host */
@@ -90,39 +79,28 @@ class DeviceVelocityDistributionTest : public ::testing::Test {
         // Initialise distributions
         generateThermalVelocityDistribution(kNumAtoms,
                                             kTestTemp,
-                                            d_streams,
                                             d_states,
                                             &d_vel);
 
         /* Copy device memory to host */ 
-        combineDeviceArrays(num_devices,
-                            kNumAtoms,
-                            d_vel,
-                            h_vel);
+        CUDA_CHECK(cudaMemcpy(h_vel, d_vel, 
+                              kNumAtoms * sizeof(double3),
+                              cudaMemcpyDeviceToHost)); 
     }
 
     virtual void TearDown() {
-        for (int d=0; d < num_devices; ++d) {
-            cudaFree(d_vel[d]);
-        }
-        free(d_vel);
-        free(d_streams);
-        free(d_states);
+        cudaFree(d_states);
+        cudaFree(d_vel);
+        
         free(h_vel);
-
-#if defined(MPI)
-        // Finalize the MPI environment.
-        MPI_Finalize();
-#endif
     }
 
-    cudaStream_t *d_streams;
-    curandState **d_states;
+    cudaStream_t s;
 
-    int num_devices;
+    curandState *d_states;
 
     double3 *h_vel;
-    double3 **d_vel;
+    double3 *d_vel;
 };
 
 TEST_F(DeviceVelocityDistributionTest, VelocityMean) {
@@ -131,14 +109,14 @@ TEST_F(DeviceVelocityDistributionTest, VelocityMean) {
                               kNumAtoms,
                               &directional_mean);
 
-    ASSERT_LT(directional_mean.x, kTolerance);
-    ASSERT_LT(directional_mean.y, kTolerance);
-    ASSERT_LT(directional_mean.z, kTolerance);
+    ASSERT_LT(directional_mean.x/2, kTolerance);
+    ASSERT_LT(directional_mean.y/2, kTolerance);
+    ASSERT_LT(directional_mean.z/2, kTolerance);
     ASSERT_LT(global_mean, kTolerance);
 
-    ASSERT_GT(directional_mean.x, -1. * kTolerance);
-    ASSERT_GT(directional_mean.y, -1. * kTolerance);
-    ASSERT_GT(directional_mean.z, -1. * kTolerance);
+    ASSERT_GT(directional_mean.x/2, -1. * kTolerance);
+    ASSERT_GT(directional_mean.y/2, -1. * kTolerance);
+    ASSERT_GT(directional_mean.z/2, -1. * kTolerance);
     ASSERT_GT(global_mean, -1. * kTolerance);
 }
 
@@ -162,29 +140,13 @@ TEST_F(DeviceVelocityDistributionTest, VelocityStdDev) {
 class DevicePositionDistributionTest : public ::testing::Test {
  protected:
     virtual void SetUp() {
-#if defined(MPI)
-        // Initialize the MPI environment
-        printf("Initialising MPI\n");
-        MPI_Init(NULL, NULL);
-#endif
-        /* Get device count */
-        CUDA_CALL(cudaGetDeviceCount(&num_devices));
 
-        d_streams = reinterpret_cast<cudaStream_t *>(calloc(num_devices, sizeof(cudaStream_t)));
-        d_states = reinterpret_cast<curandState **>(calloc(num_devices, sizeof(curandState*)));
-
-        for (int d = 0; d < num_devices; ++d) {
-            CUDA_CALL(cudaSetDevice(d));
-            CUDA_CALL(cudaStreamCreate(&d_streams[d]));
-            /* Allocate space for rng states on device */
-            CUDA_CALL(cudaMalloc((void **)&d_states[d],
-                                 kNumBlocks * kNumThreads * sizeof(curandState)));
-        }
+        CUDA_CHECK(cudaMalloc((void **)&d_states,
+                              kNumBlocks * kNumThreads * sizeof(curandState)));
 
         /* Initialise rng states on device */
         initRNG(kNumBlocks*kNumThreads,
                 kRNGSeed,
-                d_streams,
                 d_states);
 
         /* Allocate kNumAtoms double3s on host */
@@ -194,97 +156,59 @@ class DevicePositionDistributionTest : public ::testing::Test {
         generateThermalPositionDistribution(kNumAtoms,
                                             kTestParams,
                                             kTestTemp,
-                                            d_streams,
                                             d_states,
                                             &d_pos);
 
         /* Copy device memory to host */ 
-        combineDeviceArrays(num_devices,
-                            kNumAtoms,
-                            d_pos,
-                            h_pos); 
+        CUDA_CHECK(cudaMemcpy(h_pos, d_pos, 
+                              kNumAtoms * sizeof(double3),
+                              cudaMemcpyDeviceToHost)); 
     }
 
     virtual void TearDown() {
-        for (int d = 0; d < num_devices; ++d) {
-            cudaFree(d_pos[d]);
-        }
-        free(d_pos);
-        free(d_streams);
-        free(d_states);
-        free(h_pos);
+        cudaFree(d_pos);
 
-#if defined(MPI)
-        // Finalize the MPI environment.
-        MPI_Finalize();
-#endif
+        free(h_pos);
     }
 
-    cudaStream_t *d_streams;
-    curandState **d_states;
-
-    int num_devices;
+    curandState *d_states;
 
     double3 *h_pos;
-    double3 **d_pos;
+    double3 *d_pos;
 };
 
 TEST_F(DevicePositionDistributionTest, PositionMean) {
-    double3 test_sum = make_double3(0., 0., 0.);
-    for (int test = 0; test < kNumAtoms; ++test) {
-        test_sum.x += h_pos[test].x;
-        test_sum.y += h_pos[test].y;
-        test_sum.z += h_pos[test].z;
-    }
-    double3 test_mean = test_sum / kNumAtoms;
-    double global_mean = (test_mean.x + test_mean.y + test_mean.x) / 3.;
+    double3 directional_mean;
+    double global_mean = mean(h_pos,
+                              kNumAtoms,
+                              &directional_mean);
 
-    ASSERT_LT(test_mean.x, kTolerance);
-    ASSERT_LT(test_mean.y, kTolerance);
-    ASSERT_LT(test_mean.z, kTolerance);
+    ASSERT_LT(directional_mean.x, kTolerance);
+    ASSERT_LT(directional_mean.y, kTolerance);
+    ASSERT_LT(directional_mean.z, kTolerance);
     ASSERT_LT(global_mean, kTolerance);
 
-    ASSERT_GT(test_mean.x, -1. * kTolerance);
-    ASSERT_GT(test_mean.y, -1. * kTolerance);
-    ASSERT_GT(test_mean.z, -1. * kTolerance);
+    ASSERT_GT(directional_mean.x, -1. * kTolerance);
+    ASSERT_GT(directional_mean.y, -1. * kTolerance);
+    ASSERT_GT(directional_mean.z, -1. * kTolerance);
     ASSERT_GT(global_mean, -1. * kTolerance);
 }
 
 TEST_F(DevicePositionDistributionTest, PositionStdDev) {
-    double3 test_sum = make_double3(0., 0., 0.);
-    for (int test = 0; test < kNumAtoms; ++test) {
-        test_sum.x += h_pos[test].x;
-        test_sum.y += h_pos[test].y;
-        test_sum.z += h_pos[test].z;
-    }
-    double3 test_mean = test_sum / kNumAtoms;
+    double3 directional_stddev;
+    double global_stddev = stddev(h_pos,
+                                  kNumAtoms,
+                                  &directional_stddev);
 
-    double3 sum_of_squared_differences = make_double3(0., 0., 0.);
-    for (int test = 0; test < kNumAtoms; ++test) {
-        sum_of_squared_differences.x += (h_pos[test].x - test_mean.x) *
-                                        (h_pos[test].x - test_mean.x);
-        sum_of_squared_differences.y += (h_pos[test].y - test_mean.y) *
-                                        (h_pos[test].y - test_mean.y);
-        sum_of_squared_differences.z += (h_pos[test].z - test_mean.z) *
-                                        (h_pos[test].z - test_mean.z);
-    }
-    double3 test_std_dev = make_double3(0., 0., 0.);
-    test_std_dev.x = sqrt(sum_of_squared_differences.x / (kNumAtoms-1));
-    test_std_dev.y = sqrt(sum_of_squared_differences.y / (kNumAtoms-1));
-    test_std_dev.z = sqrt(sum_of_squared_differences.z / (kNumAtoms-1));
-    double global_std_dev = sqrt(test_std_dev.x*test_std_dev.x +
-                                 test_std_dev.y*test_std_dev.y +
-                                 test_std_dev.z*test_std_dev.z);
+    ASSERT_LT(directional_stddev.x, kTestPosStdDev.x * (1. + kTolerance));
+    ASSERT_LT(directional_stddev.y, kTestPosStdDev.y * (1. + kTolerance));
+    ASSERT_LT(directional_stddev.z, kTestPosStdDev.z * (1. + kTolerance));
+    ASSERT_LT(global_stddev, kTestPosGlobalStdDev * (1. + kTolerance));
 
-    ASSERT_LT(test_std_dev.x, kTestPosStdDev.x * (1. + kTolerance));
-    ASSERT_LT(test_std_dev.y, kTestPosStdDev.y * (1. + kTolerance));
-    ASSERT_LT(test_std_dev.z, kTestPosStdDev.z * (1. + kTolerance));
-    ASSERT_LT(global_std_dev, kTestPosGlobalStdDev * (1. + kTolerance));
-
-    ASSERT_GT(test_std_dev.x, kTestPosStdDev.x * (1. - kTolerance));
-    ASSERT_GT(test_std_dev.y, kTestPosStdDev.y * (1. - kTolerance));
-    ASSERT_GT(test_std_dev.z, kTestPosStdDev.z * (1. - kTolerance));
-    ASSERT_GT(global_std_dev, kTestPosGlobalStdDev * (1. - kTolerance));
+    ASSERT_GT(directional_stddev.x, kTestPosStdDev.x * (1. - kTolerance));
+    ASSERT_GT(directional_stddev.y, kTestPosStdDev.y * (1. - kTolerance));
+    ASSERT_GT(directional_stddev.z, kTestPosStdDev.z * (1. - kTolerance));
+    ASSERT_GT(global_stddev, kTestPosGlobalStdDev * (1. - kTolerance));
 }
 
 int main(int argc, char **argv) {
@@ -300,7 +224,40 @@ int main(int argc, char **argv) {
 
     LOGF(INFO, "Testing distribution generators.");
 
+#if defined(DSMC_MPI)
+    // Initialize the MPI environment
+    printf("Initialising MPI\n");
+    int world_size, world_rank;
+    MPI_CHECK(MPI_Init(&argc, &argv));
+    MPI_Comm_size(MPI_COMM_WORLD, &world_size);
+    MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
+
+    LOGF(INFO, "... seting device id\n");
+    int device_id = getLocalDeviceId();
+    LOGF(INFO, "... device id set %i\n", device_id);
+    CUDA_CHECK(cudaSetDevice(device_id));
+
+    ncclUniqueId id;
+
+    //get NCCL unique ID at rank 0 and broadcast it to all others
+    if (world_rank == 0) ncclGetUniqueId(&id);
+    MPI_CHECK(MPI_Bcast((void *)&id, sizeof(id), MPI_BYTE, 0, MPI_COMM_WORLD));
+
+    //initializing NCCL
+    NCCL_CHECK(ncclCommInitRank(&kcomm, world_size, id, world_rank));
+#endif
+
     ::testing::InitGoogleTest(&argc, argv);
 
-    return RUN_ALL_TESTS();
+    int result = RUN_ALL_TESTS();
+
+#if defined(DSMC_MPI)
+    //finalizing NCCL
+    NCCL_CHECK(ncclCommDestroy(kcomm));
+
+    // Finalize the MPI environment.
+    MPI_CHECK(MPI_Finalize());
+#endif
+
+    return result;
 }

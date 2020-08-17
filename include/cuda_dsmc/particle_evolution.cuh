@@ -15,7 +15,7 @@
 
 #include <string>
 
-#if defined(MPI)
+#if defined(DSMC_MPI)
 #include <mpi.h>
 #endif
 
@@ -28,8 +28,8 @@ void evolveParticleDistribution(int num_particles,
                                 FieldParams params,
                                 double dt,
                                 cudaStream_t *streams,
-                                double3 **pos,
-                                double3 **vel);
+                                double3 ***pos,
+                                double3 ***vel);
 
 __host__ void cuEvolveParticleDistribution(int num_particles,
                                            FieldParams params,

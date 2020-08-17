@@ -29,20 +29,6 @@ void generateThermalPositionDistribution(int num_positions,
                                          double temp,
                                          pcg32x2_random_t* rng,
                                          double3 **pos) {
-#if defined(MPI)
-    // Get the number of processes
-    int world_size;
-    MPI_Comm_size(MPI_COMM_WORLD, &world_size);
-
-    // Get the rank of the process
-    int world_rank;
-    MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
-
-    // Calculate rank local number of positions
-    numberElementsPerParallelUnit(world_rank,
-                                  world_size,
-                                  &num_positions);
-#endif
     /* Allocate num_positions double3s on host */
     *pos = reinterpret_cast<double3 *>(calloc(num_positions, sizeof(double3)));
 
@@ -96,7 +82,7 @@ double3 hGenerateThermalPosition(FieldParams params,
 
     while (no_atom_selected) {
         double3 r = gaussianVector(0.,
-                                   kMaxDistributionWidth,
+                                   params.max_distribution_width,
                                    rng);
 
         double mag_B = norm(magneticField(params,
@@ -124,21 +110,6 @@ void generateThermalVelocityDistribution(int num_velocities,
                                           double temp,
                                           pcg32x2_random_t* rng,
                                           double3 **vel) {
-#if defined(MPI)
-    // Get the number of processes
-    int world_size;
-    MPI_Comm_size(MPI_COMM_WORLD, &world_size);
-
-    // Get the rank of the process
-    int world_rank;
-    MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
-
-    // Calculate rank local number of positions
-    numberElementsPerParallelUnit(world_rank,
-                                  world_size,
-                                  &num_velocities);
-#endif
-
     /* Allocate num_velocities double3s on host */
     *vel = reinterpret_cast<double3 *>(calloc(num_velocities, sizeof(double3)));
 

@@ -10,27 +10,6 @@
 
 #include "cuda_dsmc/dsmc_utils.hpp"
 
-/** \brief Evenly divide elements amongst parallel unit
- *
- *  \param unit_id MPI world rank.
- *  \param num_units Number of ranks in the MPI world.
- *  \param num_elements Pointer to the global number of elements.
- *  \exception not yet.
- *  \return The rank local number of elements
- */
-void numberElementsPerParallelUnit(int unit_id,
-                                   int num_units,
-                                   int *num_elements) {
-    *num_elements /= num_units;
-
-    if (unit_id == num_units-1) {
-        *num_elements += *num_elements % num_units;
-    }
-
-    return;
-}
-
-
 ////////////////////////////////////////////////////////////////////////
 //                     STATISTICAL UTILITIES                          //
 ////////////////////////////////////////////////////////////////////////
@@ -47,23 +26,14 @@ void numberElementsPerParallelUnit(int unit_id,
 double mean(double3 *array,
             int num_elements,
             double3 *directional_mean) {
-#if defined(MPI)
-    int world_size, world_rank;
 
-    MPI_Comm_size(MPI_COMM_WORLD, &world_size);
-    MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
-
-    numberElementsPerParallelUnit(world_rank,
-                                  world_size,
-                                  &num_elements);
-#endif
     double3 sum = make_double3(0., 0., 0.);
     for (int element = 0; element < num_elements; ++element) {
         sum.x += array[element].x;
         sum.y += array[element].y;
         sum.z += array[element].z;
     }
-#if defined(MPI)
+#if defined(DSMC_MPI)
     MPI_Allreduce(MPI_IN_PLACE,
                   &sum,
                   3,
@@ -103,16 +73,6 @@ double stddev(double3 *array,
                               num_elements,
                               &directional_mean);
 
-#if defined(MPI)
-    int world_size, world_rank;
-
-    MPI_Comm_size(MPI_COMM_WORLD, &world_size);
-    MPI_Comm_rank(MPI_COMM_WORLD, &world_rank); 
-
-    numberElementsPerParallelUnit(world_rank,
-                                  world_size,
-                                  &num_elements);
-#endif
     double3 sum_of_squared_differences = make_double3(0., 0., 0.);
     for (int element = 0; element < num_elements; ++element) {
         sum_of_squared_differences.x += (array[element].x - directional_mean.x) *
@@ -122,7 +82,7 @@ double stddev(double3 *array,
         sum_of_squared_differences.z += (array[element].z - directional_mean.z) *
                                         (array[element].z - directional_mean.z);
     }
-#if defined(MPI)
+#if defined(DSMC_MPI)
     MPI_Allreduce(MPI_IN_PLACE,
                   &sum_of_squared_differences,
                   3,
@@ -172,21 +132,11 @@ double3 directionalKineticEnergy(double3 vel) {
 double kineticEnergyMean(double3 *vel,
                          int num_elements,
                          double3 *directional_energy_mean) {
-#if defined(MPI)
-    int world_size, world_rank;
-
-    MPI_Comm_size(MPI_COMM_WORLD, &world_size);
-    MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
-
-    numberElementsPerParallelUnit(world_rank,
-                                  world_size,
-                                  &num_elements);
-#endif
     double3 directional_energy[num_elements];
     for (int particle=0; particle<num_elements; particle++) {
         directional_energy[particle] = directionalKineticEnergy(vel[particle]);
     }
-#if defined(MPI)
+#if defined(DSMC_MPI)
     MPI_Allreduce(MPI_IN_PLACE,
                   &num_elements,
                   1,
@@ -213,21 +163,11 @@ double kineticEnergyMean(double3 *vel,
 double kineticEnergyStddev(double3 *vel,
                            int num_elements,
                            double3 *directional_stddev) {
-#if defined(MPI)
-    int world_size, world_rank;
-
-    MPI_Comm_size(MPI_COMM_WORLD, &world_size);
-    MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
-
-    numberElementsPerParallelUnit(world_rank,
-                                  world_size,
-                                  &num_elements);
-#endif
     double3 directional_energy[num_elements];
     for (int particle=0; particle<num_elements; particle++) {
         directional_energy[particle] = directionalKineticEnergy(vel[particle]);
     }
-#if defined(MPI)
+#if defined(DSMC_MPI)
     MPI_Allreduce(MPI_IN_PLACE,
                   &num_elements,
                   1,
@@ -271,22 +211,12 @@ double potentialEnergyMean(double3 *pos,
                            int num_elements,
                            FieldParams params,
                            double3 *directional_energy_mean) {
-#if defined(MPI)
-    int world_size, world_rank;
-
-    MPI_Comm_size(MPI_COMM_WORLD, &world_size);
-    MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
-
-    numberElementsPerParallelUnit(world_rank,
-                                  world_size,
-                                  &num_elements);
-#endif
     double3 directional_energy[num_elements];
     for (int particle=0; particle<num_elements; particle++) {
         directional_energy[particle] = directionalPotentialEnergy(params,
                                                                   pos[particle]);
     }
-#if defined(MPI)
+#if defined(DSMC_MPI)
     MPI_Allreduce(MPI_IN_PLACE,
                   &num_elements,
                   1,

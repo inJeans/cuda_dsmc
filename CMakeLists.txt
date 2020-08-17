@@ -21,6 +21,7 @@ ENDIF()
 
 # User defined g3log header destintation
 IF(G3LOG_INCLUDE_PATH)
+    message(STATUS "G3LOG_INCLUDE_PATH='${G3LOG_INCLUDE_PATH}'")
     include_directories("${G3LOG_INCLUDE_PATH}")
 ENDIF()
 
@@ -86,11 +87,11 @@ option(MPI "Compile with MPI distribution" OFF)
 
 IF(MPI)
   find_package(MPI REQUIRED)
-  LIST(APPEND PARALLELISATION_DEFINITIONS "MPI")
+  LIST(APPEND PARALLELISATION_DEFINITIONS "DSMC_MPI")
   LIST(APPEND PARALLELISATION_FLAGS "-lmpi")
 ENDIF()
 
-# We will optionally build with MPI.
+# We will optionally build with OpenMP.
 option(OPENMP "Compile with OpenMP parallelism" OFF)
 
 IF(OPENMP)

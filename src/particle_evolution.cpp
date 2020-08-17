@@ -25,7 +25,7 @@ void evolveParticleDistribution(int num_particles,
                                 double dt,
                                 double3 **pos,
                                 double3 **vel) {
-#if defined(MPI)
+#if defined(DSMC_MPI)
     // Get the number of processes
     int world_size;
     MPI_Comm_size(MPI_COMM_WORLD, &world_size);

@@ -60,13 +60,13 @@ class EvolutionTest : public ::testing::Test {
  protected:
     virtual void SetUp() {
         // If using MPI get the world rank information
-#if defined(MPI)
-    // Initialize the MPI environment
-    printf("Initialising MPI\n");
-    MPI_Init(NULL, NULL);
-    MPI_Comm_size(MPI_COMM_WORLD, &world_size);
-    MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
-#endif
+// #if defined(DSMC_MPI)
+//     // Initialize the MPI environment
+//     printf("Initialising MPI\n");
+//     MPI_Init(NULL, NULL);
+//     MPI_Comm_size(MPI_COMM_WORLD, &world_size);
+//     MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
+// #endif
         // Initialise detreministic seed
         pcg32x2_srandom_r(&rng,
                           42u,
@@ -92,16 +92,16 @@ class EvolutionTest : public ::testing::Test {
         free(pos);
         free(vel);
 
-#if defined(MPI)
-        // Finalize the MPI environment.
-        MPI_Finalize();
-#endif
+// #if defined(DSMC_MPI)
+//         // Finalize the MPI environment.
+//         MPI_Finalize();
+// #endif
     }
 
     pcg32x2_random_t rng;
 
     double3 *pos, *vel;
-#if defined(MPI)
+#if defined(DSMC_MPI)
     int world_size, world_rank;
 #endif
 };
@@ -307,7 +307,7 @@ TEST_F(EvolutionTest, PotentialEnergyMean) {
 //         test_sum.y += pos[test].y;
 //         test_sum.z += pos[test].z;
 //     }
-// #if defined(MPI)
+// #if defined(DSMC_MPI)
 //     MPI_Allreduce(MPI_IN_PLACE,
 //                   &test_sum,
 //                   3,
@@ -327,7 +327,7 @@ TEST_F(EvolutionTest, PotentialEnergyMean) {
 //         sum_of_squared_differences.z += (pos[test].z - test_mean.z) *
 //                                         (pos[test].z - test_mean.z);
 //     }
-// #if defined(MPI)
+// #if defined(DSMC_MPI)
 //     MPI_Allreduce(MPI_IN_PLACE,
 //                   &sum_of_squared_differences,
 //                   3,
@@ -366,7 +366,7 @@ int main(int argc, char **argv) {
                                         &CustomSink::ReceiveLogMessage);
 
     LOGF(INFO, "Testing distribution generators.");
-#if defined(MPI)
+#if defined(DSMC_MPI)
     // Initialize the MPI environment
     printf("Initialising MPI\n");
     MPI_Init(&argc, &argv);
@@ -376,7 +376,7 @@ int main(int argc, char **argv) {
 
     int return_value = RUN_ALL_TESTS();
 
-#if defined(MPI)
+#if defined(DSMC_MPI)
     // Finalize the MPI environment.
     MPI_Finalize();
 #endif

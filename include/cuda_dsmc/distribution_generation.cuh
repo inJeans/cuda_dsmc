@@ -23,14 +23,12 @@
 __host__ void generateThermalPositionDistribution(int num_positions,
                                                   FieldParams params,
                                                   double temp,
-                                                  cudaStream_t *streams,
-                                                  curandState **states,
-                                                  double3 ***pos);
+                                                  curandState *states,
+                                                  double3 **pos);
 
 __host__ void cuGenerateThermalPositionDistribution(int num_positions,
                                                     FieldParams params,
                                                     double temp,
-                                                    cudaStream_t stream,
                                                     curandState *states,
                                                     double3 *pos);
 
@@ -46,13 +44,11 @@ __device__ double3 dGenerateThermalPosition(FieldParams params,
 
 __host__ void generateThermalVelocityDistribution(int num_velocities,
                                                   double temp,
-                                                  cudaStream_t *streams,
-                                                  curandState **states,
-                                                  double3 ***vel);
+                                                  curandState *states,
+                                                  double3 **vel);
 
 __host__ void cuGenerateThermalVelocityDistribution(int num_velocities,
                                                     double temp,
-                                                    cudaStream_t stream,
                                                     curandState* states,
                                                     double3 *vel);
 

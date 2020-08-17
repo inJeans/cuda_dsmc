@@ -15,7 +15,7 @@
 
 #include <string>
 
-#if defined(MPI)
+#if defined(DSMC_MPI)
 #include <mpi.h>
 #endif
 

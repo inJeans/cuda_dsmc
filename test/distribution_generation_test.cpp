@@ -52,7 +52,7 @@ class DistributionTest : public ::testing::Test {
  protected:
     virtual void SetUp() {
         // If using MPI get the world rank information
-#if defined(MPI)
+#if defined(DSMC_MPI)
     MPI_Comm_size(MPI_COMM_WORLD, &world_size);
     MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
 #endif
@@ -84,7 +84,7 @@ class DistributionTest : public ::testing::Test {
     pcg32x2_random_t rng;
 
     double3 *pos, *vel;
-#if defined(MPI)
+#if defined(DSMC_MPI)
     int world_size, world_rank;
 #endif
 };
@@ -169,7 +169,7 @@ int main(int argc, char **argv) {
                                         &CustomSink::ReceiveLogMessage);
 
     LOGF(INFO, "Testing distribution generators.");
-#if defined(MPI)
+#if defined(DSMC_MPI)
     // Initialize the MPI environment
     printf("Initialising MPI\n");
     MPI_Init(&argc, &argv);
@@ -179,7 +179,7 @@ int main(int argc, char **argv) {
 
     int return_value = RUN_ALL_TESTS();
 
-#if defined(MPI)
+#if defined(DSMC_MPI)
     // Finalize the MPI environment.
     MPI_Finalize();
 #endif

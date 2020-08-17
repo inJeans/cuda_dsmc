@@ -28,7 +28,7 @@
 const std::string kLogfilename = "test_cuda_dsmc_random_numbers";
 
 int kRNGSeed = 1234;
-int kNumberOfTests = 100000;
+int kNumberOfTests = 1e7;
 double kTolerance = 1. / sqrt(kNumberOfTests);
 
 int kNumBlocks = 1024;
@@ -42,25 +42,25 @@ class HostAPIUniformRNGTest : public ::testing::Test {
  protected:
     virtual void SetUp() {
         // Initialise detreministic seed
-        CURAND_CALL(curandCreateGenerator(&rng, 
-                                          CURAND_RNG_PSEUDO_DEFAULT)); 
-        CURAND_CALL(curandSetPseudoRandomGeneratorSeed(rng, 
+        curandGetErrorString(curandCreateGenerator(&rng, 
+                                          CURAND_RNG_PSEUDO_DEFAULT));
+        CURAND_CHECK(curandSetPseudoRandomGeneratorSeed(rng, 
                                                        1234ULL));
 
         /* Allocate n floats on host */ 
         hostData = (double *)calloc(kNumberOfTests, sizeof(double)); 
         /* Allocate n floats on device */ 
-        CUDA_CALL(cudaMalloc((void **)&devData, kNumberOfTests*sizeof(double)));
+        CUDA_CHECK(cudaMalloc((void **)&devData, kNumberOfTests*sizeof(double)));
 
         /* Generate n floats on device */ 
-        CURAND_CALL(curandGenerateUniformDouble(rng, devData, kNumberOfTests));
+        CURAND_CHECK(curandGenerateUniformDouble(rng, devData, kNumberOfTests));
         /* Copy device memory to host */ 
-        CUDA_CALL(cudaMemcpy(hostData, devData, kNumberOfTests * sizeof(double), cudaMemcpyDeviceToHost)); 
+        CUDA_CHECK(cudaMemcpy(hostData, devData, kNumberOfTests * sizeof(double), cudaMemcpyDeviceToHost)); 
     }
 
     virtual void TearDown() {
-        CURAND_CALL(curandDestroyGenerator(rng));
-        CUDA_CALL(cudaFree(devData));
+        CURAND_CHECK(curandDestroyGenerator(rng));
+        CUDA_CHECK(cudaFree(devData));
         free(hostData); 
     }
 
@@ -135,40 +135,36 @@ __global__ void generate_uniform_kernel(curandState *state,
 class DeviceAPIUniformRNGTest : public ::testing::Test {
  protected:
     virtual void SetUp() {
-        /* Initialise CUDA stream */
-        CUDA_CALL(cudaStreamCreate(&d_stream));
-
         /* Allocate space for rng states on device */
-        CUDA_CALL(cudaMalloc((void **)&d_states,
+        CUDA_CHECK(cudaMalloc((void **)&d_states,
                              kNumBlocks * kNumThreads * sizeof(curandState)));
         /* Initialise rng states on device */
         cuInitRNG(kNumBlocks*kNumThreads,
                   kRNGSeed,
-                  d_stream,
                   d_states);
 
         /* Allocate n floats on host */ 
         h_data = (double *)calloc(kNumBlocks * kNumThreads, sizeof(double)); 
         /* Allocate n floats on device */ 
-        CUDA_CALL(cudaMalloc((void **)&d_data, kNumBlocks * kNumThreads*sizeof(double)));
+        CUDA_CHECK(cudaMalloc((void **)&d_data, kNumBlocks * kNumThreads*sizeof(double)));
 
         /* Initialise rng states on device */
-        generate_uniform_kernel<<<kNumBlocks, kNumThreads>>>(d_states,
-                                                             d_data);
+        generate_uniform_kernel<<<kNumBlocks,
+                                  kNumThreads>>>(d_states,
+                                                 d_data);
         /* Copy device memory to host */ 
-        CUDA_CALL(cudaMemcpy(h_data,
+        CUDA_CHECK(cudaMemcpy(h_data,
                              d_data,
                              kNumBlocks * kNumThreads * sizeof(double),
                              cudaMemcpyDeviceToHost));
     }
 
     virtual void TearDown() {
-        CUDA_CALL(cudaFree(d_states));
-        CUDA_CALL(cudaFree(d_data));
+        CUDA_CHECK(cudaFree(d_states));
+        CUDA_CHECK(cudaFree(d_data));
         free(h_data);
     }
 
-    cudaStream_t d_stream;
     curandState *d_states;
 
     double *d_data, *h_data;
@@ -227,29 +223,29 @@ class HostAPIGaussianRNGTest : public ::testing::Test {
  protected:
     virtual void SetUp() {
         // Initialise detreministic seed
-        CURAND_CALL(curandCreateGenerator(&rng, 
+        CURAND_CHECK(curandCreateGenerator(&rng, 
                                           CURAND_RNG_PSEUDO_DEFAULT)); 
-        CURAND_CALL(curandSetPseudoRandomGeneratorSeed(rng, 
+        CURAND_CHECK(curandSetPseudoRandomGeneratorSeed(rng, 
                                                        1234ULL));
 
         /* Allocate n floats on host */ 
         hostData = (double *)calloc(kNumberOfTests, sizeof(double)); 
         /* Allocate n floats on device */ 
-        CUDA_CALL(cudaMalloc((void **)&devData, kNumberOfTests*sizeof(double)));
+        CUDA_CHECK(cudaMalloc((void **)&devData, kNumberOfTests*sizeof(double)));
 
         /* Generate n floats on device */ 
-        CURAND_CALL(curandGenerateNormalDouble(rng, 
+        CURAND_CHECK(curandGenerateNormalDouble(rng, 
                                                devData, 
                                                kNumberOfTests, 
                                                0.0,
                                                1.0));
         /* Copy device memory to host */ 
-        CUDA_CALL(cudaMemcpy(hostData, devData, kNumberOfTests * sizeof(double), cudaMemcpyDeviceToHost)); 
+        CUDA_CHECK(cudaMemcpy(hostData, devData, kNumberOfTests * sizeof(double), cudaMemcpyDeviceToHost)); 
     }
 
     virtual void TearDown() {
-        CURAND_CALL(curandDestroyGenerator(rng));
-        CUDA_CALL(cudaFree(devData));
+        CURAND_CHECK(curandDestroyGenerator(rng));
+        CUDA_CHECK(cudaFree(devData));
         free(hostData); 
     }
 
@@ -352,40 +348,35 @@ __global__ void generate_gaussian_kernel(curandState *state,
 class DeviceAPIGaussianRNGTest : public ::testing::Test {
  protected:
     virtual void SetUp() {
-        /* Initialise CUDA stream */
-        CUDA_CALL(cudaStreamCreate(&d_stream));
-
         /* Allocate space for rng states on device */
-        CUDA_CALL(cudaMalloc((void **)&d_states,
+        CUDA_CHECK(cudaMalloc((void **)&d_states,
                              kNumBlocks * kNumThreads * sizeof(curandState)));
         /* Initialise rng states on device */
         cuInitRNG(kNumBlocks*kNumThreads,
                   kRNGSeed,
-                  d_stream,
                   d_states);
 
         /* Allocate n floats on host */ 
         h_data = (double *)calloc(kNumBlocks * kNumThreads, sizeof(double)); 
         /* Allocate n floats on device */ 
-        CUDA_CALL(cudaMalloc((void **)&d_data, kNumBlocks * kNumThreads*sizeof(double)));
+        CUDA_CHECK(cudaMalloc((void **)&d_data, kNumBlocks * kNumThreads*sizeof(double)));
 
         /* Initialise rng states on device */
         generate_gaussian_kernel<<<kNumBlocks, kNumThreads>>>(d_states,
                                                               d_data);
         /* Copy device memory to host */ 
-        CUDA_CALL(cudaMemcpy(h_data,
+        CUDA_CHECK(cudaMemcpy(h_data,
                              d_data,
                              kNumBlocks * kNumThreads * sizeof(double),
                              cudaMemcpyDeviceToHost));
     }
 
     virtual void TearDown() {
-        CUDA_CALL(cudaFree(d_states));
-        CUDA_CALL(cudaFree(d_data));
+        CUDA_CHECK(cudaFree(d_states));
+        CUDA_CHECK(cudaFree(d_data));
         free(h_data);
     }
 
-    cudaStream_t d_stream;
     curandState *d_states;
 
     double *d_data, *h_data;
@@ -472,29 +463,29 @@ class HostAPIVectorRNGTest : public ::testing::Test {
  protected:
     virtual void SetUp() {
         // Initialise detreministic seed
-        CURAND_CALL(curandCreateGenerator(&rng, 
+        CURAND_CHECK(curandCreateGenerator(&rng, 
                                           CURAND_RNG_PSEUDO_DEFAULT)); 
-        CURAND_CALL(curandSetPseudoRandomGeneratorSeed(rng, 
+        CURAND_CHECK(curandSetPseudoRandomGeneratorSeed(rng, 
                                                        1234ULL));
 
         /* Allocate n floats on host */ 
         hostData = (double3 *)calloc(kNumberOfTests, sizeof(double3)); 
         /* Allocate n floats on device */ 
-        CUDA_CALL(cudaMalloc((void **)&devData, kNumberOfTests*sizeof(double3)));
+        CUDA_CHECK(cudaMalloc((void **)&devData, kNumberOfTests*sizeof(double3)));
 
         /* Generate n floats on device */ 
-        CURAND_CALL(curandGenerateNormalDouble(rng, 
+        CURAND_CHECK(curandGenerateNormalDouble(rng, 
                                                (double *) devData, 
                                                3*kNumberOfTests, 
                                                0.0,
                                                1.0));
         /* Copy device memory to host */ 
-        CUDA_CALL(cudaMemcpy(hostData, devData, kNumberOfTests * sizeof(double3), cudaMemcpyDeviceToHost)); 
+        CUDA_CHECK(cudaMemcpy(hostData, devData, kNumberOfTests * sizeof(double3), cudaMemcpyDeviceToHost)); 
     }
 
     virtual void TearDown() {
-        CURAND_CALL(curandDestroyGenerator(rng));
-        CUDA_CALL(cudaFree(devData));
+        CURAND_CHECK(curandDestroyGenerator(rng));
+        CUDA_CHECK(cudaFree(devData));
         free(hostData); 
     }
 
@@ -571,52 +562,49 @@ __global__ void generate_gaussian_kernel(curandState *state,
 class DeviceAPIVectorRNGTest : public ::testing::Test {
  protected:
     virtual void SetUp() {
-        /* Initialise CUDA stream */
-        CUDA_CALL(cudaStreamCreate(&d_stream));
-        
         /* Allocate space for rng states on device */
-        CUDA_CALL(cudaMalloc((void **)&d_states,
+        CUDA_CHECK(cudaMalloc((void **)&d_states,
                              kNumBlocks * kNumThreads * sizeof(curandState)));
         /* Initialise rng states on device */
         cuInitRNG(kNumBlocks*kNumThreads,
                   kRNGSeed,
-                  d_stream,
                   d_states);
 
         /* Allocate n floats on host */ 
         h_data = (double3 *)calloc(kNumBlocks * kNumThreads, sizeof(double3)); 
         /* Allocate n floats on device */ 
-        CUDA_CALL(cudaMalloc((void **)&d_data, kNumBlocks * kNumThreads*sizeof(double3)));
+        CUDA_CHECK(cudaMalloc((void **)&d_data, kNumBlocks * kNumThreads*sizeof(double3)));
 
         /* Initialise rng states on device */
         generate_gaussian_kernel<<<kNumBlocks, kNumThreads>>>(d_states,
                                                               d_data);
         /* Copy device memory to host */ 
-        CUDA_CALL(cudaMemcpy(h_data,
+        CUDA_CHECK(cudaMemcpy(h_data,
                              d_data,
                              kNumBlocks * kNumThreads * sizeof(double3),
                              cudaMemcpyDeviceToHost));
     }
 
     virtual void TearDown() {
-        CUDA_CALL(cudaFree(d_states));
-        CUDA_CALL(cudaFree(d_data));
+        CUDA_CHECK(cudaFree(d_states));
+        CUDA_CHECK(cudaFree(d_data));
         free(h_data);
     }
 
-    cudaStream_t d_stream;
     curandState *d_states;
 
     double3 *d_data, *h_data;
 };
 
 TEST_F(DeviceAPIVectorRNGTest, GaussianVector3Mean) {
+    printf("Hello\n");
     double test_sum = 0.;
-    for (int test = 0; test < kNumberOfTests; ++test) {
+    for (int test = 0; test < kNumBlocks * kNumThreads; ++test) {
         test_sum += h_data[test].x + h_data[test].y + h_data[test].z;
     }
+    printf("World\n");
 
-    double test_mean = test_sum / (3*kNumberOfTests);
+    double test_mean = test_sum / (3*kNumBlocks*kNumThreads);
     ASSERT_LT(test_mean, kTolerance);
     ASSERT_GT(test_mean, -1. * kTolerance);
 }
@@ -627,13 +615,13 @@ TEST_F(DeviceAPIVectorRNGTest, GaussianVector3StdDev) {
     double sum_of_squared_differences = 0.;
 
     /* Calculate mean */
-    for (int test = 0; test < kNumberOfTests; ++test) {
+    for (int test = 0; test < kNumBlocks*kNumThreads; ++test) {
         test_sum += h_data[test].x + h_data[test].y + h_data[test].z;
     }
-    test_mean = test_sum / (3. * kNumberOfTests);
+    test_mean = test_sum / (3. * kNumBlocks*kNumThreads);
 
     /* Calculate standard deviation */
-    for (int test = 0; test < kNumberOfTests; ++test) {
+    for (int test = 0; test < kNumBlocks*kNumThreads; ++test) {
         sum_of_squared_differences += (h_data[test].x - test_mean) *
                                       (h_data[test].x - test_mean);
         sum_of_squared_differences += (h_data[test].y - test_mean) *
@@ -642,13 +630,13 @@ TEST_F(DeviceAPIVectorRNGTest, GaussianVector3StdDev) {
                                       (h_data[test].z - test_mean);
     }
     double test_std_dev = sqrt(sum_of_squared_differences /
-                              (3*kNumberOfTests-1));
+                              (3*kNumBlocks*kNumThreads-1));
     ASSERT_LT(test_std_dev, 1. * (1. + kTolerance));
     ASSERT_GT(test_std_dev, 1. * (1. - kTolerance));
 }
 
 TEST_F(DeviceAPIVectorRNGTest, GaussianVector3Distinct) {
-    for (int test = 0; test < kNumberOfTests; ++test) {
+    for (int test = 0; test < kNumBlocks*kNumThreads; ++test) {
         ASSERT_NE(h_data[test].x, h_data[test].y);
         ASSERT_NE(h_data[test].x, h_data[test].z);
         ASSERT_NE(h_data[test].y, h_data[test].z);
@@ -667,8 +655,20 @@ int main(int argc, char **argv) {
                                         &CustomSink::ReceiveLogMessage);
 
     LOGF(INFO, "Testing random number generators.");
+#if defined(DSMC_MPI)
+    // Initialize the MPI environment
+    printf("Initialising MPI\n");
+    MPI_Init(&argc, &argv);
+    printf("... seting device id\n");
+    int device_id = getLocalDeviceId();
+    CUDA_CHECK(cudaSetDevice(device_id));
+#endif
 
     ::testing::InitGoogleTest(&argc, argv);
 
+#if defined(DSMC_MPI)
+    // Finalize the MPI environment.
+    MPI_Finalize();
+#endif
     return RUN_ALL_TESTS();
 }

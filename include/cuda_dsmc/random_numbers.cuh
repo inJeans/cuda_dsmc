@@ -21,12 +21,10 @@ __device__ double3 dGaussianVector(double mean,
 
 __host__ void initRNG(int num_states,
                       int seed,
-                      cudaStream_t *streams,
-                      curandState **states);
+                      curandState *states);
 
 __host__ void cuInitRNG(int num_states,
                         int seed,
-                        cudaStream_t stream,
                         curandState *states);
 
 __global__ void gInitRNG(int num_states,

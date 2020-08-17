@@ -1,9 +1,16 @@
 cmake_minimum_required (VERSION 2.8 FATAL_ERROR)
-project (cuda_dsmc_exec)
+project (cuda_dsmc)
+
+# get_property(dirs DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY INCLUDE_DIRECTORIES)
+get_property(dirs DIRECTORY ${PROJECT_SOURCE_DIR} PROPERTY INCLUDE_DIRECTORIES)
+foreach(dir ${dirs})
+  message(STATUS "dir='${dir}'")
+endforeach()
 
 IF(CUDA)
     SET(SOURCES main.cpp)
     cuda_add_executable(cuda_dsmc ${SOURCES})
+    target_include_directories(cuda_dsmc PUBLIC ${dirs})
     target_link_libraries(cuda_dsmc g3logger -lpthread -lm)
     target_compile_definitions(cuda_dsmc PRIVATE -DCUDA)
 ELSE()

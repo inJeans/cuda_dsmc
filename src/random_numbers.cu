@@ -41,23 +41,11 @@ __device__ double3 dGaussianVector(double mean,
  */
 __host__ void initRNG(int num_states,
                       int seed,
-                      cudaStream_t *streams,
-                      curandState **states) {
-    /* Get device count */
-    int num_devices;
-    CUDA_CALL(cudaGetDeviceCount(&num_devices));
+                      curandState *states) {
 
-    for (int d = 0; d < num_devices; ++d) {
-        CUDA_CALL(cudaSetDevice(d));
-        /* Allocate num_positions double3s on device */
-        // MODIFY FOR RNG STATE ALLOCATION
-        // CUDA_CALL(cudaMalloc((void **)*pos, num_positions*sizeof(double3)));
-
-        cuInitRNG(num_states,
-                  seed,
-                  streams[d],
-                  states[d]);
-    }
+    cuInitRNG(num_states,
+              seed,
+              states);
 
     return;
 }
@@ -71,22 +59,17 @@ __host__ void initRNG(int num_states,
  */
 __host__ void cuInitRNG(int num_states,
                         int seed,
-                        cudaStream_t stream,
                         curandState *states) {
     int block_size = 0;
-    int min_grid_size = 0;
     int grid_size = 0;
-    cudaOccupancyMaxPotentialBlockSize(&min_grid_size,
+    cudaOccupancyMaxPotentialBlockSize(&grid_size,
                                        &block_size,
                                        (const void *) gInitRNG,
                                        0,
                                        num_states);
-    grid_size = (num_states + block_size - 1) / block_size;
     
     gInitRNG<<<grid_size,
-               block_size,
-               0,
-               stream>>>
+               block_size>>>
             (num_states,
              seed,
              states);
@@ -103,19 +86,19 @@ __host__ void cuInitRNG(int num_states,
  *  employs the curand XORWOW generator.
  *
  *  \param seed A unique seed for the rng stream.
- *  \param state A pointer to an array of cuRand rng states of the device.
+ *  \param state A pointer to an array of cuRand rng states on the device.
  *  \exception not yet.
  */
  
 __global__ void gInitRNG(int num_states,
                          int seed,
-                         curandState *state) {
+                         curandState *states) {
     int id = threadIdx.x + blockIdx.x * blockDim.x;
     /* Each thread gets same seed, a different sequence 
        number, no offset */
     for (int s = blockIdx.x * blockDim.x + threadIdx.x;
          s < num_states;
          s += blockDim.x * gridDim.x) {
-        curand_init(seed, id, 0, &state[s]);
+        curand_init(seed, id, 0, &states[s]);
     }
 }
